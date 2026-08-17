@@ -8,16 +8,16 @@ export interface LocalBasisInGlobal {
 }
 
 export function createRotatedLocalBasis(
-  clockwiseAngle: number,
+  clockwiseAngleRadians: number,
 ): LocalBasisInGlobal {
   throw new Error("TODO: calculate the rotated local axes");
 }
 
 export function rotateLocalVectorInGlobal(
   localVector: Vector3,
-  clockwiseAngle: number,
+  clockwiseAngleRadians: number,
 ): Vector3 {
-  const basis = createRotatedLocalBasis(clockwiseAngle);
+  const basis = createRotatedLocalBasis(clockwiseAngleRadians);
 
   return localVectorToGlobal(
     localVector,

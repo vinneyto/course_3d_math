@@ -2,15 +2,29 @@
 
 Локальный вектор, связанный с диском часов, сохраняет свои компоненты. В глобальной системе он вращается потому, что вращается локальный базис.
 
-Для поворота по часовой стрелке на угол `angle`:
+Эти формулы связаны с [полярной системой координат](https://ru.wikipedia.org/wiki/%D0%9F%D0%BE%D0%BB%D1%8F%D1%80%D0%BD%D0%B0%D1%8F_%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0_%D0%BA%D0%BE%D0%BE%D1%80%D0%B4%D0%B8%D0%BD%D0%B0%D1%82): координаты единичного вектора, повёрнутого на угол, выражаются через `cos` и `sin`.
+
+## Радианы и градусы
+
+В тексте угол иногда удобнее указывать в градусах, но `Math.sin()`, `Math.cos()` и API вращения Three.js принимают угол **в радианах**.
 
 ```text
-X = (cos(angle), -sin(angle), 0)
-Y = (sin(angle),  cos(angle), 0)
-Z = (0,           0,          1)
+90°  = PI / 2 radians
+180° = PI radians
+360° = 2 * PI radians
 ```
 
-При `angle = 90°`:
+В коде этого упражнения угол всегда измеряется в радианах. Поэтому переменные и параметры содержат слово `Radians`, например `clockwiseAngleRadians`.
+
+Для поворота по часовой стрелке на угол `clockwiseAngleRadians`:
+
+```text
+X = (cos(clockwiseAngleRadians), -sin(clockwiseAngleRadians), 0)
+Y = (sin(clockwiseAngleRadians),  cos(clockwiseAngleRadians), 0)
+Z = (0,                           0,                          1)
+```
+
+При `clockwiseAngleDegrees = 90°`, то есть `clockwiseAngleRadians = Math.PI / 2`:
 
 ```text
 X = (0, -1, 0)
@@ -26,7 +40,7 @@ Z = (0,  0, 1)
 
 ## Задание
 
-Реализуйте `createRotatedLocalBasis(clockwiseAngle)`. Угол передаётся в радианах.
+Реализуйте `createRotatedLocalBasis(clockwiseAngleRadians)`. Угол передаётся в радианах.
 
 `rotateLocalVectorInGlobal()` уже вызывает `localVectorToGlobal()` из предыдущего упражнения. Её тесты покажут, что один локальный вектор получает разные глобальные координаты при вращении базиса.
 

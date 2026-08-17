@@ -13,7 +13,8 @@ function expectVectorClose(actual: Vector3, expected: Vector3): void {
 
 describe("rotated local basis", () => {
   it("rotates the basis 90 degrees clockwise", () => {
-    const basis = createRotatedLocalBasis(Math.PI / 2);
+    const clockwiseAngleRadians = Math.PI / 2;
+    const basis = createRotatedLocalBasis(clockwiseAngleRadians);
 
     expectVectorClose(basis.xAxis, new Vector3(0, -1, 0));
     expectVectorClose(basis.yAxis, new Vector3(1, 0, 0));
@@ -25,9 +26,12 @@ describe("rotated local basis", () => {
     [Math.PI / 2, new Vector3(6, -2, 0)],
     [Math.PI, new Vector3(-2, -6, 0)],
     [(3 * Math.PI) / 2, new Vector3(-6, 2, 0)],
-  ])("rotates a local vector with its basis", (angle, expected) => {
+  ])("rotates a local vector with its basis", (clockwiseAngleRadians, expected) => {
     expectVectorClose(
-      rotateLocalVectorInGlobal(new Vector3(2, 6, 0), angle),
+      rotateLocalVectorInGlobal(
+        new Vector3(2, 6, 0),
+        clockwiseAngleRadians,
+      ),
       expected,
     );
   });
