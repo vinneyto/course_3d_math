@@ -1,0 +1,22 @@
+{
+  "name": "practical-3d-math",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "three": "0.185.0"
+  },
+  "devDependencies": {
+    "@types/three": "0.185.1",
+    "typescript": "^6.0.0",
+    "vitest": "^4.1.10"
+  }
+}
