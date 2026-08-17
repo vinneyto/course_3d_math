@@ -2,36 +2,37 @@
 
 Вернёмся к системе координат секундной стрелки. Её базис, выраженный в глобальных координатах, можно записать в столбцы матрицы:
 
-\[
-M_{local\to global}=
-\begin{bmatrix}|&|&|\\X&Y&Z\\|&|&|\end{bmatrix}
-\]
+```text
+                      [ X.x  Y.x  Z.x ]
+localToGlobalMatrix = [ X.y  Y.y  Z.y ]
+                      [ X.z  Y.z  Z.z ]
+```
 
 Для поворота на 90° по часовой стрелке:
 
-\[
-M_{local\to global}=
-\begin{bmatrix}0&1&0\\-1&0&0\\0&0&1\end{bmatrix}
-\]
+```text
+                      [  0  1  0 ]
+localToGlobalMatrix = [ -1  0  0 ]
+                      [  0  0  1 ]
+```
 
 Умножим её на локальный вектор:
 
-\[
-v_{global}=M_{local\to global}v_{local}
-\]
+```text
+globalVector = localToGlobalMatrix * localVector
 
-\[
-\begin{bmatrix}0&1&0\\-1&0&0\\0&0&1\end{bmatrix}
-\begin{bmatrix}2\\6\\0\end{bmatrix}
-=
-\begin{bmatrix}6\\-2\\0\end{bmatrix}
-\]
+[  0  1  0 ]   [ 2 ]   [  6 ]
+[ -1  0  0 ] * [ 6 ] = [ -2 ]
+[  0  0  1 ]   [ 0 ]   [  0 ]
+```
 
 Это тот же результат, который давала функция без матрицы:
 
-\[
-v_{global}=v_xX+v_yY+v_zZ
-\]
+```text
+globalVector = localVector.x * X
+             + localVector.y * Y
+             + localVector.z * Z
+```
 
 Умножение матрицы на вектор не является новой магической операцией. Оно формализует уже знакомую линейную комбинацию базисных векторов.
 
