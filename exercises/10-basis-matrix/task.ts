@@ -5,5 +5,5 @@ export function createBasisMatrix(
   yAxis: Vector3,
   zAxis: Vector3,
 ): Matrix3 {
-  throw new Error("TODO: write the basis vectors into the matrix columns");
+  throw new Error("TODO: create Matrix3 and write the basis into its columns");
 }
