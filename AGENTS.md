@@ -8,6 +8,12 @@
   label vector components, projections, angles, or other quantities demonstrated
   by the lesson.
 - Follow the conventional coordinate colors: X is red, Y is green, and Z is blue.
+- When visualizing vector components, use an axis-aligned construction such as
+  `(0, 0, 0) → (x, 0, 0) → (x, y, 0) → (x, y, z)`. This keeps the construction
+  anchored to the coordinate axes and planes. Label each segment with its
+  component value. Do not draw lines directly from the vector endpoint to each
+  axis unless the lesson specifically teaches orthogonal projection onto a line;
+  those lines leave the coordinate planes and make the components harder to read.
 - Use lit 3D geometry with enough segments for objects intended to look solid.
   Avoid unlit low-poly substitutes for cylinders, cones, spheres, and similar
   shapes.
