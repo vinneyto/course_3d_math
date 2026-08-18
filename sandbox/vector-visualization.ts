@@ -14,6 +14,8 @@ import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import type { RegisterFrameCallback } from "./types";
 
 const UP = new Vector3(0, 1, 0);
+const CHAIN_PHASE_DURATION_SECONDS = 3;
+const CHAIN_CYCLE_DURATION_SECONDS = CHAIN_PHASE_DURATION_SECONDS * 4;
 
 export interface VectorArrowOptions {
   color: number;
@@ -85,18 +87,23 @@ function smoothStep(value: number): number {
 }
 
 function chainProgress(elapsedSeconds: number): number {
-  const phase = elapsedSeconds % 4;
+  const phase = elapsedSeconds % CHAIN_CYCLE_DURATION_SECONDS;
 
-  if (phase < 1) {
+  if (phase < CHAIN_PHASE_DURATION_SECONDS) {
     return 0;
   }
-  if (phase < 2) {
-    return smoothStep(phase - 1);
+  if (phase < CHAIN_PHASE_DURATION_SECONDS * 2) {
+    return smoothStep(
+      (phase - CHAIN_PHASE_DURATION_SECONDS) / CHAIN_PHASE_DURATION_SECONDS,
+    );
   }
-  if (phase < 3) {
+  if (phase < CHAIN_PHASE_DURATION_SECONDS * 3) {
     return 1;
   }
-  return 1 - smoothStep(phase - 3);
+  const returnProgress =
+    (phase - CHAIN_PHASE_DURATION_SECONDS * 3) /
+    CHAIN_PHASE_DURATION_SECONDS;
+  return 1 - smoothStep(returnProgress);
 }
 
 export function createLoopingVectorChainAnimation(

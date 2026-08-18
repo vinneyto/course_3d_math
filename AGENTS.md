@@ -16,9 +16,10 @@
   those lines leave the coordinate planes and make the components harder to read.
 - In vector-addition demos, animate the addends between two states: all arrows
   start at the coordinate origin, then move into a head-to-tail chain, then return
-  to the origin. Use a repeating four-second cycle: hold for one second, ease for
-  one second, hold for one second, and ease back for one second. Keep the result
-  vector and its component construction fixed throughout the animation.
+  to the origin. Use a repeating twelve-second cycle: hold for three seconds,
+  ease for three seconds, hold for three seconds, and ease back for three seconds.
+  Keep the result vector and its component construction fixed throughout the
+  animation.
 - Use lit 3D geometry with enough segments for objects intended to look solid.
   Avoid unlit low-poly substitutes for cylinders, cones, spheres, and similar
   shapes.
