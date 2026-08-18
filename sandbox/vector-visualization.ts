@@ -11,6 +11,7 @@ import {
   Vector3,
 } from "three";
 import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+import type { RegisterFrameCallback } from "./types";
 
 const UP = new Vector3(0, 1, 0);
 
@@ -20,6 +21,11 @@ export interface VectorArrowOptions {
   shaftRadius?: number;
   headLength?: number;
   headRadius?: number;
+}
+
+export interface AnimatedChainArrow {
+  arrow: Object3D;
+  chainOrigin: Vector3;
 }
 
 export function createLabel(
@@ -72,6 +78,43 @@ export function createVectorArrow(
     new Quaternion().setFromUnitVectors(UP, vector.clone().normalize()),
   );
   return arrow;
+}
+
+function smoothStep(value: number): number {
+  return value * value * (3 - 2 * value);
+}
+
+function chainProgress(elapsedSeconds: number): number {
+  const phase = elapsedSeconds % 4;
+
+  if (phase < 1) {
+    return 0;
+  }
+  if (phase < 2) {
+    return smoothStep(phase - 1);
+  }
+  if (phase < 3) {
+    return 1;
+  }
+  return 1 - smoothStep(phase - 3);
+}
+
+export function createLoopingVectorChainAnimation(
+  registerFrameCallback: RegisterFrameCallback,
+  arrows: AnimatedChainArrow[],
+): () => void {
+  let startedAtSeconds: number | undefined;
+
+  arrows.forEach(({ arrow }) => arrow.position.set(0, 0, 0));
+
+  return registerFrameCallback((elapsedSeconds) => {
+    startedAtSeconds ??= elapsedSeconds;
+    const progress = chainProgress(elapsedSeconds - startedAtSeconds);
+
+    arrows.forEach(({ arrow, chainOrigin }) => {
+      arrow.position.copy(chainOrigin).multiplyScalar(progress);
+    });
+  });
 }
 
 export function disposeObject3D(root: Object3D): void {
