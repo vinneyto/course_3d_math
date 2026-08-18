@@ -47,7 +47,7 @@ if (!loadDemo) {
 }
 
 const demo = await loadDemo();
-const disposeDemo = demo.mountDemo({ scene, camera, renderer });
+const disposeDemo = demo.mountDemo({ scene, camera, controls, renderer });
 
 function resize(): void {
   const width = window.innerWidth;
