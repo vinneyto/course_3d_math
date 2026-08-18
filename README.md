@@ -21,6 +21,15 @@ npm test
 npm test -- exercises/01-create-vector
 ```
 
+Запуск визуальной демки упражнения:
+
+```bash
+npm run demo -- exercises/01-create-vector
+```
+
+Откроется полноэкранная Three.js-песочница. Камеру можно вращать левой
+кнопкой мыши, приближать колёсиком и перемещать правой кнопкой.
+
 Проверка TypeScript:
 
 ```bash
