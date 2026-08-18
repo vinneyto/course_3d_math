@@ -16,13 +16,40 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(circle at 50% 22%, rgba(104, 149, 195, 0.38), transparent 42%),
-    linear-gradient(180deg, #25364c 0%, #111827 55%, #070b12 100%);
+  background: #070b12;
 }
 
 #demo-canvas {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.label-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.demo-label {
+  padding: 0.18rem 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 0.35rem;
+  background: rgba(7, 11, 18, 0.72);
+  box-shadow: 0 0.15rem 0.6rem rgba(0, 0, 0, 0.35);
+  color: white;
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1;
+  text-shadow: 0 0.08rem 0.16rem black;
+  white-space: nowrap;
+  transform: translate(0.45rem, -0.45rem);
+}
+
+.axis-label {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 1rem;
+  font-weight: 800;
 }
