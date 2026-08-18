@@ -5,7 +5,7 @@ import {
   CylinderGeometry,
   Group,
   Line,
-  LineDashedMaterial,
+  LineBasicMaterial,
   Mesh,
   MeshStandardMaterial,
   Object3D,
@@ -73,45 +73,46 @@ export function mountDemo({ scene }: DemoContext): () => void {
     createLabel("Z", new Vector3(0, 0, 6.1), "#5b8cff", "axis-label"),
   ];
 
-  const projections = [
+  const projectionSteps = [
     {
       text: "x = 2",
-      position: new Vector3(VECTOR.x, 0, 0),
+      start: new Vector3(0, 0, 0),
+      end: new Vector3(VECTOR.x, 0, 0),
       color: 0xff5b5b,
       css: "#ff7878",
     },
     {
       text: "y = 3",
-      position: new Vector3(0, VECTOR.y, 0),
+      start: new Vector3(VECTOR.x, 0, 0),
+      end: new Vector3(VECTOR.x, VECTOR.y, 0),
       color: 0x68e06f,
       css: "#80ee86",
     },
     {
       text: "z = 4",
-      position: new Vector3(0, 0, VECTOR.z),
+      start: new Vector3(VECTOR.x, VECTOR.y, 0),
+      end: VECTOR,
       color: 0x5b8cff,
       css: "#7aa0ff",
     },
-  ].flatMap(({ text, position, color, css }) => {
+  ].flatMap(({ text, start, end, color, css }) => {
     const material = new MeshStandardMaterial({ color, roughness: 0.35 });
     const marker = new Mesh(new SphereGeometry(0.11, 24, 16), material);
-    marker.position.copy(position);
-    const label = createLabel(text, position, css);
+    marker.position.copy(end);
+    const labelPosition = start.clone().lerp(end, 0.5);
+    const label = createLabel(text, labelPosition, css);
     const guide = new Line(
-      new BufferGeometry().setFromPoints([position, VECTOR]),
-      new LineDashedMaterial({
+      new BufferGeometry().setFromPoints([start, end]),
+      new LineBasicMaterial({
         color,
-        dashSize: 0.16,
-        gapSize: 0.11,
-        opacity: 0.65,
+        opacity: 0.9,
         transparent: true,
       }),
     );
-    guide.computeLineDistances();
     return [marker, label, guide];
   });
 
-  demoObjects.push(...axisLabels, ...projections);
+  demoObjects.push(...axisLabels, ...projectionSteps);
   scene.add(...demoObjects);
 
   return () => {
@@ -123,7 +124,7 @@ export function mountDemo({ scene }: DemoContext): () => void {
         object.material.dispose();
       }
     });
-    projections.forEach((object) => {
+    projectionSteps.forEach((object) => {
       if (object instanceof Mesh) {
         object.geometry.dispose();
         object.material.dispose();
