@@ -116,7 +116,9 @@ export function createLoopingVectorChainAnimation(
 
   return registerFrameCallback((elapsedSeconds) => {
     startedAtSeconds ??= elapsedSeconds;
-    const progress = chainProgress(elapsedSeconds - startedAtSeconds);
+    const progress = chainProgress(
+      elapsedSeconds - startedAtSeconds + CHAIN_PHASE_DURATION_SECONDS,
+    );
 
     arrows.forEach(({ arrow, chainOrigin }) => {
       arrow.position.copy(chainOrigin).multiplyScalar(progress);
