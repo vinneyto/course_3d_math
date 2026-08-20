@@ -8,6 +8,9 @@
   exercise's `README.md`. Add a `## Визуализация` section with the exact command
   `npm run demo -- exercises/<exercise>`. Treat the demo and its launch
   instructions as parts of the same change.
+- Every exercise `README.md` must document how to run that exercise's task
+  tests with the exact command `npm test -- exercises/<exercise>`. The path in
+  the command must match the exercise directory.
 - Make every mathematical value visible and readable. Label coordinate axes and
   label vector components, projections, angles, or other quantities demonstrated
   by the lesson.
