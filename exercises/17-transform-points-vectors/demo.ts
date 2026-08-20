@@ -274,12 +274,6 @@ export function mountDemo({
     new Vector3(-0.25, -0.25, -0.25),
     "#ffffff",
   );
-  const cubeLabel = createLabel(
-    "локальное начало / центр куба",
-    new Vector3(0.8, -0.8, 0),
-    "#cbb8ff",
-  );
-  transformedObjects.add(cubeLabel);
   const statusLabel = createLabel(
     "Сейчас: шаг 1 — исходное состояние",
     new Vector3(2.2, 6.8, 0),
