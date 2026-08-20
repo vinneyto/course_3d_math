@@ -19,3 +19,9 @@
 Реализуйте `calculateVectorLength(vector)` самостоятельно через компоненты `x`, `y`, `z` и `Math.sqrt()`.
 
 Тест сравнит ручной результат с `vector.length()`.
+
+Запустите тесты упражнения:
+
+```bash
+npm test -- exercises/04-vector-length
+```
