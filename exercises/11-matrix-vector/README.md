@@ -27,3 +27,9 @@ const result = vector.clone().applyMatrix3(matrix);
 ## Задание
 
 Реализуйте `multiplyMatrixByVector(matrix, vector)`. Верните новый вектор и сохраните аргументы без изменений.
+
+Запустите тесты упражнения:
+
+```bash
+npm test -- exercises/11-matrix-vector
+```
