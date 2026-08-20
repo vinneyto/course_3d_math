@@ -57,3 +57,4 @@ npm run typecheck
 15. [Точки и векторы](exercises/15-points-and-vectors/README.md)
 16. [Однородные координаты](exercises/16-homogeneous-coordinates/README.md)
 17. [Matrix4: преобразование точек и векторов](exercises/17-transform-points-vectors/README.md)
+18. [Длинная цепочка преобразований](exercises/18-matrix-transform-chain/README.md)
