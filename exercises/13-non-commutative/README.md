@@ -29,3 +29,9 @@ B * A = [ -2  0  0 ]
 Реализуйте `multiplyInBothOrders(matrixA, matrixB)`. Верните `productAB` и `productBA` и убедитесь, что они различаются.
 
 Порядок применения составных преобразований к векторам будет разобран отдельно. Поэтому здесь используются буквальные имена `productAB` и `productBA`.
+
+Запустите тесты упражнения:
+
+```bash
+npm test -- exercises/13-non-commutative
+```

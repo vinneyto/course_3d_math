@@ -55,3 +55,9 @@ localVectorToGlobal(
 ```
 
 Верните новый вектор и не изменяйте аргументы.
+
+Запустите тесты упражнения:
+
+```bash
+npm test -- exercises/08-local-vector-to-global
+```

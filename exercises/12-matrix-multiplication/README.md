@@ -28,3 +28,9 @@ a.clone().premultiply(b);            // b * a
 ## Задание
 
 Реализуйте `multiplyMatrices(first, second)` через API `Matrix3`. Функция должна вернуть `first * second` и не изменить аргументы.
+
+Запустите тесты упражнения:
+
+```bash
+npm test -- exercises/12-matrix-multiplication
+```

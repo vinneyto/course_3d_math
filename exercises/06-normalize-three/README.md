@@ -17,3 +17,9 @@ const copy = vector.clone();
 Реализуйте `normalizeWithThree(vector)` с помощью `clone()` и `normalize()`.
 
 Результат должен совпасть с ручной нормализацией и иметь длину `1`.
+
+Запустите тесты упражнения:
+
+```bash
+npm test -- exercises/06-normalize-three
+```

@@ -52,3 +52,9 @@ globalVector = localToGlobalMatrix * localVector
 Реализуйте `localVectorToGlobalWithMatrix(localVector, localToGlobalMatrix)` через `applyMatrix3()`.
 
 Функция должна вернуть новый глобальный вектор и не изменить локальный.
+
+Запустите тесты упражнения:
+
+```bash
+npm test -- exercises/14-local-to-global-matrix
+```
