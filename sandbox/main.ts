@@ -9,7 +9,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer.js";
 import "./style.css";
 import { createSky } from "./sky";
-import type { DemoModule } from "./types";
+import type { DemoModule, FrameCallback } from "./types";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#demo-canvas");
 
@@ -39,6 +39,12 @@ const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 controls.target.set(1, 1.5, 2);
 
+const frameCallbacks = new Set<FrameCallback>();
+const registerFrameCallback = (callback: FrameCallback): (() => void) => {
+  frameCallbacks.add(callback);
+  return () => frameCallbacks.delete(callback);
+};
+
 const demoLoaders = import.meta.glob<DemoModule>("../exercises/**/demo.ts");
 const loadDemo = demoLoaders[__DEMO_ENTRY__];
 
@@ -47,7 +53,13 @@ if (!loadDemo) {
 }
 
 const demo = await loadDemo();
-const disposeDemo = demo.mountDemo({ scene, camera, controls, renderer });
+const disposeDemo = demo.mountDemo({
+  scene,
+  camera,
+  controls,
+  renderer,
+  registerFrameCallback,
+});
 
 function resize(): void {
   const width = window.innerWidth;
@@ -59,7 +71,9 @@ function resize(): void {
   labelRenderer.setSize(width, height);
 }
 
-function render(): void {
+function render(timeMilliseconds: number): void {
+  const elapsedSeconds = timeMilliseconds / 1_000;
+  frameCallbacks.forEach((callback) => callback(elapsedSeconds));
   controls.update();
   sky.follow(camera.position);
   renderer.render(scene, camera);
@@ -76,6 +90,7 @@ if (import.meta.hot) {
     renderer.setAnimationLoop(null);
     controls.dispose();
     disposeDemo?.();
+    frameCallbacks.clear();
     scene.remove(sky.mesh, hemisphereLight, directionalLight);
     sky.dispose();
     labelRenderer.domElement.remove();

@@ -14,6 +14,12 @@
   component value. Do not draw lines directly from the vector endpoint to each
   axis unless the lesson specifically teaches orthogonal projection onto a line;
   those lines leave the coordinate planes and make the components harder to read.
+- In vector-addition demos, animate the addends between two states: all arrows
+  start at the coordinate origin, then move into a head-to-tail chain, then return
+  to the origin. Start easing into the chain immediately when the demo loads.
+  Then continue a repeating twelve-second cycle with three-second phases: ease
+  into the chain, hold the chain, ease back, and hold at the origin. Keep the
+  result vector and its component construction fixed throughout the animation.
 - Use lit 3D geometry with enough segments for objects intended to look solid.
   Avoid unlit low-poly substitutes for cylinders, cones, spheres, and similar
   shapes.

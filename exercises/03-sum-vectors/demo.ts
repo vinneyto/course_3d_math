@@ -12,6 +12,7 @@ import {
 import type { DemoContext } from "../../sandbox/types";
 import {
   createLabel,
+  createLoopingVectorChainAnimation,
   createVectorArrow,
   disposeObject3D,
 } from "../../sandbox/vector-visualization";
@@ -33,6 +34,7 @@ export function mountDemo({
   scene,
   camera,
   controls,
+  registerFrameCallback,
 }: DemoContext): () => void {
   const previousCameraPosition = camera.position.clone();
   const previousControlsTarget = controls.target.clone();
@@ -49,27 +51,30 @@ export function mountDemo({
 
   let chainPosition = new Vector3();
   const chainArrows: Object3D[] = [];
-  const vectorLabels = VECTORS.map((vector, index) => {
+  const animatedChainArrows = VECTORS.map((vector, index) => {
     const arrowOrigin = chainPosition.clone();
     const arrow = createVectorArrow(vector, {
       color: VECTOR_COLORS[index],
-      origin: arrowOrigin,
       shaftRadius: 0.06,
       headLength: 0.5,
       headRadius: 0.21,
     });
     chainArrows.push(arrow);
-
-    const labelPosition = arrowOrigin
-      .clone()
-      .add(vector.clone().multiplyScalar(0.52));
-    chainPosition.add(vector);
-    return createLabel(
-      `v${index + 1} = (${vector.x}, ${vector.y}, ${vector.z})`,
-      labelPosition,
-      VECTOR_CSS_COLORS[index],
+    arrow.add(
+      createLabel(
+        `v${index + 1} = (${vector.x}, ${vector.y}, ${vector.z})`,
+        new Vector3(0, vector.length() * 0.52, 0),
+        VECTOR_CSS_COLORS[index],
+      ),
     );
+    chainPosition.add(vector);
+    return { arrow, chainOrigin: arrowOrigin };
   });
+
+  const stopChainAnimation = createLoopingVectorChainAnimation(
+    registerFrameCallback,
+    animatedChainArrows,
+  );
 
   const resultArrow = createVectorArrow(RESULT, {
     color: 0xffd166,
@@ -124,7 +129,6 @@ export function mountDemo({
     ...chainArrows,
     resultArrow,
     ...axisLabels,
-    ...vectorLabels,
     ...sumLabels,
     ...projectionSteps,
   ];
@@ -136,9 +140,10 @@ export function mountDemo({
     chainArrows.forEach(disposeObject3D);
     disposeObject3D(resultArrow);
     projectionSteps.forEach(disposeObject3D);
-    [...axisLabels, ...vectorLabels, ...sumLabels].forEach((label) =>
+    [...axisLabels, ...sumLabels].forEach((label) =>
       label.element.remove(),
     );
+    stopChainAnimation();
     camera.position.copy(previousCameraPosition);
     controls.target.copy(previousControlsTarget);
     controls.update();
