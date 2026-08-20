@@ -2,7 +2,7 @@
 
 Практический курс по векторам, матрицам и линейным преобразованиям в компьютерной графике.
 
-Курс использует TypeScript, Vitest и Three.js, но не является курсом по Three.js. `Vector3` и `Matrix3` нужны здесь как удобные реализации универсальных математических сущностей.
+Курс использует TypeScript, Vitest и Three.js, но не является курсом по Three.js. `Vector3`, `Vector4` и `Matrix3` нужны здесь как удобные реализации универсальных математических сущностей.
 
 В упражнениях 1–14 мы работаем только с векторами и матрицами `3 × 3`. Начиная с упражнения 15 курс также вводит понятие точки. `Matrix4`, world space и handedness пока не рассматриваются. Используются термины **local** и **global**.
 
@@ -55,3 +55,4 @@ npm run typecheck
 13. [Некоммутативность матричного умножения](exercises/13-non-commutative/README.md)
 14. [Перевод локального вектора через Matrix3](exercises/14-local-to-global-matrix/README.md)
 15. [Точки и векторы](exercises/15-points-and-vectors/README.md)
+16. [Однородные координаты](exercises/16-homogeneous-coordinates/README.md)
