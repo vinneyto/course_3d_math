@@ -1,5 +1,17 @@
 # Repository instructions
 
+## Exercise page navigation
+
+- End every exercise `README.md` with a navigation block separated from the
+  lesson by a horizontal rule (`---`). Link to the previous and next exercises
+  using their titles; the first exercise has only a next link, and the last
+  exercise has only a previous link.
+- Keep the navigation in the primary English pages and the corresponding pages
+  under `translations/ru` in sync. Russian pages must use Russian link labels
+  and stay within the Russian translation tree.
+- When adding a new exercise, add its navigation block and update the formerly
+  last exercise so that its next link points to the new page.
+
 ## Exercise visualizations
 
 - Put each exercise visualization in `exercises/<exercise>/demo.ts` and export

@@ -58,3 +58,7 @@ globalVector = localToGlobalMatrix * localVector
 ```bash
 npm test -- exercises/14-local-to-global-matrix
 ```
+
+---
+
+[← Предыдущее: 13. Некоммутативность матричного умножения](../13-non-commutative/) | [Следующее: 15. Точки и векторы →](../15-points-and-vectors/)

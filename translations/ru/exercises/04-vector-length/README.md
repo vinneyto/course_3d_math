@@ -25,3 +25,7 @@
 ```bash
 npm test -- exercises/04-vector-length
 ```
+
+---
+
+[← Предыдущее: 3. Сложение нескольких векторов](../03-sum-vectors/) | [Следующее: 5. Нормализация вручную →](../05-normalize-manually/)

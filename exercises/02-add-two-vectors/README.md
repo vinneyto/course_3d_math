@@ -35,3 +35,7 @@ npm run demo -- exercises/02-add-two-vectors
 ```
 
 The second vector is moved to the end of the first. The yellow arrow shows their sum. Projections onto the coordinate planes are shown only for the resulting vector. The animation alternates between the initial position, where both addends start at the origin, and the triangle-rule arrangement.
+
+---
+
+[← Previous: 1. Creating a vector](../01-create-vector/) | [Next: 3. Adding multiple vectors →](../03-sum-vectors/)

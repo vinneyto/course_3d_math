@@ -61,3 +61,7 @@ Run the exercise tests:
 ```bash
 npm test -- exercises/08-local-vector-to-global
 ```
+
+---
+
+[← Previous: 7. Coordinate systems and basis vectors](../07-basis-vectors/) | [Next: 9. Rotating a local basis →](../09-rotate-local-basis/)

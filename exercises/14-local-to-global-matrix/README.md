@@ -54,3 +54,7 @@ Run the exercise tests:
 ```bash
 npm test -- exercises/14-local-to-global-matrix
 ```
+
+---
+
+[← Previous: 13. Non-commutativity of matrix multiplication](../13-non-commutative/) | [Next: 15. Points and vectors →](../15-points-and-vectors/)

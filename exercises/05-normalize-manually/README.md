@@ -37,3 +37,7 @@ npm run demo -- exercises/05-normalize-manually
 ```
 
 Both vectors lie on the same ray, making it clear that normalization changes the length but preserves the direction.
+
+---
+
+[← Previous: 4. Vector length](../04-vector-length/) | [Next: 6. Normalization with Three.js →](../06-normalize-three/)

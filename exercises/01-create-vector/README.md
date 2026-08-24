@@ -35,3 +35,7 @@ npm run demo -- exercises/01-create-vector
 ```
 
 The colored segments show the vector components: `2` along X, `3` along Y, and `4` along Z. Use the mouse to orbit the camera and inspect the vector from different angles.
+
+---
+
+[Next: 2. Adding two vectors →](../02-add-two-vectors/)

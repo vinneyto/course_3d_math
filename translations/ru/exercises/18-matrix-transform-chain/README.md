@@ -178,3 +178,7 @@ M = T2 * S * R2 * T1 * R1
 ```bash
 npm test -- exercises/18-matrix-transform-chain
 ```
+
+---
+
+[← Предыдущее: 17. Matrix4: преобразование точек и векторов](../17-transform-points-vectors/)

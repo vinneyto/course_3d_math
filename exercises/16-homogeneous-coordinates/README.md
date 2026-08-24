@@ -158,3 +158,7 @@ npm run demo -- exercises/16-homogeneous-coordinates
 ```
 
 In the loop, `w` decreases from `1` to `0`, then returns to `1`.
+
+---
+
+[← Previous: 15. Points and vectors](../15-points-and-vectors/) | [Next: 17. Matrix4: transforming points and vectors →](../17-transform-points-vectors/)

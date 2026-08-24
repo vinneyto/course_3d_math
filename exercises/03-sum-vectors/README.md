@@ -40,3 +40,7 @@ npm run demo -- exercises/03-sum-vectors
 ```
 
 Each next vector starts at the end of the previous one. The yellow arrow runs from the origin to the end of the chain and shows the sum `(5, 5, 3)`. The stepwise component construction is shown only for the resulting vector. The animation alternates between the initial position, where every addend starts at the origin, and the assembled vector chain.
+
+---
+
+[← Previous: 2. Adding two vectors](../02-add-two-vectors/) | [Next: 4. Vector length →](../04-vector-length/)

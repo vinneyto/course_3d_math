@@ -35,3 +35,7 @@ Run the exercise tests:
 ```bash
 npm test -- exercises/11-matrix-vector
 ```
+
+---
+
+[← Previous: 10. Storing a basis in Matrix3](../10-basis-matrix/) | [Next: 12. Matrix multiplication →](../12-matrix-multiplication/)

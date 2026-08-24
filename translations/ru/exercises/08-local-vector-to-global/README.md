@@ -61,3 +61,7 @@ localVectorToGlobal(
 ```bash
 npm test -- exercises/08-local-vector-to-global
 ```
+
+---
+
+[← Предыдущее: 7. Система координат и базисные векторы](../07-basis-vectors/) | [Следующее: 9. Вращение локального базиса →](../09-rotate-local-basis/)

@@ -247,3 +247,7 @@ M = T * R
 ```bash
 npm test -- exercises/17-transform-points-vectors
 ```
+
+---
+
+[← Предыдущее: 16. Однородные координаты](../16-homogeneous-coordinates/) | [Следующее: 18. Длинная цепочка преобразований →](../18-matrix-transform-chain/)

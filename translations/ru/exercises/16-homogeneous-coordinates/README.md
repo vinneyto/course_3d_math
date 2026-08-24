@@ -184,3 +184,7 @@ npm run demo -- exercises/16-homogeneous-coordinates
 ```
 
 В цикле `w` уменьшается от `1` до `0`, а затем возвращается к `1`.
+
+---
+
+[← Предыдущее: 15. Точки и векторы](../15-points-and-vectors/) | [Следующее: 17. Matrix4: преобразование точек и векторов →](../17-transform-points-vectors/)

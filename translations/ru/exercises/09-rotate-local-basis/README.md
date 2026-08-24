@@ -51,3 +51,7 @@ Z = (0,  0, 1)
 ```bash
 npm test -- exercises/09-rotate-local-basis
 ```
+
+---
+
+[← Предыдущее: 8. Вложенные системы координат](../08-local-vector-to-global/) | [Следующее: 10. Запись базиса в Matrix3 →](../10-basis-matrix/)

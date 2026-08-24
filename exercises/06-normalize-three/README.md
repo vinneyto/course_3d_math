@@ -23,3 +23,7 @@ Run the exercise tests:
 ```bash
 npm test -- exercises/06-normalize-three
 ```
+
+---
+
+[← Previous: 5. Manual normalization](../05-normalize-manually/) | [Next: 7. Coordinate systems and basis vectors →](../07-basis-vectors/)

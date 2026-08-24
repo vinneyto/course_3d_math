@@ -145,3 +145,7 @@ npm run demo -- exercises/15-points-and-vectors
 ```
 
 The animation moves vector `AB` to the coordinate origin without changing its length or direction.
+
+---
+
+[← Previous: 14. Converting a local vector with Matrix3](../14-local-to-global-matrix/) | [Next: 16. Homogeneous coordinates →](../16-homogeneous-coordinates/)

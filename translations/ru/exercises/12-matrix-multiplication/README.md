@@ -34,3 +34,7 @@ a.clone().premultiply(b);            // b * a
 ```bash
 npm test -- exercises/12-matrix-multiplication
 ```
+
+---
+
+[← Предыдущее: 11. Умножение матрицы на вектор](../11-matrix-vector/) | [Следующее: 13. Некоммутативность матричного умножения →](../13-non-commutative/)
