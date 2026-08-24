@@ -1,6 +1,6 @@
-# 10. Запись базиса в Matrix3
+# 10. Storing a basis in Matrix3
 
-В Three.js есть класс `Matrix3`, который представляет матрицу размером `3 × 3`, то есть таблицу из девяти чисел:
+Three.js provides the `Matrix3` class, which represents a `3 × 3` matrix—a table of nine numbers:
 
 ```ts
 import { Matrix3 } from "three";
@@ -8,7 +8,7 @@ import { Matrix3 } from "three";
 const matrix = new Matrix3();
 ```
 
-Без аргументов создаётся единичная матрица:
+With no arguments, it creates the identity matrix:
 
 ```text
 [ 1  0  0 ]
@@ -16,16 +16,16 @@ const matrix = new Matrix3();
 [ 0  0  1 ]
 ```
 
-Сами числа доступны через свойство `elements`:
+The numbers are available through the `elements` property:
 
 ```ts
 matrix.elements;
 // [1, 0, 0, 0, 1, 0, 0, 0, 1]
 ```
 
-## Матрица как хранилище базиса
+## A matrix as basis storage
 
-Матрицу `3 × 3` можно использовать как структуру данных для хранения трёх базисных векторов. Каждый базисный вектор занимает один столбец матрицы:
+A `3 × 3` matrix can be used as a data structure for storing three basis vectors. Each basis vector occupies one matrix column:
 
 ```text
     [ X.x  Y.x  Z.x ]
@@ -33,13 +33,13 @@ M = [ X.y  Y.y  Z.y ]
     [ X.z  Y.z  Z.z ]
 ```
 
-Можно представить, что три вектора-столбца просто поставили рядом.
+You can think of this as simply placing three column vectors side by side.
 
-`Matrix3` сама по себе не знает, что записанные числа являются базисом. Это смысл, который придаём матрице мы: первый столбец хранит локальную ось X, второй — локальную ось Y, третий — локальную ось Z.
+`Matrix3` itself does not know that the stored numbers represent a basis. We assign that meaning: the first column stores the local X axis, the second stores the local Y axis, and the third stores the local Z axis.
 
-## Метод set()
+## The set() method
 
-Для записи девяти значений используется метод `set()`:
+Use `set()` to write the nine values:
 
 ```ts
 const matrix = new Matrix3();
@@ -51,7 +51,7 @@ matrix.set(
 );
 ```
 
-`set()` принимает аргументы по строкам, поэтому компоненты трёх базисных векторов в вызове чередуются. Внутри `elements` значения хранятся в column-major порядке, и компоненты каждого столбца располагаются подряд:
+`set()` accepts arguments row by row, so the components of the three basis vectors alternate in the call. Inside `elements`, values use column-major storage, and each column's components are contiguous:
 
 ```text
 [
@@ -61,17 +61,17 @@ matrix.set(
 ]
 ```
 
-## Задание
+## Task
 
-Реализуйте `createBasisMatrix(xAxis, yAxis, zAxis)`:
+Implement `createBasisMatrix(xAxis, yAxis, zAxis)`:
 
-1. создайте `new Matrix3()`;
-2. запишите базисные векторы в столбцы с помощью `set()`;
-3. верните полученную матрицу.
+1. Create `new Matrix3()`.
+2. Write the basis vectors into its columns with `set()`.
+3. Return the resulting matrix.
 
-Пока используйте `Matrix3` только как структуру для хранения базиса. Математические операции над матрицами будут рассмотрены в следующих упражнениях.
+For now, use `Matrix3` only as a structure for storing a basis. The next exercises introduce mathematical operations on matrices.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/10-basis-matrix

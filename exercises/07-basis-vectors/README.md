@@ -1,29 +1,29 @@
-# 7. Система координат и базисные векторы
+# 7. Coordinate systems and basis vectors
 
-До сих пор мы работали с вектором как с тремя числами `(x, y, z)`. Но эти числа имеют смысл только относительно **системы координат**.
+So far, we have treated a vector as three numbers `(x, y, z)`. But these numbers are meaningful only relative to a **coordinate system**.
 
-У трёхмерной системы координат есть:
+A three-dimensional coordinate system has:
 
-- начало координат `(0, 0, 0)`;
-- ось X;
-- ось Y;
-- ось Z.
+- an origin `(0, 0, 0)`;
+- an X axis;
+- a Y axis;
+- a Z axis.
 
-В используемой нами системе координат положительное направление X смотрит вправо, положительное направление Y — вверх, а положительное направление Z — к наблюдателю. На плоском рисунке ось Z показана диагонально.
+In the coordinate system used here, positive X points to the right, positive Y points upward, and positive Z points toward the viewer. In the flat illustration, the Z axis is drawn diagonally.
 
-![Трёхмерная система координат: X направлена вправо, Y вверх, Z к наблюдателю](./coordinate-system.png)
+![A three-dimensional coordinate system: X points right, Y points up, and Z points toward the viewer](./coordinate-system.png)
 
-Все векторы мы задаём относительно этой системы координат. Например, координаты вектора `(2, 3, 4)` означают, что вектор состоит из:
+Every vector is defined relative to this coordinate system. For example, the coordinates `(2, 3, 4)` mean that the vector consists of:
 
-- двух единиц вдоль оси X;
-- трёх единиц вдоль оси Y;
-- четырёх единиц вдоль оси Z.
+- two units along the X axis;
+- three units along the Y axis;
+- four units along the Z axis.
 
-## Базисные векторы
+## Basis vectors
 
-Сами направления осей тоже можно задать векторами. Такие векторы называются **базисными**.
+The axis directions can themselves be represented by vectors. These are called **basis vectors**.
 
-Положительные направления осей нашей системы координат задаются векторами:
+The positive directions of the axes in our coordinate system are represented by:
 
 ```text
 X = (1, 0, 0)
@@ -31,19 +31,19 @@ Y = (0, 1, 0)
 Z = (0, 0, 1)
 ```
 
-Они имеют длину `1`, взаимно перпендикулярны и вместе образуют стандартный базис. В этом базисе каждый базисный вектор совпадает с одной из осей системы координат.
+They have length `1`, are mutually perpendicular, and together form the standard basis. In this basis, each basis vector coincides with one coordinate-system axis.
 
-Пока мы считаем, что начала всех рассматриваемых систем координат совпадают. Поэтому нас интересуют только направления их осей; к смещению начала координат мы вернёмся позже.
+For now, assume that the origins of all coordinate systems coincide. We therefore care only about the directions of their axes; we will return to displaced origins later.
 
-Координаты вектора показывают, сколько раз нужно взять каждый базисный вектор:
+A vector's coordinates tell us how many copies of each basis vector to use:
 
 ```text
 (2, 3, 4) = 2X + 3Y + 4Z
 ```
 
-## От строк к столбцам
+## From rows to columns
 
-Векторы часто печатают горизонтально как строки. Если транспонировать каждую такую запись, получатся векторы-столбцы:
+Vectors are often printed horizontally as rows. Transposing each representation produces column vectors:
 
 ```text
     [1]       [0]       [0]
@@ -51,7 +51,7 @@ X = [0]   Y = [1]   Z = [0]
     [0]       [0]       [1]
 ```
 
-Если поставить их рядом, базис окажется записанным по столбцам:
+Placing them side by side stores the basis in columns:
 
 ```text
         X  Y  Z
@@ -60,26 +60,24 @@ basis [ 0  1  0 ]
       [ 0  0  1 ]
 ```
 
-Для стандартного базиса получается симметричная единичная таблица, поэтому эффект транспонирования визуально незаметен. Он станет очевиднее на повёрнутом базисе.
+The standard basis produces a symmetric identity table, so the effect of transposition is not visually apparent. It will become clearer with a rotated basis.
 
-## Задание
+## Task
 
-Реализуйте `createVectorFromBasis(x, y, z)` через `multiplyScalar()` и `add()`. Не создавайте итоговый `Vector3` напрямую из `x`, `y`, `z`.
+Implement `createVectorFromBasis(x, y, z)` using `multiplyScalar()` and `add()`. Do not construct the final `Vector3` directly from `x`, `y`, and `z`.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/07-basis-vectors
 ```
 
-## Визуализация
+## Visualization
 
-Запустите демку, чтобы увидеть стандартную систему координат и три единичных
-базисных вектора на её осях:
+Run the demo to see the standard coordinate system and its three unit basis vectors:
 
 ```bash
 npm run demo -- exercises/07-basis-vectors
 ```
 
-Красная стрелка показывает `X = (1, 0, 0)`, зелёная — `Y = (0, 1, 0)`, а
-синяя — `Z = (0, 0, 1)`.
+The red arrow shows `X = (1, 0, 0)`, the green arrow shows `Y = (0, 1, 0)`, and the blue arrow shows `Z = (0, 0, 1)`.

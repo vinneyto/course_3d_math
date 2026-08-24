@@ -1,14 +1,14 @@
-# 5. Нормализация вручную
+# 5. Manual normalization
 
-Нормализация сохраняет направление вектора, но делает его длину равной единице.
+Normalization preserves a vector's direction but changes its length to one.
 
-Для этого каждую компоненту нужно разделить на длину:
+To normalize a vector, divide each component by its length:
 
 ```text
 normalized = (x / |v|, y / |v|, z / |v|)
 ```
 
-Например:
+For example:
 
 ```text
 v = (3, 4, 0)
@@ -16,26 +16,24 @@ v = (3, 4, 0)
 normalized = (0.6, 0.8, 0)
 ```
 
-## Задание
+## Task
 
-Реализуйте `normalizeManually(vector)` без `Vector3.normalize()`.
+Implement `normalizeManually(vector)` without using `Vector3.normalize()`.
 
-Функция должна вернуть новый вектор и не изменить исходный. В этом упражнении входной вектор гарантированно имеет ненулевую длину.
+The function must return a new vector and leave the original unchanged. In this exercise, the input vector is guaranteed to have a nonzero length.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/05-normalize-manually
 ```
 
-## Визуализация
+## Visualization
 
-Запустите демку, чтобы сравнить исходный вектор `(3, 4, 0)` длины `5` и
-нормализованный вектор `(0.6, 0.8, 0)` длины `1`:
+Run the demo to compare the original vector `(3, 4, 0)` of length `5` with the normalized vector `(0.6, 0.8, 0)` of length `1`:
 
 ```bash
 npm run demo -- exercises/05-normalize-manually
 ```
 
-Оба вектора лежат на одном луче, поэтому видно, что нормализация меняет длину,
-но сохраняет направление.
+Both vectors lie on the same ray, making it clear that normalization changes the length but preserves the direction.

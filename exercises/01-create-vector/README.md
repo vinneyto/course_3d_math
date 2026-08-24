@@ -1,39 +1,37 @@
-# 1. Создание вектора
+# 1. Creating a vector
 
-Вектор описывает направленную величину: у него есть направление и длина (модуль). Например, вектор скорости ветра может показывать, в какую сторону дует ветер и насколько сильно.
+A vector describes a directed quantity: it has a direction and a length (magnitude). For example, a wind-velocity vector can show both the direction in which the wind is blowing and how strong it is.
 
-Вектор в трёхмерном пространстве описывается тремя числами:
+A vector in three-dimensional space is described by three numbers:
 
 ```text
 v = (x, y, z)
 ```
 
-Эти числа являются координатами вектора относительно системы координат с тремя осями: X, Y и Z. В начальной модели мы изображаем вектор как стрелку, проведённую из начала координат.
+These numbers are the vector's coordinates relative to a coordinate system with three axes: X, Y, and Z. In our initial model, we draw a vector as an arrow that starts at the coordinate origin.
 
-Three.js предоставляет готовую структуру `Vector3`:
+Three.js provides a ready-made `Vector3` data structure:
 
 ```ts
 const vector = new Vector3(2, 3, 4);
 ```
 
-Three.js используется только как удобная реализация. Само понятие вектора не зависит от графического фреймворка.
+Three.js is used only as a convenient implementation. The mathematical concept of a vector does not depend on a graphics framework.
 
-## Задание
+## Task
 
-В `task.ts` реализуйте `createVector()`. Функция должна вернуть вектор `(2, 3, 4)`.
+Implement `createVector()` in `task.ts`. The function must return the vector `(2, 3, 4)`.
 
 ```bash
 npm test -- exercises/01-create-vector
 ```
 
-## Визуализация
+## Visualization
 
-Запустите демку, чтобы увидеть вектор `(2, 3, 4)` в трёхмерной системе
-координат:
+Run the demo to see the vector `(2, 3, 4)` in a three-dimensional coordinate system:
 
 ```bash
 npm run demo -- exercises/01-create-vector
 ```
 
-Цветные отрезки показывают компоненты вектора: `2` вдоль X, `3` вдоль Y и
-`4` вдоль Z. Мышью можно вращать камеру и рассматривать вектор с разных сторон.
+The colored segments show the vector components: `2` along X, `3` along Y, and `4` along Z. Use the mouse to orbit the camera and inspect the vector from different angles.

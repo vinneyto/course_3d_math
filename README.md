@@ -1,60 +1,61 @@
 # Practical 3D Math
 
-Практический курс по векторам, матрицам и линейным преобразованиям в компьютерной графике.
+A hands-on course about vectors, matrices, and linear transformations in computer graphics.
 
-Курс использует TypeScript, Vitest и Three.js, но не является курсом по Three.js. `Vector3`, `Vector4`, `Matrix3` и `Matrix4` нужны здесь как удобные реализации универсальных математических сущностей.
+The course uses TypeScript, Vitest, and Three.js, but it is not a Three.js course. `Vector3`, `Vector4`, `Matrix3`, and `Matrix4` are used as convenient implementations of universal mathematical concepts.
 
-В упражнениях 1–14 мы работаем только с векторами и матрицами `3 × 3`. Начиная с упражнения 15 курс также вводит понятие точки, а в упражнении 17 — матрицу `4 × 4`. World space и handedness пока не рассматриваются. Используются термины **local** и **global**.
+Exercises 1–14 work only with vectors and `3 × 3` matrices. Exercise 15 introduces points, and exercise 17 introduces `4 × 4` matrices. World space and handedness are intentionally left out for now. The terms **local** and **global** are used throughout the course.
 
-## Запуск
+Russian translation: [translations/ru/README.md](translations/ru/README.md)
 
-Требуется Node.js 20 или новее.
+## Getting started
+
+Node.js 20 or newer is required.
 
 ```bash
 npm install
 npm test
 ```
 
-Запуск одного упражнения:
+Run a single exercise:
 
 ```bash
 npm test -- exercises/01-create-vector
 ```
 
-Запуск визуальной демки упражнения:
+Run an exercise visualization:
 
 ```bash
 npm run demo -- exercises/01-create-vector
 ```
 
-Откроется полноэкранная Three.js-песочница. Камеру можно вращать левой
-кнопкой мыши, приближать колёсиком и перемещать правой кнопкой.
+This opens a full-screen Three.js sandbox. Drag with the left mouse button to orbit the camera, use the mouse wheel to zoom, and drag with the right mouse button to pan.
 
-Проверка TypeScript:
+Run the TypeScript check:
 
 ```bash
 npm run typecheck
 ```
 
-Заготовки намеренно содержат `TODO`, поэтому тесты начинают проходить по мере решения упражнений.
+The starter files deliberately contain `TODO` markers, so tests begin to pass as you complete the exercises.
 
-## Оглавление
+## Contents
 
-1. [Создание вектора](exercises/01-create-vector/README.md)
-2. [Сложение двух векторов](exercises/02-add-two-vectors/README.md)
-3. [Сложение нескольких векторов](exercises/03-sum-vectors/README.md)
-4. [Длина вектора](exercises/04-vector-length/README.md)
-5. [Нормализация вручную](exercises/05-normalize-manually/README.md)
-6. [Нормализация через Three.js](exercises/06-normalize-three/README.md)
-7. [Система координат и базисные векторы](exercises/07-basis-vectors/README.md)
-8. [Вложенные системы координат](exercises/08-local-vector-to-global/README.md)
-9. [Вращение локального базиса](exercises/09-rotate-local-basis/README.md)
-10. [Запись базиса в Matrix3](exercises/10-basis-matrix/README.md)
-11. [Умножение матрицы на вектор](exercises/11-matrix-vector/README.md)
-12. [Умножение матриц](exercises/12-matrix-multiplication/README.md)
-13. [Некоммутативность матричного умножения](exercises/13-non-commutative/README.md)
-14. [Перевод локального вектора через Matrix3](exercises/14-local-to-global-matrix/README.md)
-15. [Точки и векторы](exercises/15-points-and-vectors/README.md)
-16. [Однородные координаты](exercises/16-homogeneous-coordinates/README.md)
-17. [Matrix4: преобразование точек и векторов](exercises/17-transform-points-vectors/README.md)
-18. [Длинная цепочка преобразований](exercises/18-matrix-transform-chain/README.md)
+1. [Creating a vector](exercises/01-create-vector/README.md)
+2. [Adding two vectors](exercises/02-add-two-vectors/README.md)
+3. [Adding multiple vectors](exercises/03-sum-vectors/README.md)
+4. [Vector length](exercises/04-vector-length/README.md)
+5. [Manual normalization](exercises/05-normalize-manually/README.md)
+6. [Normalization with Three.js](exercises/06-normalize-three/README.md)
+7. [Coordinate systems and basis vectors](exercises/07-basis-vectors/README.md)
+8. [Nested coordinate systems](exercises/08-local-vector-to-global/README.md)
+9. [Rotating a local basis](exercises/09-rotate-local-basis/README.md)
+10. [Storing a basis in Matrix3](exercises/10-basis-matrix/README.md)
+11. [Multiplying a matrix by a vector](exercises/11-matrix-vector/README.md)
+12. [Matrix multiplication](exercises/12-matrix-multiplication/README.md)
+13. [Non-commutativity of matrix multiplication](exercises/13-non-commutative/README.md)
+14. [Converting a local vector with Matrix3](exercises/14-local-to-global-matrix/README.md)
+15. [Points and vectors](exercises/15-points-and-vectors/README.md)
+16. [Homogeneous coordinates](exercises/16-homogeneous-coordinates/README.md)
+17. [Matrix4: transforming points and vectors](exercises/17-transform-points-vectors/README.md)
+18. [A long transformation chain](exercises/18-matrix-transform-chain/README.md)

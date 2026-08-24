@@ -1,8 +1,8 @@
-# 11. Умножение матрицы на вектор
+# 11. Multiplying a matrix by a vector
 
-В отрыве от применения матрицы могут выглядеть как игра с таблицами чисел. Но в 3D-графике они формализуют преобразования векторов и систем координат.
+Without an application, matrices can look like a game played with tables of numbers. In 3D graphics, however, they formalize transformations of vectors and coordinate systems.
 
-Математически вектор можно представить как таблицу с одним столбцом:
+Mathematically, a vector can be represented as a table with one column:
 
 ```text
     [ x ]
@@ -10,10 +10,9 @@ v = [ y ]
     [ z ]
 ```
 
-У такого представления три строки и один столбец. Поэтому трёхмерный вектор
-можно считать частным случаем матрицы размером `3 × 1`.
+This representation has three rows and one column. A three-dimensional vector can therefore be treated as a special case of a `3 × 1` matrix.
 
-Матрица умножается на вектор по правилу «строка на столбец»:
+A matrix is multiplied by a vector using the row-by-column rule:
 
 ```text
 [ 1  2  0 ]   [ 3 ]   [ 1*3 + 2*4 + 0*5 ]   [ 11 ]
@@ -21,17 +20,17 @@ v = [ y ]
 [ 0  0  1 ]   [ 5 ]   [ 0*3 + 0*4 + 1*5 ]   [  5 ]
 ```
 
-В Three.js операция записывается так:
+In Three.js, the operation is written as:
 
 ```ts
 const result = vector.clone().applyMatrix3(matrix);
 ```
 
-## Задание
+## Task
 
-Реализуйте `multiplyMatrixByVector(matrix, vector)`. Верните новый вектор и сохраните аргументы без изменений.
+Implement `multiplyMatrixByVector(matrix, vector)`. Return a new vector and leave the arguments unchanged.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/11-matrix-vector

@@ -1,6 +1,6 @@
-# 14. Перевод локального вектора через Matrix3
+# 14. Converting a local vector with Matrix3
 
-Вернёмся к системе координат секундной стрелки. Её базис, выраженный в глобальных координатах, можно записать в столбцы матрицы:
+Return to the second-hand coordinate system. Its basis, expressed in global coordinates, can be stored in the columns of a matrix:
 
 ```text
                       [ X.x  Y.x  Z.x ]
@@ -8,7 +8,7 @@ localToGlobalMatrix = [ X.y  Y.y  Z.y ]
                       [ X.z  Y.z  Z.z ]
 ```
 
-Для поворота на 90° по часовой стрелке:
+For a 90° clockwise rotation:
 
 ```text
                       [  0  1  0 ]
@@ -16,7 +16,7 @@ localToGlobalMatrix = [ -1  0  0 ]
                       [  0  0  1 ]
 ```
 
-Умножим её на локальный вектор:
+Multiply it by the local vector:
 
 ```text
 globalVector = localToGlobalMatrix * localVector
@@ -26,8 +26,7 @@ globalVector = localToGlobalMatrix * localVector
 [  0  0  1 ]   [ 0 ]   [  0 ]
 ```
 
-Это тот же результат, который давала функция `localVectorToGlobal()` из
-упражнения 8. Она выполняла преобразование без матрицы:
+This is the same result produced by `localVectorToGlobal()` in exercise 8. That function performed the transformation without a matrix:
 
 ```text
 globalVector = localVector.x * X
@@ -35,25 +34,22 @@ globalVector = localVector.x * X
              + localVector.z * Z
 ```
 
-Таким образом, эти две операции эквивалентны:
+The following two operations are therefore equivalent:
 
 ```text
 globalVector = localVectorToGlobal(localVector, X, Y, Z)
 globalVector = localToGlobalMatrix * localVector
 ```
 
-В первом случае базис передаётся как три отдельных вектора, а во втором — как
-матрица, в столбцах которой записаны те же векторы `X`, `Y`, `Z`. Умножение
-матрицы на вектор не является новой магической операцией. Оно формализует уже
-знакомую линейную комбинацию базисных векторов.
+In the first case, the basis is passed as three separate vectors. In the second, it is passed as a matrix whose columns contain the same vectors `X`, `Y`, and `Z`. Matrix-vector multiplication is not a new magical operation: it formalizes the familiar linear combination of basis vectors.
 
-## Задание
+## Task
 
-Реализуйте `localVectorToGlobalWithMatrix(localVector, localToGlobalMatrix)` через `applyMatrix3()`.
+Implement `localVectorToGlobalWithMatrix(localVector, localToGlobalMatrix)` using `applyMatrix3()`.
 
-Функция должна вернуть новый глобальный вектор и не изменить локальный.
+The function must return a new global vector without modifying the local vector.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/14-local-to-global-matrix

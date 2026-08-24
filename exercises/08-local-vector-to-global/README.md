@@ -1,17 +1,17 @@
-# 8. Вложенные системы координат
+# 8. Nested coordinate systems
 
-Системы координат могут быть вложены друг в друга. У вложенной системы есть собственные оси и собственные базисные векторы, но сама она может двигаться и вращаться относительно родительской системы.
+Coordinate systems can be nested inside one another. A nested system has its own axes and basis vectors, but it can move and rotate relative to its parent coordinate system.
 
-Рассмотрим обычные часы с циферблатом. Возможно, вы видели в магазинах часы, у которых вместо секундной стрелки установлен прозрачный пластиковый диск с рисунком. Диск целиком вращается вокруг центра часов, и рисунок вращается вместе с ним.
+Consider an ordinary clock face. You may have seen clocks where a transparent plastic disc with a picture replaces the second hand. The entire disc rotates around the center of the clock, and the picture rotates with it.
 
-С этим диском можно связать отдельную систему координат. Она вращается относительно системы координат циферблата:
+We can associate a separate coordinate system with this disc. It rotates relative to the coordinate system of the clock face:
 
-- система координат циферблата — родительская и глобальная;
-- система координат диска секундной стрелки — вложенная и локальная;
-- начала обеих систем совпадают в центре циферблата;
-- локальная система координат вращается относительно глобальной.
+- the clock-face coordinate system is the parent and global system;
+- the second-hand disc coordinate system is nested and local;
+- the origins of both systems coincide at the center of the clock face;
+- the local coordinate system rotates relative to the global system.
 
-Когда секундная стрелка смотрит на 12 часов, базисные векторы локальной системы могут совпадать с базисными векторами глобальной системы:
+When the second hand points to 12 o'clock, the basis vectors of the local system may coincide with the basis vectors of the global system:
 
 ```text
 local X in global = (1, 0, 0)
@@ -19,7 +19,7 @@ local Y in global = (0, 1, 0)
 local Z in global = (0, 0, 1)
 ```
 
-Но после поворота диска локальные оси повернутся вместе с ним. Например, после поворота на 90 градусов по часовой стрелке:
+After the disc rotates, its local axes rotate with it. For example, after a 90-degree clockwise rotation:
 
 ```text
 local X in global = (0, -1, 0)
@@ -27,23 +27,23 @@ local Y in global = (1,  0, 0)
 local Z in global = (0,  0, 1)
 ```
 
-Это всё ещё оси X, Y и Z локальной системы. Но теперь их направления не совпадают с одноимёнными осями глобальной системы. Поэтому локальный базис нужно задавать в координатах родительской системы.
+These are still the X, Y, and Z axes of the local system, but their directions no longer coincide with the corresponding global axes. The local basis must therefore be expressed in the parent coordinate system.
 
-## Вектор на вращающемся диске
+## A vector on the rotating disc
 
-Проведём из центра часов вектор к некоторой точке рисунка на прозрачном диске. Этот вектор неподвижен относительно диска, поэтому его локальные координаты не меняются. Однако диск вращается, и вместе с ним в глобальной системе вращаются локальные базисные векторы и сам вектор.
+Draw a vector from the center of the clock to a point in the picture on the transparent disc. The vector is fixed relative to the disc, so its local coordinates do not change. The disc rotates, however, so the local basis vectors and the vector itself rotate in the global system.
 
-Пусть `localVector = (a, b, c)`, а базисные векторы локальной системы выражены в глобальных координатах как `X`, `Y`, `Z`. Тогда соответствующий глобальный вектор можно получить так:
+Let `localVector = (a, b, c)`, with the basis vectors of the local system expressed in global coordinates as `X`, `Y`, and `Z`. The corresponding global vector is:
 
 ```text
 globalVector = aX + bY + cZ
 ```
 
-Компоненты локального вектора показывают, сколько раз нужно взять каждый локальный базисный вектор. Складывая эти векторы, мы переводим локальный вектор в глобальную систему координат часов.
+The local vector components specify how many copies of each local basis vector to take. Adding those scaled vectors converts the local vector into the global coordinate system of the clock.
 
-## Задание
+## Task
 
-Реализуйте `localVectorToGlobal(...)` без `Matrix3` и `Matrix4`:
+Implement `localVectorToGlobal(...)` without `Matrix3` or `Matrix4`:
 
 ```ts
 localVectorToGlobal(
@@ -54,9 +54,9 @@ localVectorToGlobal(
 );
 ```
 
-Верните новый вектор и не изменяйте аргументы.
+Return a new vector without modifying the arguments.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/08-local-vector-to-global

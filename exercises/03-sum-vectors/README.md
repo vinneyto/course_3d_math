@@ -1,46 +1,42 @@
-# 3. Сложение нескольких векторов
+# 3. Adding multiple vectors
 
-Можно сложить не только два, но и любое количество векторов:
+You can add any number of vectors, not just two:
 
 ```text
 (1, 0, 2) + (0, 3, 1) + (4, 2, 0) = (5, 5, 3)
 ```
 
-Геометрически векторы выстраиваются в цепочку: начало каждого следующего переносится в конец предыдущего. Сумма проводится из начала первого в конец последнего.
+Geometrically, the vectors form a chain: the start of each next vector is moved to the end of the previous one. The sum runs from the start of the first vector to the end of the last.
 
-Для накопления суммы удобно начать с нулевого вектора:
+It is convenient to accumulate the sum starting with the zero vector:
 
 ```text
 0 = (0, 0, 0)
 v + 0 = v
 ```
 
-## Задание
+## Task
 
-Реализуйте `sumVectors(vectors)`.
+Implement `sumVectors(vectors)`.
 
-Функция должна:
+The function must:
 
-- вернуть сумму всех векторов;
-- не изменять элементы массива;
-- вернуть `(0, 0, 0)` для пустого массива.
+- return the sum of all vectors;
+- leave the array elements unchanged;
+- return `(0, 0, 0)` for an empty array.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/03-sum-vectors
 ```
 
-## Визуализация
+## Visualization
 
-Запустите демку, чтобы увидеть цепочку из трёх векторов и их сумму:
+Run the demo to see a chain of three vectors and their sum:
 
 ```bash
 npm run demo -- exercises/03-sum-vectors
 ```
 
-Каждый следующий вектор начинается в конце предыдущего. Жёлтая стрелка идёт
-из нулевого вектора в конец цепочки и показывает сумму `(5, 5, 3)`. Ступенчатые
-компоненты показаны только для результирующего вектора.
-Анимация циклически переключается между исходным положением, где все слагаемые
-начинаются в нуле, и собранной цепочкой векторов.
+Each next vector starts at the end of the previous one. The yellow arrow runs from the origin to the end of the chain and shows the sum `(5, 5, 3)`. The stepwise component construction is shown only for the resulting vector. The animation alternates between the initial position, where every addend starts at the origin, and the assembled vector chain.

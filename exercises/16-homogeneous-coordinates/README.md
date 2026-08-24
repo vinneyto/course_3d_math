@@ -1,49 +1,43 @@
-# 16. Однородные координаты
+# 16. Homogeneous coordinates
 
-В предыдущем упражнении мы познакомились с точками и увидели, что в Three.js и
-точка, и вектор могут храниться в `Vector3`:
+In the previous exercise, we introduced points and saw that Three.js can store both a point and a vector in `Vector3`:
 
 ```ts
 const point = new Vector3(2, 3, 4);
 const vector = new Vector3(2, 3, 4);
 ```
 
-По значениям `x`, `y`, `z` невозможно определить смысл переменной. `point`
-обозначает положение в пространстве, а `vector` — направление и величину.
+The values `x`, `y`, and `z` alone do not reveal a variable's meaning. `point` denotes a position in space, while `vector` denotes a direction and magnitude.
 
-Чтобы хранить это различие непосредственно в данных, можно добавить четвёртую
-компоненту `w`.
+To store this distinction directly in the data, we can add a fourth component, `w`.
 
-## Четвёртая компонента w
+## The fourth component, w
 
-В однородных координатах используются четыре компоненты:
+Homogeneous coordinates use four components:
 
 ```text
 (x, y, z, w)
 ```
 
-Первые три компоненты уже знакомы нам по `Vector3`. Четвёртая компонента `w`
-помогает различать точки и векторы:
+The first three components are familiar from `Vector3`. The fourth component, `w`, helps distinguish points from vectors:
 
 ```text
-точка:  (x, y, z, 1)
-вектор: (x, y, z, 0)
+point:  (x, y, z, 1)
+vector: (x, y, z, 0)
 ```
 
-В Three.js такие значения можно хранить в `Vector4`:
+In Three.js, these values can be stored in `Vector4`:
 
 ```ts
 const point = new Vector4(2, 3, 4, 1);
 const vector = new Vector4(2, 3, 4, 0);
 ```
 
-Сам класс `Vector4` не запрещает записать в `w` любое число. Но принято
-использовать `w = 1` для обычной точки и `w = 0` для вектора.
+The `Vector4` class itself does not prevent you from storing any number in `w`. By convention, however, `w = 1` represents an ordinary point and `w = 0` represents a vector.
 
-## Переход к декартовым координатам
+## Converting to Cartesian coordinates
 
-Однородные координаты точки можно перевести в обычные декартовы координаты.
-Для этого компоненты `x`, `y`, `z` нужно разделить на `w`:
+A point in homogeneous coordinates can be converted to ordinary Cartesian coordinates by dividing `x`, `y`, and `z` by `w`:
 
 ```text
 cartesianX = x / w
@@ -51,7 +45,7 @@ cartesianY = y / w
 cartesianZ = z / w
 ```
 
-Например:
+For example:
 
 ```text
 homogeneousPoint = (4, 6, 8, 2)
@@ -59,8 +53,7 @@ cartesianPoint = (4 / 2, 6 / 2, 8 / 2)
 cartesianPoint = (2, 3, 4)
 ```
 
-Поэтому одна декартова точка может иметь разные записи в однородных
-координатах:
+The same Cartesian point can therefore have different homogeneous representations:
 
 ```text
 (2, 3, 4, 1)
@@ -68,12 +61,11 @@ cartesianPoint = (2, 3, 4)
 (1, 1.5, 2, 0.5)
 ```
 
-После деления первых трёх компонентов на `w` все эти записи превращаются в
-точку `(2, 3, 4)`. Обычно точку записывают в нормализованном виде с `w = 1`.
+After dividing the first three components by `w`, all of these representations become the point `(2, 3, 4)`. A point is usually written in normalized form with `w = 1`.
 
-## Промежуточные значения w
+## Intermediate values of w
 
-Компонента `w` не обязана содержать только `0` или `1`. Например:
+The `w` component does not have to contain only `0` or `1`. For example:
 
 ```text
 homogeneousPoint = (1, 2, 3, 0.5)
@@ -81,18 +73,16 @@ cartesianPoint = (1 / 0.5, 2 / 0.5, 3 / 0.5)
 cartesianPoint = (2, 4, 6)
 ```
 
-Значение `w = 0.5` не означает, что перед нами что-то среднее между точкой и
-вектором. Любое `w`, не равное нулю, задаёт конечную точку после деления на
-`w`:
+The value `w = 0.5` does not mean that the value is halfway between a point and a vector. Any nonzero `w` represents a finite point after division by `w`:
 
 ```text
-w != 0 — конечная точка
-w == 0 — направление
+w != 0 — finite point
+w == 0 — direction
 ```
 
-## Что происходит при приближении w к нулю
+## What happens as w approaches zero
 
-Рассмотрим однородную точку `(1, 2, 0, w)` и будем уменьшать `w`:
+Consider the homogeneous point `(1, 2, 0, w)` and decrease `w`:
 
 ```text
 w = 1     → (1, 2, 0)
@@ -100,87 +90,71 @@ w = 0.1   → (10, 20, 0)
 w = 0.01  → (100, 200, 0)
 ```
 
-При уменьшении `w` точка удаляется всё дальше от начала координат, но остаётся
-на одном направлении `(1, 2, 0)`.
+As `w` decreases, the point moves farther from the origin while remaining in the direction `(1, 2, 0)`.
 
-Чем дальше находится точка, тем меньше небольшое конечное смещение влияет на
-направление из начала координат к этой точке. В пределе при `w → 0` получается
-точка, бесконечно удалённая в направлении `(1, 2, 0)`. Такую точку называют
-**точкой на бесконечности**.
+The farther away the point is, the less a small finite translation affects the direction from the origin to that point. In the limit `w → 0`, we obtain a point infinitely far away in the direction `(1, 2, 0)`. This is called a **point at infinity**.
 
-Конечное смещение не меняет направление к такой бесконечно удалённой точке.
-Поэтому она проявляет свойства вектора: описывает направление, а не положение
-в пространстве. В однородных координатах запись `(1, 2, 0, 0)` мы называем
-вектором `(1, 2, 0)`.
+A finite translation does not change the direction toward such an infinitely distant point. It therefore behaves like a vector: it describes a direction rather than a position in space. In homogeneous coordinates, we call `(1, 2, 0, 0)` the vector `(1, 2, 0)`.
 
-## Точка и вектор
+## Point and vector
 
-Одинаковые первые три компоненты теперь могут иметь разный смысл:
+The same first three components can now carry different meanings:
 
 ```text
 point  = (3, 4, 0, 1)
 vector = (3, 4, 0, 0)
 ```
 
-Точка обозначает положение, имеет ненулевое `w` и может быть преобразована в
-декартовы координаты делением на `w`.
+A point denotes a position, has a nonzero `w`, and can be converted to Cartesian coordinates by dividing by `w`.
 
-Вектор обозначает направление и величину, имеет `w = 0` и не преобразуется в
-точку делением на `w`.
+A vector denotes a direction and magnitude, has `w = 0`, and cannot be converted into a point by dividing by `w`.
 
-Таким образом, четвёртая компонента позволяет хранить различие между точкой и
-вектором непосредственно в данных.
+The fourth component therefore stores the distinction between a point and a vector directly in the data.
 
-## Задание
+## Task
 
-Реализуйте три функции.
+Implement three functions.
 
-### Точка в однородных координатах
+### Point in homogeneous coordinates
 
-`toHomogeneousPoint(point)` должна преобразовать `Vector3` в `Vector4`, добавив
-`w = 1`:
+`toHomogeneousPoint(point)` must convert a `Vector3` into a `Vector4` by adding `w = 1`:
 
 ```text
 (2, 3, 4) → (2, 3, 4, 1)
 ```
 
-### Вектор в однородных координатах
+### Vector in homogeneous coordinates
 
-`toHomogeneousVector(vector)` должна преобразовать `Vector3` в `Vector4`,
-добавив `w = 0`:
+`toHomogeneousVector(vector)` must convert a `Vector3` into a `Vector4` by adding `w = 0`:
 
 ```text
 (2, 3, 4) → (2, 3, 4, 0)
 ```
 
-### Однородная точка в декартовых координатах
+### Homogeneous point to Cartesian coordinates
 
-`homogeneousPointToCartesian(point)` должна вернуть `Vector3`, разделив `x`,
-`y`, `z` на `w`:
+`homogeneousPointToCartesian(point)` must return a `Vector3` by dividing `x`, `y`, and `z` by `w`:
 
 ```text
 (4, 6, 8, 2) → (2, 3, 4)
 ```
 
-Если `w = 0`, функция должна выбросить ошибку: такое значение представляет
-вектор или направление и не может быть преобразовано в конечную декартову
-точку.
+If `w = 0`, the function must throw an error: such a value represents a vector or direction and cannot be converted to a finite Cartesian point.
 
-Все функции должны возвращать новые объекты и не изменять переданные значения.
+All functions must return new objects without modifying their inputs.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/16-homogeneous-coordinates
 ```
 
-## Визуализация
+## Visualization
 
-Запустите демку, чтобы увидеть переход от конечной точки к направлению при
-уменьшении `w`:
+Run the demo to see the transition from a finite point to a direction as `w` decreases:
 
 ```bash
 npm run demo -- exercises/16-homogeneous-coordinates
 ```
 
-В цикле `w` уменьшается от `1` до `0`, а затем возвращается к `1`.
+In the loop, `w` decreases from `1` to `0`, then returns to `1`.

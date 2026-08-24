@@ -48,7 +48,7 @@ function animationState(elapsedSeconds: number): AnimationState {
       rotationProgress: 0,
       translationProgress: 0,
       activeStep: 0,
-      title: "Сейчас: шаг 1 — исходное состояние",
+      title: "Now: step 1 — initial state",
     };
   }
   if (phase < PHASE_DURATION_SECONDS * 2) {
@@ -58,7 +58,7 @@ function animationState(elapsedSeconds: number): AnimationState {
       ),
       translationProgress: 0,
       activeStep: 1,
-      title: "Сейчас: шаг 2 — R · local",
+      title: "Now: step 2 — R · local",
     };
   }
   if (phase < PHASE_DURATION_SECONDS * 3) {
@@ -66,7 +66,7 @@ function animationState(elapsedSeconds: number): AnimationState {
       rotationProgress: 1,
       translationProgress: 0,
       activeStep: 1,
-      title: "Шаг 2 готов: rotated = R · local",
+      title: "Step 2 complete: rotated = R · local",
     };
   }
   if (phase < PHASE_DURATION_SECONDS * 4) {
@@ -76,14 +76,14 @@ function animationState(elapsedSeconds: number): AnimationState {
         (phase - PHASE_DURATION_SECONDS * 3) / PHASE_DURATION_SECONDS,
       ),
       activeStep: 2,
-      title: "Сейчас: шаг 3 — T · rotated",
+      title: "Now: step 3 — T · rotated",
     };
   }
   return {
     rotationProgress: 1,
     translationProgress: 1,
     activeStep: 2,
-    title: "Шаг 3 готов: global = T · (R · local)",
+    title: "Step 3 complete: global = T · (R · local)",
   };
 }
 
@@ -107,14 +107,14 @@ function createLegend(): { element: HTMLElement; steps: HTMLElement[] } {
   });
 
   const heading = document.createElement("div");
-  heading.textContent = "Последовательность: M = T · R";
+  heading.textContent = "Sequence: M = T · R";
   Object.assign(heading.style, {
     marginBottom: "0.25rem",
     fontSize: "1rem",
     fontWeight: "800",
   });
   const hint = document.createElement("div");
-  hint.textContent = "Читаем справа налево, начиная с local";
+  hint.textContent = "Read right to left, starting with local";
   Object.assign(hint.style, {
     marginBottom: "0.85rem",
     color: "#aebbd0",
@@ -123,9 +123,9 @@ function createLegend(): { element: HTMLElement; steps: HTMLElement[] } {
   element.append(heading, hint);
 
   const stepContents = [
-    ["1. Локальные объекты", "P = (3, 1, 0); cube O = (0, 0, 0)"],
-    ["2. Поворот R", "rotated = R · local; Rz = 90° = π / 2 rad"],
-    ["3. Глобальная трансляция T", "global = T · rotated; T = (4, 2, 1)"],
+    ["1. Local objects", "P = (3, 1, 0); cube O = (0, 0, 0)"],
+    ["2. Rotation R", "rotated = R · local; Rz = 90° = π / 2 rad"],
+    ["3. Global translation T", "global = T · rotated; T = (4, 2, 1)"],
   ];
   const steps = stepContents.map(([title, formula]) => {
     const step = document.createElement("div");
@@ -155,7 +155,7 @@ function createLegend(): { element: HTMLElement; steps: HTMLElement[] } {
   });
 
   const result = document.createElement("div");
-  result.textContent = "Итог: global = T · (R · local)";
+  result.textContent = "Result: global = T · (R · local)";
   Object.assign(result.style, {
     marginTop: "0.85rem",
     color: "#ffe08a",
@@ -275,7 +275,7 @@ export function mountDemo({
     "#ffffff",
   );
   const statusLabel = createLabel(
-    "Сейчас: шаг 1 — исходное состояние",
+    "Now: step 1 — initial state",
     new Vector3(2.2, 6.8, 0),
     "#ffffff",
   );
