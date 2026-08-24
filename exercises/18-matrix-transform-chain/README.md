@@ -1,18 +1,16 @@
-# 18. Длинная цепочка преобразований
+# 18. A long transformation chain
 
-В предыдущем упражнении мы объединили поворот и смещение:
+In the previous exercise, we combined a rotation and a translation:
 
 ```text
 M = T * R
 ```
 
-Теперь соберём более длинную цепочку. Это упражнение нужно прежде всего для
-практики порядка матриц.
+Now we will assemble a longer chain. This exercise is primarily practice with matrix order.
 
-## Последовательность действий
+## Sequence of operations
 
-Пусть к локальной точке нужно применить пять преобразований именно в таком
-хронологическом порядке:
+Suppose a local point must undergo five transformations in exactly this chronological order:
 
 ```text
 localPoint
@@ -24,27 +22,25 @@ localPoint
 → globalPoint
 ```
 
-Обозначим соответствующие матрицы как `R1`, `T1`, `R2`, `S` и `T2`.
+Denote the corresponding matrices by `R1`, `T1`, `R2`, `S`, and `T2`.
 
-Three.js и GLSL используют векторы-столбцы. Точка находится справа от матриц,
-поэтому ближайшая к ней матрица применяется первой:
+Three.js and GLSL use column vectors. The point is to the right of the matrices, so the matrix nearest to it is applied first:
 
 ```text
 globalPoint = T2 * S * R2 * T1 * R1 * localPoint
 ```
 
-Итоговая матрица имеет вид:
+The combined matrix is:
 
 ```text
 M = T2 * S * R2 * T1 * R1
 ```
 
-Запись читается от `localPoint` справа налево. Поэтому `R1` — первое действие,
-а `T2` — последнее.
+The expression is read from `localPoint` right to left. `R1` is therefore the first operation and `T2` is the last.
 
-## Как это выглядит в шейдере
+## How this looks in a shader
 
-В GLSL та же цепочка может быть записана так:
+In GLSL, the same chain can be written as:
 
 ```glsl
 vec4 globalPoint =
@@ -56,13 +52,11 @@ vec4 globalPoint =
     localPoint;
 ```
 
-Матрицы записаны сверху вниз в порядке множителей слева направо. Но применяются
-к точке снизу вверх.
+The matrix factors appear top to bottom in left-to-right order, but they are applied to the point from bottom to top.
 
-## Сборка через Matrix4.multiply
+## Composing with Matrix4.multiply
 
-`multiplyMatrices(a, b)` принимает только две матрицы. Для длинной цепочки
-удобно начать с единичной матрицы и последовательно вызывать `multiply()`:
+`multiplyMatrices(a, b)` accepts only two matrices. For a long chain, it is convenient to start with the identity matrix and call `multiply()` repeatedly:
 
 ```ts
 const transform = new Matrix4()
@@ -74,29 +68,27 @@ const transform = new Matrix4()
   .multiply(rotation1);
 ```
 
-Метод `matrix.multiply(other)` выполняет:
+`matrix.multiply(other)` performs:
 
 ```text
 matrix = matrix * other
 ```
 
-Поэтому код сверху создаёт именно такое произведение:
+The code above therefore creates this exact product:
 
 ```text
 M = I * T2 * S * R2 * T1 * R1
 M = T2 * S * R2 * T1 * R1
 ```
 
-Порядок строк `.multiply()` совпадает с порядком матриц в шейдерной записи —
-слева направо. Порядок фактических действий над точкой будет обратным — справа
-налево.
+The order of the `.multiply()` lines matches the left-to-right order of the matrices in the shader expression. The actual operations on the point occur in the reverse order, from right to left.
 
-## Главная ловушка
+## The main pitfall
 
-Не нужно передавать матрицы в `multiply()` в хронологическом порядке действий:
+Do not pass matrices to `multiply()` in the chronological order of the operations:
 
 ```ts
-// Эта матрица применит преобразования в обратном порядке.
+// This matrix applies the transformations in reverse order.
 const wrongTransform = new Matrix4()
   .identity()
   .multiply(rotation1)
@@ -106,29 +98,29 @@ const wrongTransform = new Matrix4()
   .multiply(translation2);
 ```
 
-Здесь получится произведение:
+This produces:
 
 ```text
 R1 * T1 * R2 * S * T2
 ```
 
-Первой к точке применится крайняя правая матрица `T2`, а не `R1`.
+The rightmost matrix, `T2`, is applied to the point first—not `R1`.
 
-## Численный пример
+## Numerical example
 
-В демке и тестах используются следующие значения:
+The demo and tests use these values:
 
 ```text
 localPoint = (2, 1, 1)
 
-R1 = rotation Z на  90°
+R1 = rotation Z by  90°
 T1 = translation (3, 0, 0)
-R2 = rotation Y на  90°
+R2 = rotation Y by  90°
 S  = scale       (1.5, 0.75, 1)
 T2 = translation (-1, 2, 4)
 ```
 
-Проверим каждое действие отдельно:
+Check each operation separately:
 
 ```text
 (2, 1, 1)
@@ -139,41 +131,35 @@ T2 = translation (-1, 2, 4)
   --T2--> ( 0.5, 3.5, 2)
 ```
 
-Цепочка также применяется к кубу с центром в локальном начале. Это позволяет
-увидеть, как промежуточные вращение и масштабирование влияют не только на его
-ориентацию, но и на смещения, выполненные ранее.
+The chain is also applied to a cube centered at the local origin. This makes it possible to see how the intermediate rotations and scaling affect both its orientation and translations performed earlier.
 
-## Запуск демки
+## Running the demo
 
 ```bash
 npm run demo -- exercises/18-matrix-transform-chain
 ```
 
-В статичной легенде слева показан фактический порядок действий, а справа —
-порядок вызовов `multiply()`. Текущая операция подсвечивается в обоих списках.
+The static legend shows the actual operation order on the left and the order of `multiply()` calls on the right. The current operation is highlighted in both lists.
 
-## Задание
+## Task
 
-Реализуйте две функции.
+Implement two functions.
 
-### Сборка цепочки
+### Composing the chain
 
-`composeTransformChain(rotation1, translation1, rotation2, scale,
-translation2)` должна вернуть новую `Matrix4`:
+`composeTransformChain(rotation1, translation1, rotation2, scale, translation2)` must return a new `Matrix4`:
 
 ```text
 M = T2 * S * R2 * T1 * R1
 ```
 
-Начните с единичной матрицы и используйте `multiply()`. Не изменяйте переданные
-матрицы.
+Start with the identity matrix and use `multiply()`. Do not modify the input matrices.
 
-### Применение цепочки
+### Applying the chain
 
-`applyTransformChain(value, transform)` должна применить готовую матрицу к
-копии `Vector4` и вернуть результат, не изменяя аргументы.
+`applyTransformChain(value, transform)` must apply the completed matrix to a copy of `Vector4` and return the result without modifying either argument.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/18-matrix-transform-chain

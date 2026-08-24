@@ -1,24 +1,24 @@
-# 6. Нормализация через Three.js
+# 6. Normalization with Three.js
 
-В предыдущем упражнении нормализация выполнялась вручную. Теперь используйте готовый API:
+In the previous exercise, you normalized a vector manually. Now use the ready-made API:
 
 ```ts
 vector.normalize();
 ```
 
-`normalize()` изменяет текущий `Vector3`. Чтобы сохранить входной вектор, нормализуйте его копию:
+`normalize()` mutates the current `Vector3`. To preserve the input vector, normalize a copy:
 
 ```ts
 const copy = vector.clone();
 ```
 
-## Задание
+## Task
 
-Реализуйте `normalizeWithThree(vector)` с помощью `clone()` и `normalize()`.
+Implement `normalizeWithThree(vector)` using `clone()` and `normalize()`.
 
-Результат должен совпасть с ручной нормализацией и иметь длину `1`.
+The result must match the manual normalization and have a length of `1`.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/06-normalize-three

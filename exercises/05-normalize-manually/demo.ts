@@ -64,7 +64,7 @@ export function mountDemo({
     "#ffe08a",
   );
   const directionLabel = createLabel(
-    "направление сохранилось",
+    "direction preserved",
     VECTOR.clone().multiplyScalar(0.52).add(new Vector3(0.2, -0.2, 0)),
     "#ffffff",
   );

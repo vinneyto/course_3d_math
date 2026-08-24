@@ -5,7 +5,7 @@
 - Put each exercise visualization in `exercises/<exercise>/demo.ts` and export
   `mountDemo(context)`.
 - Whenever an exercise has a `demo.ts`, document how to launch it in that
-  exercise's `README.md`. Add a `## Визуализация` section with the exact command
+  exercise's `README.md`. Add a `## Visualization` section with the exact command
   `npm run demo -- exercises/<exercise>`. Treat the demo and its launch
   instructions as parts of the same change.
 - Every exercise `README.md` must document how to run that exercise's task

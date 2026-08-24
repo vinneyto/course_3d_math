@@ -62,7 +62,7 @@ function animationState(elapsedSeconds: number): AnimationState {
     return {
       progresses: [0, 0, 0, 0, 0],
       activeOperation: undefined,
-      title: "Исходное состояние: P0 = (2, 1, 1)",
+      title: "Initial state: P0 = (2, 1, 1)",
     };
   }
 
@@ -79,14 +79,14 @@ function animationState(elapsedSeconds: number): AnimationState {
         return 0;
       }),
       activeOperation,
-      title: `Сейчас: ${OPERATION_TITLES[activeOperation]}`,
+      title: `Now: ${OPERATION_TITLES[activeOperation]}`,
     };
   }
 
   return {
     progresses: [1, 1, 1, 1, 1],
     activeOperation: undefined,
-    title: "Готово: P5 = (0.5, 3.5, 2)",
+    title: "Complete: P5 = (0.5, 3.5, 2)",
   };
 }
 
@@ -123,7 +123,7 @@ function createLegend(): {
     fontWeight: "800",
   });
   const hint = document.createElement("div");
-  hint.textContent = "Действия читаем справа налево";
+  hint.textContent = "Read operations from right to left";
   Object.assign(hint.style, {
     marginBottom: "0.7rem",
     color: "#aebbd0",
@@ -140,9 +140,9 @@ function createLegend(): {
   const actionsColumn = document.createElement("div");
   const multiplyColumn = document.createElement("div");
   const actionsTitle = document.createElement("div");
-  actionsTitle.textContent = "Действия над точкой";
+  actionsTitle.textContent = "Operations on the point";
   const multiplyTitle = document.createElement("div");
-  multiplyTitle.textContent = "Код сверху вниз";
+  multiplyTitle.textContent = "Code from top to bottom";
   [actionsTitle, multiplyTitle].forEach((title) => {
     Object.assign(title.style, {
       marginBottom: "0.35rem",
@@ -310,7 +310,7 @@ export function mountDemo({
     "#ffffff",
   );
   const statusLabel = createLabel(
-    "Исходное состояние: P0 = (2, 1, 1)",
+    "Initial state: P0 = (2, 1, 1)",
     new Vector3(1.5, 6.6, 0),
     "#ffffff",
   );

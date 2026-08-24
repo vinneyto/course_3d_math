@@ -1,6 +1,6 @@
-# 12. Умножение матриц
+# 12. Matrix multiplication
 
-При умножении матриц каждый элемент результата вычисляется как произведение строки первой матрицы на столбец второй:
+When multiplying matrices, each element of the result is computed from a row of the first matrix and a column of the second:
 
 ```text
 C[i][j] =
@@ -9,7 +9,7 @@ C[i][j] =
   + A[i][2] * B[2][j]
 ```
 
-Например:
+For example:
 
 ```text
 [ 1  2  0 ]   [ 2  0  0 ]   [ 2  6  0 ]
@@ -17,7 +17,7 @@ C[i][j] =
 [ 0  0  1 ]   [ 0  0  1 ]   [ 0  0  1 ]
 ```
 
-Three.js предоставляет несколько API:
+Three.js provides several APIs:
 
 ```ts
 new Matrix3().multiplyMatrices(a, b); // a * b
@@ -25,11 +25,11 @@ a.clone().multiply(b);               // a * b
 a.clone().premultiply(b);            // b * a
 ```
 
-## Задание
+## Task
 
-Реализуйте `multiplyMatrices(first, second)` через API `Matrix3`. Функция должна вернуть `first * second` и не изменить аргументы.
+Implement `multiplyMatrices(first, second)` using the `Matrix3` API. The function must return `first * second` without modifying its arguments.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/12-matrix-multiplication

@@ -1,6 +1,6 @@
-# 2. Сложение двух векторов
+# 2. Adding two vectors
 
-Векторы складываются покомпонентно:
+Vectors are added component by component:
 
 ```text
 a + b = (a.x + b.x, a.y + b.y, a.z + b.z)
@@ -8,34 +8,30 @@ a + b = (a.x + b.x, a.y + b.y, a.z + b.z)
 (1, 2, 3) + (4, 5, 6) = (5, 7, 9)
 ```
 
-## Геометрический смысл
+## Geometric meaning
 
-Нарисуйте `a` из начала координат. Затем мысленно перенесите начало `b` в конец `a`, не меняя длину и направление `b`. Сумма — это вектор из начала `a` в конец перенесённого `b`. Это правило треугольника.
+Draw `a` from the origin. Then imagine moving the start of `b` to the end of `a` without changing the length or direction of `b`. The sum is the vector from the start of `a` to the end of the translated `b`. This is the triangle rule.
 
-Иначе говоря: сначала переместиться на `a`, затем на `b`; общее перемещение равно `a + b`.
+In other words: first move by `a`, then by `b`; the total displacement is `a + b`.
 
-В Three.js метод `add()` изменяет объект, у которого вызван. Если исходный вектор требуется сохранить, сначала создайте его копию через `clone()`.
+In Three.js, `add()` mutates the object on which it is called. If you need to preserve the original vector, create a copy with `clone()` first.
 
-## Задание
+## Task
 
-Реализуйте `addVectors(first, second)`. Функция должна вернуть новый вектор и не изменять аргументы.
+Implement `addVectors(first, second)`. The function must return a new vector without modifying its arguments.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/02-add-two-vectors
 ```
 
-## Визуализация
+## Visualization
 
-Запустите демку, чтобы увидеть правило треугольника для
-`(1, 2, 3) + (4, 5, 6) = (5, 7, 9)`:
+Run the demo to see the triangle rule for `(1, 2, 3) + (4, 5, 6) = (5, 7, 9)`:
 
 ```bash
 npm run demo -- exercises/02-add-two-vectors
 ```
 
-Второй вектор перенесён в конец первого. Жёлтая стрелка показывает их сумму.
-Проекции на координатные плоскости показаны только для результирующего вектора.
-Анимация циклически переключается между исходным положением, где оба слагаемых
-начинаются в нуле, и правилом треугольника.
+The second vector is moved to the end of the first. The yellow arrow shows their sum. Projections onto the coordinate planes are shown only for the resulting vector. The animation alternates between the initial position, where both addends start at the origin, and the triangle-rule arrangement.

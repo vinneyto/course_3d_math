@@ -1,82 +1,70 @@
-# 15. Точки и векторы
+# 15. Points and vectors
 
-До этого момента мы в основном говорили о векторах.
+So far, we have mostly discussed vectors.
 
-Вектор задаёт направление и величину, которую выражает его длина. Например,
-вектор может описывать направление и силу ветра или направление и расстояние
-перемещения объекта.
+A vector specifies a direction and a magnitude, represented by its length. For example, a vector can describe the direction and strength of the wind, or the direction and distance of an object's movement.
 
-Но вектор сам по себе не обозначает конкретное место в пространстве. Для
-описания положения используется другое понятие — **точка**.
+A vector by itself does not identify a particular location in space. A different concept—a **point**—is used to describe position.
 
-## Точка
+## Point
 
-Точка обозначает некоторое положение в пространстве. В трёхмерной системе
-координат положение точки задаётся тремя координатами:
+A point represents a position in space. In a three-dimensional coordinate system, that position is specified by three coordinates:
 
 ```text
 P = (2, 3, 4)
 ```
 
-Это означает, что точка `P` находится в положении с координатами `x = 2`,
-`y = 3`, `z = 4`. Координаты точки рассматриваются относительно выбранной
-системы координат и её начала `(0, 0, 0)`.
+This means that point `P` is located at `x = 2`, `y = 3`, and `z = 4`. Point coordinates are interpreted relative to the chosen coordinate system and its origin `(0, 0, 0)`.
 
-## Вектор не имеет фиксированного положения
+## A vector has no fixed position
 
-Для вектора важны направление и длина, но у него нет закреплённого положения в
-пространстве. Поэтому вектор можно параллельно переносить. Если его направление
-и длина не изменились, это всё ещё тот же вектор.
+A vector's direction and length matter, but it has no fixed position in space. You can therefore translate a vector parallel to itself. If its direction and length do not change, it is still the same vector.
 
-Например, стрелки, начинающиеся в разных точках, представляют один вектор, если
-все они имеют компоненты:
+For example, arrows that start at different points represent the same vector when they all have the components:
 
 ```text
 v = (3, 4, 0)
 ```
 
-Положение стрелки изменилось, но направление, длина и компоненты вектора
-остались прежними.
+The arrow's position changed, but the vector's direction, length, and components remained the same.
 
-## Вектор из начала координат в точку
+## A vector from the origin to a point
 
-Пусть есть точка:
+Consider the point:
 
 ```text
 P = (2, 3, 4)
 ```
 
-Проведём стрелку из начала координат `O = (0, 0, 0)` в точку `P`. Получится
-вектор положения точки:
+Draw an arrow from the origin `O = (0, 0, 0)` to point `P`. This gives the point's position vector:
 
 ```text
 OP = P - O
 OP = (2, 3, 4)
 ```
 
-Координаты точки и компоненты такого вектора численно совпадают:
+The point's coordinates and this vector's components have the same numerical values:
 
 ```text
-точка:   P  = (2, 3, 4)
-вектор:  OP = (2, 3, 4)
+point:   P  = (2, 3, 4)
+vector:  OP = (2, 3, 4)
 ```
 
-Но их смысл различается:
+But their meanings differ:
 
-- `P` обозначает положение в пространстве;
-- `OP` обозначает направление и расстояние от начала координат до точки `P`.
+- `P` denotes a position in space;
+- `OP` denotes the direction and distance from the origin to point `P`.
 
-## Вектор между двумя точками
+## A vector between two points
 
-Вектор можно провести не только из начала координат. Пусть есть две точки:
+A vector does not have to start at the origin. Consider two points:
 
 ```text
 A = (1, 2, 0)
 B = (4, 6, 0)
 ```
 
-Вектор из точки `A` в точку `B` вычисляется как разность координат конечной и
-начальной точек:
+The vector from point `A` to point `B` is the difference between the end point and the start point:
 
 ```text
 AB = B - A
@@ -84,60 +72,55 @@ AB = (4, 6, 0) - (1, 2, 0)
 AB = (3, 4, 0)
 ```
 
-Этот вектор показывает, в каком направлении и на какое расстояние нужно
-переместиться из точки `A`, чтобы попасть в точку `B`.
+This vector tells us in which direction and how far to move from point `A` to reach point `B`.
 
-После вычисления вектор `AB` можно мысленно перенести так, чтобы он начинался в
-начале координат. Перенесённая стрелка имеет те же компоненты, направление и
-длину. Информация о точке `A` в самом результате `(3, 4, 0)` уже не хранится.
+After calculating `AB`, you can imagine translating it so that it starts at the origin. The translated arrow has the same components, direction, and length. The result `(3, 4, 0)` itself no longer stores any information about point `A`.
 
-## Связь точек и векторов
+## Relationship between points and vectors
 
-Две точки определяют вектор между ними:
+Two points define the vector between them:
 
 ```text
 vectorAB = pointB - pointA
 ```
 
-Если к точке прибавить вектор, получится новая точка:
+Adding a vector to a point produces a new point:
 
 ```text
 pointB = pointA + vectorAB
 ```
 
-Таким образом:
+Therefore:
 
 ```text
-точка - точка = вектор
-точка + вектор = точка
+point - point = vector
+point + vector = point
 ```
 
-Векторы описывают разницу между положениями точек.
+Vectors describe differences between point positions.
 
-## Точки и векторы в Three.js
+## Points and vectors in Three.js
 
-В Three.js и точки, и векторы можно хранить с помощью `Vector3`:
+In Three.js, both points and vectors can be stored with `Vector3`:
 
 ```ts
 const pointA = new Vector3(1, 2, 0);
 const pointB = new Vector3(4, 6, 0);
 ```
 
-Класс один и тот же, но смысл переменных различается: `pointA` и `pointB`
-обозначают положения, а результат их вычитания обозначает вектор. Имена
-переменных помогают явно показать этот смысл.
+The class is the same, but the meanings of the variables differ: `pointA` and `pointB` denote positions, while the result of subtracting them denotes a vector. Variable names help make that meaning explicit.
 
-## Задание
+## Task
 
-Реализуйте `createVectorFromPoints(pointA, pointB)`.
+Implement `createVectorFromPoints(pointA, pointB)`.
 
-Функция должна вернуть вектор, направленный из точки `pointA` в точку `pointB`:
+The function must return a vector directed from `pointA` to `pointB`:
 
 ```text
 vector = pointB - pointA
 ```
 
-Например:
+For example:
 
 ```text
 pointA = (1, 2, 0)
@@ -145,22 +128,20 @@ pointB = (4, 6, 0)
 vector = (3, 4, 0)
 ```
 
-Верните новый `Vector3` и не изменяйте переданные точки. Не нормализуйте
-результат: длина вектора должна оставаться равной расстоянию между точками.
+Return a new `Vector3` without modifying the input points. Do not normalize the result: the vector's length must remain equal to the distance between the points.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/15-points-and-vectors
 ```
 
-## Визуализация
+## Visualization
 
-Запустите демку, чтобы увидеть две точки и вектор направления из `A` в `B`:
+Run the demo to see two points and the direction vector from `A` to `B`:
 
 ```bash
 npm run demo -- exercises/15-points-and-vectors
 ```
 
-Анимация переносит вектор `AB` в начало координат, не изменяя его длину и
-направление.
+The animation moves vector `AB` to the coordinate origin without changing its length or direction.

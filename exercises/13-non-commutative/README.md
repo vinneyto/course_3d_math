@@ -1,8 +1,8 @@
-# 13. Некоммутативность матричного умножения
+# 13. Non-commutativity of matrix multiplication
 
-Для обычных чисел `2 * 3 = 3 * 2`. Для матриц в общем случае `A * B != B * A`.
+For ordinary numbers, `2 * 3 = 3 * 2`. For matrices, in general, `A * B != B * A`.
 
-Возьмём две матрицы:
+Consider two matrices:
 
 ```text
     [ 2  0  0 ]       [  0  1  0 ]
@@ -10,7 +10,7 @@ A = [ 0  1  0 ]   B = [ -1  0  0 ]
     [ 0  0  1 ]       [  0  0  1 ]
 ```
 
-Получим разные результаты:
+They produce different results:
 
 ```text
         [  0  2  0 ]
@@ -22,15 +22,15 @@ B * A = [ -2  0  0 ]
         [  0  0  1 ]
 ```
 
-Порядок имеет значение. В графике это означает, что перестановка преобразований обычно меняет результат.
+Order matters. In graphics, this means that rearranging transformations usually changes the result.
 
-## Задание
+## Task
 
-Реализуйте `multiplyInBothOrders(matrixA, matrixB)`. Верните `productAB` и `productBA` и убедитесь, что они различаются.
+Implement `multiplyInBothOrders(matrixA, matrixB)`. Return `productAB` and `productBA`, and verify that they differ.
 
-Порядок применения составных преобразований к векторам будет разобран отдельно. Поэтому здесь используются буквальные имена `productAB` и `productBA`.
+The order in which compound transformations are applied to vectors will be covered separately. This exercise therefore uses the literal names `productAB` and `productBA`.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/13-non-commutative

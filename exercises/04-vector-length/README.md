@@ -1,26 +1,26 @@
-# 4. Длина вектора
+# 4. Vector length
 
-Длина вектора вычисляется по теореме Пифагора:
+The length of a vector is calculated using the Pythagorean theorem:
 
 ```text
 |v| = sqrt(x² + y² + z²)
 ```
 
-Для вектора `(3, 4, 12)`:
+For the vector `(3, 4, 12)`:
 
 ```text
 |v| = sqrt(3² + 4² + 12²) = 13
 ```
 
-В Three.js готовое вычисление выполняет `Vector3.length()`.
+Three.js provides the ready-made `Vector3.length()` method.
 
-## Задание
+## Task
 
-Реализуйте `calculateVectorLength(vector)` самостоятельно через компоненты `x`, `y`, `z` и `Math.sqrt()`.
+Implement `calculateVectorLength(vector)` yourself using the `x`, `y`, and `z` components and `Math.sqrt()`.
 
-Тест сравнит ручной результат с `vector.length()`.
+The test compares your manual result with `vector.length()`.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/04-vector-length

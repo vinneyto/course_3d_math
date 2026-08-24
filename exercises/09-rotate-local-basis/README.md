@@ -1,12 +1,12 @@
-# 9. Вращение локального базиса
+# 9. Rotating a local basis
 
-Локальный вектор, связанный с диском часов, сохраняет свои компоненты. В глобальной системе он вращается потому, что вращается локальный базис.
+A local vector attached to the clock disc keeps the same components. It rotates in the global system because the local basis rotates.
 
-Эти формулы связаны с [полярной системой координат](https://ru.wikipedia.org/wiki/%D0%9F%D0%BE%D0%BB%D1%8F%D1%80%D0%BD%D0%B0%D1%8F_%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0_%D0%BA%D0%BE%D0%BE%D1%80%D0%B4%D0%B8%D0%BD%D0%B0%D1%82): координаты единичного вектора, повёрнутого на угол, выражаются через `cos` и `sin`.
+These formulas are related to the [polar coordinate system](https://en.wikipedia.org/wiki/Polar_coordinate_system): the coordinates of a unit vector rotated by an angle are expressed through `cos` and `sin`.
 
-## Радианы и градусы
+## Radians and degrees
 
-В тексте угол иногда удобнее указывать в градусах, но `Math.sin()`, `Math.cos()` и API вращения Three.js принимают угол **в радианах**.
+Angles are sometimes easier to describe in degrees, but `Math.sin()`, `Math.cos()`, and the Three.js rotation API accept angles **in radians**.
 
 ```text
 90°  = PI / 2 radians
@@ -14,9 +14,9 @@
 360° = 2 * PI radians
 ```
 
-В коде этого упражнения угол всегда измеряется в радианах. Поэтому переменные и параметры содержат слово `Radians`, например `clockwiseAngleRadians`.
+In this exercise's code, angles are always measured in radians. Variables and parameters therefore contain the word `Radians`, as in `clockwiseAngleRadians`.
 
-Для поворота по часовой стрелке на угол `clockwiseAngleRadians`:
+For a clockwise rotation by `clockwiseAngleRadians`:
 
 ```text
 X = (cos(clockwiseAngleRadians), -sin(clockwiseAngleRadians), 0)
@@ -24,7 +24,7 @@ Y = (sin(clockwiseAngleRadians),  cos(clockwiseAngleRadians), 0)
 Z = (0,                           0,                          1)
 ```
 
-При `clockwiseAngleDegrees = 90°`, то есть `clockwiseAngleRadians = Math.PI / 2`:
+When `clockwiseAngleDegrees = 90°`, so `clockwiseAngleRadians = Math.PI / 2`:
 
 ```text
 X = (0, -1, 0)
@@ -32,21 +32,21 @@ Y = (1,  0, 0)
 Z = (0,  0, 1)
 ```
 
-Для локального вектора `(2, 6, 0)` функция из предыдущего задания даст:
+For the local vector `(2, 6, 0)`, the function from the previous exercise gives:
 
 ```text
 2X + 6Y = (6, -2, 0)
 ```
 
-## Задание
+## Task
 
-Реализуйте `createRotatedLocalBasis(clockwiseAngleRadians)`. Угол передаётся в радианах.
+Implement `createRotatedLocalBasis(clockwiseAngleRadians)`. The angle is passed in radians.
 
-`rotateLocalVectorInGlobal()` уже вызывает `localVectorToGlobal()` из предыдущего упражнения. Её тесты покажут, что один локальный вектор получает разные глобальные координаты при вращении базиса.
+`rotateLocalVectorInGlobal()` already calls `localVectorToGlobal()` from the previous exercise. Its tests demonstrate that the same local vector gets different global coordinates as the basis rotates.
 
-В формулах этого упражнения положительный угол направлен по часовой стрелке. Это локальное соглашение примера с часами.
+In this exercise's formulas, a positive angle means a clockwise rotation. This is a local convention for the clock example.
 
-Запустите тесты упражнения:
+Run the exercise tests:
 
 ```bash
 npm test -- exercises/09-rotate-local-basis

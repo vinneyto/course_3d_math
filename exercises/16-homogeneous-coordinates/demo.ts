@@ -64,7 +64,7 @@ export function mountDemo({
     new SphereGeometry(0.2, 32, 24),
     pointMaterial,
   );
-  const pointLabel = createLabel("декартова точка", new Vector3(0.2, 0.2, 0), "#fa84d3");
+  const pointLabel = createLabel("Cartesian point", new Vector3(0.2, 0.2, 0), "#fa84d3");
   cartesianPoint.add(pointLabel);
 
   const directionArrow = createVectorArrow(
@@ -78,7 +78,7 @@ export function mountDemo({
   );
   directionArrow.add(
     createLabel(
-      "(2, 1, 0, 0) — направление",
+      "(2, 1, 0, 0) — direction",
       new Vector3(0, 4.5, 0),
       "#ffe08a",
     ),
@@ -147,7 +147,7 @@ export function mountDemo({
 
     if (w < MIN_VISUAL_W) {
       statusLabel.element.textContent =
-        "H = (2, 1, 0, 0) → точка на бесконечности → направление";
+        "H = (2, 1, 0, 0) → point at infinity → direction";
     } else {
       statusLabel.element.textContent =
         `H = (2, 1, 0, ${w.toFixed(2)}) → ` +
