@@ -81,3 +81,7 @@ npm run demo -- exercises/07-basis-vectors
 ```
 
 The red arrow shows `X = (1, 0, 0)`, the green arrow shows `Y = (0, 1, 0)`, and the blue arrow shows `Z = (0, 0, 1)`.
+
+---
+
+[← Previous: 6. Normalization with Three.js](../06-normalize-three/) | [Next: 8. Nested coordinate systems →](../08-local-vector-to-global/)

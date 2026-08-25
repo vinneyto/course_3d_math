@@ -25,3 +25,7 @@ Run the exercise tests:
 ```bash
 npm test -- exercises/04-vector-length
 ```
+
+---
+
+[← Previous: 3. Adding multiple vectors](../03-sum-vectors/) | [Next: 5. Manual normalization →](../05-normalize-manually/)

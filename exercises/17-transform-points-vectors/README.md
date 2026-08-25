@@ -222,3 +222,7 @@ Run the exercise tests:
 ```bash
 npm test -- exercises/17-transform-points-vectors
 ```
+
+---
+
+[← Previous: 16. Homogeneous coordinates](../16-homogeneous-coordinates/) | [Next: 18. A long transformation chain →](../18-matrix-transform-chain/)

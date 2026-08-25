@@ -35,3 +35,7 @@ B * A = [ -2  0  0 ]
 ```bash
 npm test -- exercises/13-non-commutative
 ```
+
+---
+
+[← Предыдущее: 12. Умножение матриц](../12-matrix-multiplication/) | [Следующее: 14. Перевод локального вектора через Matrix3 →](../14-local-to-global-matrix/)

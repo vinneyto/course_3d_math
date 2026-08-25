@@ -35,3 +35,7 @@ Run the exercise tests:
 ```bash
 npm test -- exercises/13-non-commutative
 ```
+
+---
+
+[← Previous: 12. Matrix multiplication](../12-matrix-multiplication/) | [Next: 14. Converting a local vector with Matrix3 →](../14-local-to-global-matrix/)

@@ -34,3 +34,7 @@ Run the exercise tests:
 ```bash
 npm test -- exercises/12-matrix-multiplication
 ```
+
+---
+
+[← Previous: 11. Multiplying a matrix by a vector](../11-matrix-vector/) | [Next: 13. Non-commutativity of matrix multiplication →](../13-non-commutative/)

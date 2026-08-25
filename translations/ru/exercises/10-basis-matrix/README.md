@@ -76,3 +76,7 @@ matrix.set(
 ```bash
 npm test -- exercises/10-basis-matrix
 ```
+
+---
+
+[← Предыдущее: 9. Вращение локального базиса](../09-rotate-local-basis/) | [Следующее: 11. Умножение матрицы на вектор →](../11-matrix-vector/)

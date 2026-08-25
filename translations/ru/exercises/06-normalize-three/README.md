@@ -23,3 +23,7 @@ const copy = vector.clone();
 ```bash
 npm test -- exercises/06-normalize-three
 ```
+
+---
+
+[← Предыдущее: 5. Нормализация вручную](../05-normalize-manually/) | [Следующее: 7. Система координат и базисные векторы →](../07-basis-vectors/)

@@ -164,3 +164,7 @@ Run the exercise tests:
 ```bash
 npm test -- exercises/18-matrix-transform-chain
 ```
+
+---
+
+[← Previous: 17. Matrix4: transforming points and vectors](../17-transform-points-vectors/)

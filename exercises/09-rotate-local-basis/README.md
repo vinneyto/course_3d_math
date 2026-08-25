@@ -51,3 +51,7 @@ Run the exercise tests:
 ```bash
 npm test -- exercises/09-rotate-local-basis
 ```
+
+---
+
+[← Previous: 8. Nested coordinate systems](../08-local-vector-to-global/) | [Next: 10. Storing a basis in Matrix3 →](../10-basis-matrix/)

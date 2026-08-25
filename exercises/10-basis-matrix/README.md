@@ -76,3 +76,7 @@ Run the exercise tests:
 ```bash
 npm test -- exercises/10-basis-matrix
 ```
+
+---
+
+[← Previous: 9. Rotating a local basis](../09-rotate-local-basis/) | [Next: 11. Multiplying a matrix by a vector →](../11-matrix-vector/)

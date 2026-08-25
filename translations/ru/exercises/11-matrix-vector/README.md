@@ -36,3 +36,7 @@ const result = vector.clone().applyMatrix3(matrix);
 ```bash
 npm test -- exercises/11-matrix-vector
 ```
+
+---
+
+[← Предыдущее: 10. Запись базиса в Matrix3](../10-basis-matrix/) | [Следующее: 12. Умножение матриц →](../12-matrix-multiplication/)
