@@ -86,4 +86,4 @@ npm run demo -- exercises/07-basis-vectors
 
 ---
 
-[← Предыдущее: 6. Нормализация через Three.js](../06-normalize-three/) | [Следующее: 8. Вложенные системы координат →](../08-local-vector-to-global/)
+[← Предыдущее: 6. Нормализация через Three.js](../06-normalize-three/) | [Следующее: 8. Векторное произведение →](../08-cross-product/)

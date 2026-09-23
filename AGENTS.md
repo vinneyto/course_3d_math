@@ -9,8 +9,10 @@
 - Keep the navigation in the primary English pages and the corresponding pages
   under `translations/ru` in sync. Russian pages must use Russian link labels
   and stay within the Russian translation tree.
-- When adding a new exercise, add its navigation block and update the formerly
-  last exercise so that its next link points to the new page.
+- When adding or inserting an exercise, update both neighboring navigation blocks
+  and both tables of contents. If numbering changes, rename the English and Russian
+  directories together and update headings, numbered references, code/image links,
+  and test/demo commands throughout the repository.
 
 ## Exercise visualizations
 
