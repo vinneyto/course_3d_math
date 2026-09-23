@@ -84,4 +84,4 @@ The red arrow shows `X = (1, 0, 0)`, the green arrow shows `Y = (0, 1, 0)`, and 
 
 ---
 
-[← Previous: 6. Normalization with Three.js](../06-normalize-three/) | [Next: 8. Nested coordinate systems →](../08-local-vector-to-global/)
+[← Previous: 6. Normalization with Three.js](../06-normalize-three/) | [Next: 8. Cross product →](../08-cross-product/)

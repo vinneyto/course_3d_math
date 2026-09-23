@@ -6,7 +6,7 @@
 
 Курс использует TypeScript, Vitest и Three.js, но не является курсом по Three.js. `Vector3`, `Vector4`, `Matrix3` и `Matrix4` нужны здесь как удобные реализации универсальных математических сущностей.
 
-В упражнениях 1–14 мы работаем только с векторами и матрицами `3 × 3`. Начиная с упражнения 15 курс также вводит понятие точки, а в упражнении 17 — матрицу `4 × 4`. World space и handedness пока не рассматриваются. Используются термины **local** и **global**.
+Упражнения 1–13 посвящены векторам, их произведениям и применению к нормалям, освещению и сходству. Упражнения 14–20 разбирают преобразования координат с матрицами `3 × 3`. Вершины треугольника знакомят с точками в упражнении 10; подробнее точки рассматриваются в упражнении 21, а матрицы `4 × 4` — в упражнении 23. В упражнении 9 кратко вводится правый базис; world space пока не рассматривается. Используются термины **local** и **global**.
 
 ## Запуск
 
@@ -49,14 +49,20 @@ npm run typecheck
 5. [Нормализация вручную](exercises/05-normalize-manually/README.md)
 6. [Нормализация через Three.js](exercises/06-normalize-three/README.md)
 7. [Система координат и базисные векторы](exercises/07-basis-vectors/README.md)
-8. [Вложенные системы координат](exercises/08-local-vector-to-global/README.md)
-9. [Вращение локального базиса](exercises/09-rotate-local-basis/README.md)
-10. [Запись базиса в Matrix3](exercises/10-basis-matrix/README.md)
-11. [Умножение матрицы на вектор](exercises/11-matrix-vector/README.md)
-12. [Умножение матриц](exercises/12-matrix-multiplication/README.md)
-13. [Некоммутативность матричного умножения](exercises/13-non-commutative/README.md)
-14. [Перевод локального вектора через Matrix3](exercises/14-local-to-global-matrix/README.md)
-15. [Точки и векторы](exercises/15-points-and-vectors/README.md)
-16. [Однородные координаты](exercises/16-homogeneous-coordinates/README.md)
-17. [Matrix4: преобразование точек и векторов](exercises/17-transform-points-vectors/README.md)
-18. [Длинная цепочка преобразований](exercises/18-matrix-transform-chain/README.md)
+8. [Векторное произведение](exercises/08-cross-product/README.md)
+9. [Построение ортонормированного базиса](exercises/09-build-orthonormal-basis/README.md)
+10. [Нормали треугольника по вершинам](exercises/10-triangle-normals/README.md)
+11. [Скалярное произведение](exercises/11-dot-product/README.md)
+12. [Диффузное освещение через скалярное произведение](exercises/12-diffuse-lighting/README.md)
+13. [Многомерные векторы и сходство](exercises/13-high-dimensional-vectors/README.md)
+14. [Вложенные системы координат](exercises/14-local-vector-to-global/README.md)
+15. [Вращение локального базиса](exercises/15-rotate-local-basis/README.md)
+16. [Запись базиса в Matrix3](exercises/16-basis-matrix/README.md)
+17. [Умножение матрицы на вектор](exercises/17-matrix-vector/README.md)
+18. [Умножение матриц](exercises/18-matrix-multiplication/README.md)
+19. [Некоммутативность матричного умножения](exercises/19-non-commutative/README.md)
+20. [Перевод локального вектора через Matrix3](exercises/20-local-to-global-matrix/README.md)
+21. [Точки и векторы](exercises/21-points-and-vectors/README.md)
+22. [Однородные координаты](exercises/22-homogeneous-coordinates/README.md)
+23. [Matrix4: преобразование точек и векторов](exercises/23-transform-points-vectors/README.md)
+24. [Длинная цепочка преобразований](exercises/24-matrix-transform-chain/README.md)

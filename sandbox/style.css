@@ -53,3 +53,71 @@ body {
   font-size: 1rem;
   font-weight: 800;
 }
+
+.product-panel {
+  position: absolute;
+  z-index: 5;
+  top: 1rem;
+  right: 1rem;
+  width: min(360px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: 1.1rem;
+  border: 1px solid #526279;
+  border-radius: 0.7rem;
+  background: rgba(10, 18, 30, 0.95);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+.product-panel h1 {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+}
+.product-panel label {
+  display: block;
+  margin: 0.7rem 0;
+}
+.product-panel input,
+.product-panel select {
+  display: block;
+  width: 100%;
+  margin-top: 0.3rem;
+}
+.product-panel select {
+  padding: 0.4rem;
+}
+.product-readout {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 0.82rem/1.6 monospace;
+}
+.product-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.product-panel caption {
+  text-align: left;
+  margin: 0.7rem 0;
+}
+.product-panel th,
+.product-panel td {
+  border-bottom: 1px solid #526279;
+  padding: 0.3rem;
+  text-align: right;
+}
+.product-panel.embedding-panel {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  width: min(650px, calc(100vw - 2rem));
+}
+@media (max-width: 640px) {
+  .product-panel:not(.embedding-panel) {
+    top: auto;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    max-height: 40vh;
+    font-size: 0.8rem;
+  }
+}
