@@ -307,6 +307,9 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
     "cube-30",
     "model-vertices",
     "conditions-0",
+    "conditions-3",
+    "axis-X-0",
+    "conditions-3",
     "gimbal-cancel90",
     "boundary-0.5",
     "q-matrix-75",
@@ -320,6 +323,12 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
       true,
     );
     await expect(page.locator(".scene-loading")).toHaveCount(0);
+    if (id === "conditions-3") {
+      await canvas.scrollIntoViewIfNeeded();
+      await page.screenshot({
+        path: `test-results/${test.info().project.name}-restored-sectors.png`,
+      });
+    }
   }
   await go(page, "q-matrix-75", false);
   await page.locator(".back-link").click();

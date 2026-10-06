@@ -39,6 +39,7 @@ export interface RotationState {
   t: number;
   local: boolean;
   arc: boolean;
+  eulerSectors: boolean;
   arcStartAngles: Triple;
   translation: boolean;
   zero: boolean;
@@ -92,6 +93,7 @@ export const initialState: RotationState = {
   t: 0,
   local: false,
   arc: false,
+  eulerSectors: false,
   arcStartAngles: [0, 0, 0],
   translation: false,
   zero: false,

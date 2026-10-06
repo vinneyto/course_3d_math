@@ -10,7 +10,7 @@ import {
 import { eulerQuaternion, rad, type Triple } from "./math";
 import { displayedEulerAngles, orientation } from "./state";
 import { snapshots, sequenceFor } from "./snapshots";
-import { blendScene } from "./transition";
+import { blendScene, visibility } from "./transition";
 
 const scene = (id: string) => snapshots.find((step) => step.id === id)!.scene;
 describe("Euler angle sectors", () => {
@@ -107,6 +107,26 @@ describe("Euler angle sectors", () => {
     expect(eulerQuaternion(angles).angleTo(orientation(middle))).toBeLessThan(
       1e-7,
     );
+    // The restoration frame already shows sectors. Resetting to the first axis
+    // shrinks their angles, without briefly fading sectors into existence.
+    const restored = scene("conditions-3"),
+      reset = scene("axis-X-0");
+    for (const [from, to] of [
+      [restored, reset],
+      [reset, restored],
+    ]) {
+      for (const t of [0, 0.1, 0.5, 0.9, 1]) {
+        const frame = blendScene(from, to, t);
+        expect(
+          (frame.visual?.visibility ?? visibility(frame)).eulerSectors,
+        ).toBe(1);
+      }
+    }
+    const interrupted = blendScene(restored, reset, 0.4);
+    expect(
+      blendScene(interrupted, restored, 0.3).visual!.visibility.eulerSectors,
+    ).toBe(1);
+    expect(displayedEulerAngles(reset)).toEqual([0, 0, 0]);
   });
 });
 

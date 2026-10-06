@@ -448,7 +448,7 @@ const authored: readonly RotationSnapshot[] = [
     "conditions-3",
     10,
     "model",
-    { panel: "conditions", angles: [20, 25, 30] },
+    { panel: "conditions", angles: [20, 25, 30], eulerSectors: true },
     [36],
     { en: "Restore a pure rotation", ru: "Возвращаем чистое вращение" },
     "Δ R[0,1] = 0",
