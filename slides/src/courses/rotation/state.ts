@@ -30,6 +30,7 @@ export interface RotationState {
   dimension: 2 | 3;
   origin: Triple;
   point: Triple;
+  pointTooltip: boolean;
   angles: Triple;
   axis: Triple;
   angle: number;
@@ -81,6 +82,7 @@ export const initialState: RotationState = {
   dimension: 2,
   origin: [0, 0, 0],
   point: [2, 1, 0],
+  pointTooltip: false,
   angles: [0, 0, 0],
   axis: [0, 1, 0],
   angle: 60,

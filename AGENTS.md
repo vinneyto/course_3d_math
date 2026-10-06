@@ -40,6 +40,9 @@
 - The sidebar is part of each snapshot. Switch its text, formulas and layout
   immediately without entry/exit motion, crossfades or animated height. Numeric
   readouts and indicators follow the displayed scene during its transition.
+  Reset sidebar scroll immediately when the operation timeline group changes,
+  including reverse navigation. Preserve scroll within a group. On mobile, where
+  the document scrolls, return to the lesson heading if the reader is below it.
 - Every multi-step demonstration has an operation timeline with stage markers and
   hover/focus tooltips. Use the current stage's descriptive name as its heading;
   do not substitute completion percentages or an anonymous time/progress meter.

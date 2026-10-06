@@ -11,6 +11,9 @@ Run `npm run dev` from the monorepo root, then open http://localhost:3000.
 Existing workspace and route names remain stable. User-facing terminology is
 **interactive manual** and **step**. The rotation manual contains 103 atomic snapshots
 covering 19 topics. Each snapshot describes the complete scene and sidebar.
+The first six steps keep the point-coordinate tooltip visible without hover.
+Sidebar scroll resets on entering another timeline group and stays in place
+within a group; on mobile this applies to the document's lesson section.
 
 ## React structure
 

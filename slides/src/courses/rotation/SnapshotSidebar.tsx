@@ -1,4 +1,6 @@
 "use client";
+import { useLayoutEffect, useRef } from "react";
+import { snapshots } from "./snapshots";
 import { chapterIndex, chapters, lessons, type Language } from "./content";
 import type { RotationState } from "./state";
 import { Numbers, SnapshotParameters } from "./Panels";
@@ -46,6 +48,31 @@ export function SnapshotSidebar({
   scene: RotationState;
   destination: RotationState;
 }) {
+  const panel = useRef<HTMLElement>(null);
+  const snapshot = snapshots[index];
+  const group = snapshot.scene.timeline?.group ?? snapshot.id;
+  const previousGroup = useRef(group);
+  useLayoutEffect(() => {
+    if (previousGroup.current === group) return;
+    previousGroup.current = group;
+    const node = panel.current;
+    if (!node) return;
+    node.scrollTo({ top: 0, behavior: "instant" });
+    // On narrow screens the document, rather than the sidebar, scrolls.
+    // Keep the scene in view if the reader has not scrolled into the lesson.
+    if (getComputedStyle(node).overflowY === "visible") {
+      const header = node
+        .closest(".presentation")
+        ?.querySelector(".player-header");
+      const top = Math.max(
+        0,
+        node.getBoundingClientRect().top +
+          window.scrollY -
+          (header?.getBoundingClientRect().height ?? 0),
+      );
+      if (window.scrollY > top) window.scrollTo({ top, behavior: "instant" });
+    }
+  }, [group]);
   const displayed = {
     ...scene,
     mode: destination.mode,
@@ -53,6 +80,7 @@ export function SnapshotSidebar({
   };
   return (
     <section
+      ref={panel}
       className="lesson"
       aria-label={language === "ru" ? "Кадр мануала" : "Manual frame"}
     >

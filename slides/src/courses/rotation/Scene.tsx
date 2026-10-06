@@ -350,10 +350,12 @@ function Point({
   point,
   world,
   language,
+  forceTooltip = false,
 }: {
   point: Triple;
   world: Triple;
   language: Language;
+  forceTooltip?: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -369,7 +371,7 @@ function Point({
         <sphereGeometry args={[0.09, 24, 16]} />
         <meshStandardMaterial color="#fff1a0" roughness={0.35} />
       </mesh>
-      <Fade opacity={hovered ? 1 : 0}>
+      <Fade opacity={forceTooltip || hovered ? 1 : 0}>
         <ScreenLabel
           position={world}
           tooltip
@@ -732,7 +734,12 @@ function World({
       </Fade>
       <Fade opacity={weights.point}>
         <>
-          <Point point={p} world={tuple(world)} language={language} />
+          <Point
+            point={p}
+            world={tuple(world)}
+            language={language}
+            forceTooltip={s.pointTooltip}
+          />
           <Fade opacity={weights.vector}>
             <Arrow from={s.origin} to={tuple(world)} color="#fff1a0" />
           </Fade>

@@ -324,7 +324,18 @@ test("camera and hover inspect a frame without changing its mathematical values"
     .locator(".point-tooltip")
     .filter({ hasText: /^P/ })
     .first();
+  // The point's coordinates remain visible without hover on the first six steps.
+  for (const step of snapshots.slice(0, 6)) {
+    await go(page, step.id);
+    await expect(pointTooltip).toBeVisible();
+    await expect(pointTooltip).toContainText("local (2.00, 1.00, 0.00)");
+    await expect(pointTooltip).toContainText(
+      await pane(page).locator(".readouts span:nth-child(2) b").innerText(),
+    );
+  }
+  await go(page, "basis-symbolic");
   await expect(pointTooltip).not.toBeVisible();
+  // Later steps still use hover to inspect the point.
   await expect(pointTooltip).toHaveAttribute("data-anchor-x", /[0-9]/);
   const bounds = (await canvas.boundingBox())!;
   const anchor = await pointTooltip.evaluate((node) => ({
@@ -333,7 +344,7 @@ test("camera and hover inspect a frame without changing its mathematical values"
   }));
   await page.mouse.move(bounds.x + anchor.x, bounds.y + anchor.y);
   await expect(pointTooltip).toBeVisible();
-  await expect(pointTooltip).toContainText("world (2.00, 1.00, 0.00)");
+  await expect(pointTooltip).toContainText("world (5.00, 2.00, 1.00)");
   const tooltipBounds = (await pointTooltip.boundingBox())!;
   expect(tooltipBounds.x).toBeGreaterThanOrEqual(bounds.x);
   expect(tooltipBounds.x + tooltipBounds.width).toBeLessThanOrEqual(
@@ -341,6 +352,8 @@ test("camera and hover inspect a frame without changing its mathematical values"
   );
   await page.mouse.move(bounds.x + 30, bounds.y + 60);
   await expect(pointTooltip).not.toBeVisible();
+  await go(page, "local-z-0");
+  await expect(pointTooltip).toBeVisible();
   await page.mouse.move(
     bounds.x + bounds.width * 0.7,
     bounds.y + bounds.height * 0.6,
@@ -357,6 +370,50 @@ test("camera and hover inspect a frame without changing its mathematical values"
     "data-snapshot",
     "local-z-0",
   );
+});
+
+test("changing timeline groups resets sidebar scroll while steps within a group preserve it", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/presentations/rotation");
+  const panel = page.locator(".lesson");
+  const scrollDown = async () =>
+    panel.evaluate((node) => {
+      if (getComputedStyle(node).overflowY !== "visible") {
+        node.scrollTop = 80;
+      } else {
+        const header = document.querySelector(".player-header")!;
+        const top =
+          node.getBoundingClientRect().top +
+          scrollY -
+          header.getBoundingClientRect().height;
+        window.scrollTo({ top: top + 80, behavior: "instant" });
+      }
+    });
+  const offset = async () =>
+    panel.evaluate((node) => {
+      if (getComputedStyle(node).overflowY !== "visible") return node.scrollTop;
+      const header = document.querySelector(".player-header")!;
+      return (
+        header.getBoundingClientRect().height - node.getBoundingClientRect().top
+      );
+    });
+  await go(page, "basis-0");
+  await scrollDown();
+  expect(await offset()).toBeGreaterThan(50);
+  await go(page, "basis-90");
+  expect(await offset()).toBeCloseTo(80, 0);
+  await go(page, "compute-0");
+  expect(await offset()).toBeCloseTo(0, 0);
+  // The two gimbal passes are different timelines despite sharing a topic.
+  await go(page, "gimbal-cancel90");
+  await scrollDown();
+  await go(page, "gimbal-rings-start");
+  expect(await offset()).toBeCloseTo(0, 0);
+  await scrollDown();
+  await go(page, "gimbal-cancel90");
+  expect(await offset()).toBeCloseTo(0, 0);
 });
 
 test("keyboard navigation and graphics failure keep the snapshot manual usable", async ({

@@ -72,6 +72,7 @@ const objectAngle = deg(2 * Math.acos(rotation.w));
 const authored: readonly RotationSnapshot[] = [
   ...[0, 15, 30, 45].map((z) =>
     frame(`local-z-${z}`, 2, "point", {
+      pointTooltip: true,
       local: true,
       arc: true,
       angles: [0, 0, z],
@@ -79,6 +80,7 @@ const authored: readonly RotationSnapshot[] = [
   ),
   ...[0.5, 1].map((t) =>
     frame(`origin-${t}`, 3, "point", {
+      pointTooltip: true,
       local: true,
       arc: true,
       angles: [0, 0, 45],
