@@ -1,9 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useRef, type ComponentRef } from "react";
+import {
+  Children,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  type ComponentRef,
+  type RefObject,
+} from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Html, Line, OrbitControls } from "@react-three/drei";
-import { Euler, Matrix4, Quaternion, Vector3 } from "three";
+import { Line, OrbitControls } from "@react-three/drei";
+import { Euler, Group, Matrix4, Quaternion, Vector3 } from "three";
 import { createSky } from "@course/sandbox/sky";
 import { createKnotGeometry, modelVertex } from "./geometry";
 import {
@@ -20,11 +29,74 @@ import { orientation, type RotationState } from "./state";
 import type { Language } from "./content";
 
 const colors = ["#f78189", "#8fd29d", "#7ea9ff"];
+// Projected DOM labels have an effect-owned layer, with no secondary React roots.
+const LabelPortal = createContext<RefObject<HTMLDivElement | null> | undefined>(
+  undefined,
+);
 const axes: Triple[] = [
   [1, 0, 0],
   [0, 1, 0],
   [0, 0, 1],
 ];
+function ScreenLabel({
+  position,
+  text,
+  color = "#e6eef8",
+  tooltip = false,
+}: {
+  position: Triple;
+  text: string;
+  color?: string;
+  tooltip?: boolean;
+}) {
+  const portal = useContext(LabelPortal);
+  const invalidate = useThree((state) => state.invalidate);
+  const group = useRef<Group>(null);
+  const element = useRef<HTMLDivElement | null>(null);
+  const projected = useMemo(() => new Vector3(), []);
+  useEffect(() => {
+    const node = document.createElement("div");
+    node.style.position = "absolute";
+    node.style.top = node.style.left = "0";
+    node.style.pointerEvents = "none";
+    portal?.current?.appendChild(node);
+    element.current = node;
+    invalidate();
+    return () => {
+      node.remove();
+      element.current = null;
+    };
+  }, [portal, invalidate]);
+  useEffect(() => {
+    const node = element.current;
+    if (!node) return;
+    node.className = tooltip ? "point-tooltip" : "scene-label";
+    node.style.color = color;
+    node.replaceChildren(
+      ...text.split("\n").map((line, i) => {
+        const item = document.createElement(tooltip && i === 0 ? "b" : "span");
+        item.textContent = line;
+        return item;
+      }),
+    );
+  }, [text, color, tooltip]);
+  useFrame(({ camera, size }) => {
+    if (!group.current || !element.current) return;
+    group.current.updateWorldMatrix(true, false);
+    projected.setFromMatrixPosition(group.current.matrixWorld).project(camera);
+    let x = ((projected.x + 1) * size.width) / 2;
+    let y = ((1 - projected.y) * size.height) / 2;
+    if (tooltip) {
+      x = Math.max(112, Math.min(size.width - 112, x));
+      y = Math.max(125, y);
+    }
+    const node = element.current;
+    node.style.display = projected.z < -1 || projected.z > 1 ? "none" : "";
+    node.style.zIndex = tooltip ? "25" : "10";
+    node.style.transform = `translate(${x}px, ${y}px) translate(-50%, ${tooltip ? "calc(-100% - 18px)" : "-50%"})`;
+  });
+  return <group ref={group} position={position} />;
+}
 function Label({
   position,
   children,
@@ -35,16 +107,11 @@ function Label({
   color?: string;
 }) {
   return (
-    <Html
+    <ScreenLabel
       position={position}
-      center
-      zIndexRange={[20, 0]}
-      style={{ pointerEvents: "none" }}
-    >
-      <span className="scene-label" style={{ color }}>
-        {children}
-      </span>
-    </Html>
+      color={color}
+      text={Children.toArray(children).join("")}
+    />
   );
 }
 function Arrow({
@@ -226,35 +293,11 @@ function Point({
         <sphereGeometry args={[0.09, 24, 16]} />
         <meshStandardMaterial color="#fff1a0" roughness={0.35} />
       </mesh>
-      <Html
+      <ScreenLabel
         position={world}
-        zIndexRange={[25, 21]}
-        style={{ pointerEvents: "none" }}
-        calculatePosition={(object, camera, size) => {
-          const projected = new Vector3()
-            .setFromMatrixPosition(object.matrixWorld)
-            .project(camera);
-          const x = ((projected.x + 1) * size.width) / 2;
-          const y = ((1 - projected.y) * size.height) / 2;
-          return [
-            Math.max(112, Math.min(size.width - 112, x)),
-            Math.max(125, y),
-          ];
-        }}
-      >
-        <div
-          className="point-tooltip"
-          style={{ transform: "translate(-50%, calc(-100% - 18px))" }}
-        >
-          <b>P</b>
-          <span>
-            {language === "ru" ? "лок." : "local"} {vectorText(point)}
-          </span>
-          <span>
-            {language === "ru" ? "мир" : "world"} {vectorText(world)}
-          </span>
-        </div>
-      </Html>
+        tooltip
+        text={`P\n${language === "ru" ? "лок." : "local"} ${vectorText(point)}\n${language === "ru" ? "мир" : "world"} ${vectorText(world)}`}
+      />
     </group>
   );
 }
@@ -596,35 +639,51 @@ function World({
     </>
   );
 }
+function RendererLifecycle({ failed }: { failed: () => void }) {
+  const gl = useThree((state) => state.gl);
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const lost = (event: Event) => {
+      event.preventDefault();
+      failed();
+    };
+    canvas.addEventListener("webglcontextlost", lost);
+    canvas.dataset.webglReady = "true";
+    return () => {
+      canvas.removeEventListener("webglcontextlost", lost);
+      delete canvas.dataset.webglReady;
+    };
+  }, [gl, failed]);
+  return null;
+}
+
 export default function RotationScene(props: {
   state: RotationState;
   patch: (p: Partial<RotationState>) => void;
   language: Language;
   failed: () => void;
 }) {
+  const portal = useRef<HTMLDivElement>(null);
   return (
-    <Canvas
-      frameloop="demand"
-      dpr={[1, 1.75]}
-      gl={{ antialias: true, alpha: false }}
-      camera={{ fov: 45, near: 0.1, far: 250 }}
-      fallback={
-        <div className="canvas-fallback">
-          WebGL is unavailable. You can still read the lesson and use the
-          numerical controls.
-        </div>
-      }
-      onCreated={({ gl }) => {
-        const lost = (event: Event) => {
-          event.preventDefault();
-          props.failed();
-        };
-        gl.domElement.addEventListener("webglcontextlost", lost, {
-          once: true,
-        });
-      }}
-    >
-      <World {...props} />
-    </Canvas>
+    <div className="rotation-canvas">
+      <div ref={portal} className="scene-label-layer" />
+      <Canvas
+        frameloop="demand"
+        dpr={[1, 1.75]}
+        gl={{ antialias: true, alpha: false }}
+        camera={{ fov: 45, near: 0.1, far: 250 }}
+        fallback={
+          <div className="canvas-fallback">
+            WebGL is unavailable. You can still read the lesson and use the
+            numerical controls.
+          </div>
+        }
+      >
+        <RendererLifecycle failed={props.failed} />
+        <LabelPortal.Provider value={portal}>
+          <World {...props} />
+        </LabelPortal.Provider>
+      </Canvas>
+    </div>
   );
 }

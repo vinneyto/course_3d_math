@@ -8,36 +8,53 @@ Run `npm run dev` from the monorepo root, then open http://localhost:3000.
 - `/`: responsive tile catalogue.
 - `/presentations/rotation`: 22-slide rotation course in English and Russian.
 
-## Slide contract
+## React presentation structure
 
-```ts
-interface Slide<Context> {
-  id: string;
-  apply(context: Context, signal: AbortSignal): Promise<void>;
-  revert(context: Context, signal: AbortSignal): Promise<void>;
+```tsx
+function CoursePage() {
+  const controller = useCourseController(22);
+  let slide;
+  switch (controller.index) {
+    case 0: slide = <PointSlide index={0} language="en" />; break;
+    case 1: slide = <PointSlide index={1} language="en" scene={{ translation: true }} />; break;
+    // Other components, or the same component with different props.
+  }
+  return <>
+    <Fragment key={controller.index}>{slide}</Fragment>
+    <CourseControls controller={controller} titles={titles} language="en" />
+  </>;
 }
 ```
 
-`apply` and `revert` name a symmetrical change rather than a visibility event.
-`Presentation` serializes navigation and traverses intermediate changes for every
-jump. A step's index advances only after its asynchronous method succeeds. Failed
-steps restore their prior immutable context; disposing a presentation aborts its
-signal and removes subscribers. Async custom slides should honor that signal.
+`useCourseController` is a small React hook: it holds the current index and exposes
+`goTo`, `next`, and `previous`. Jumps select the requested component directly.
+`CourseControls` renders navigation, the slide selector and progress, and owns
+the keyboard listener and its cleanup. It has no knowledge of the course scene.
 
-`reversibleSlide` captures the immutable context before applying its patch. Revert
-restores that snapshot, including previous user edits, without duplicating another
-slide's code. State and vector tuples must be replaced, never mutated in place.
+`RotationPresentation` contains the course's switch. `PointSlide`, `ModelSlide`,
+`GimbalSlide`, `InterpolationSlide`, `QuaternionSlide` and `ObjectSlide` reuse the
+R3F visualization with declarative props. `RotationSlide` owns its interactive
+parameters and camera with `useState`, and playback with `useEffect` and RAF cleanup.
+Scene features such as `panel`, `mode` and `dimension` follow props on every render;
+angles and other interactive values in `scene` supply initial state on mount.
 
-The rotation course is in `src/courses/rotation`: immutable step patches, bilingual
-lesson content, math functions, scene, and numeric controls. To add a course, create
-its own state and slide sequence, reuse `Presentation`, add a player route, and add
-its tile to the catalogue. The engine has no Three.js or React dependencies.
+The rotation page keys independent examples by index, resetting controls, camera
+and playback to the new step's defaults. The basis/matrix pair (5–6) and
+quaternion/matrix pair (18–19) share keys: panels change through props while their
+interactive parameters and camera stay intact. Switching language preserves state.
+To keep local state across other related steps, use the same component and key.
+No transition queue, scene snapshots, or imperative slide lifecycle is needed.
+
+To add a course, create a React page with its controller, switch and slide
+components, reuse `CourseControls`, add its route and catalogue tile. Each component
+describes its full example, independently of how the learner reached it.
 
 The scene uses the sandbox's gradient sky, equivalent lighting, and OrbitControls.
-Labels are DOM-backed via drei `Html`. Declarative geometry is disposed by Fiber;
+Labels use a projected DOM layer owned by React effects, avoiding extra React roots
+inside Fiber's teardown. Declarative geometry is disposed by Fiber;
 explicitly created sky and knot resources have disposal effects. Rendering is on
-demand; the timeline drives it only during playback. Playback cancels on slide
-navigation or unmount. Mobile controls use normal touch-friendly form elements.
+demand; the timeline drives it only during playback. Unmounting a slide cancels
+playback. Mobile controls use normal touch-friendly form elements.
 
 ## Rotation course
 

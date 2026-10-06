@@ -343,6 +343,14 @@ select {
   background: #0c1729b8;
   border-radius: 4px;
 }
+.rotation-canvas {
+  position: relative;
+}
+.scene-label-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
 .point-tooltip {
   width: 210px;
   display: flex;

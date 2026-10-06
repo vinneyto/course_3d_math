@@ -8,7 +8,6 @@ import {
   localToWorld,
   rad,
 } from "./math";
-import { createRotationPresentation } from "./state";
 
 describe("lesson mathematics", () => {
   it("computes the translated 90° example and fixes points on the axis", () => {
@@ -63,20 +62,5 @@ describe("lesson mathematics", () => {
     const q = axisQuaternion([1, 1, 0], 75);
     expect(q.length()).toBeCloseTo(1, 12);
     expect(q.x).toBeCloseTo(Math.sin(rad(75) / 2) / Math.sqrt(2), 12);
-  });
-  it("all 22 steps reverse cleanly, retaining the user camera and point", async () => {
-    const p = createRotationPresentation();
-    await p.goTo(0);
-    p.context.patch({ point: [1, 3, 0], cameraPosition: [0, 0, 9] });
-    const before = p.context.state;
-    await p.goTo(21);
-    await p.goTo(0);
-    expect(p.context.state).toEqual(before);
-    await p.goTo(11);
-    p.context.patch({ shear: 0.9 });
-    await p.goTo(12);
-    expect(p.context.state.shear).toBe(0);
-    await p.goTo(11);
-    expect(p.context.state.shear).toBe(0.9);
   });
 });

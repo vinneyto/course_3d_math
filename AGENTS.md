@@ -7,11 +7,12 @@
 - `slides` uses Next.js, React Three Fiber, drei, and classic WebGLRenderer.
   Do not switch to WebGPU without an explicit request.
 - Keep English primary and maintain the Russian presentation text alongside it.
-- Slide methods are asynchronous `apply(context, signal)` and
-  `revert(context, signal)`. Jumps must apply/revert every intermediate change.
-  Capture previous immutable context rather than copying another slide's logic.
-- Include camera and interactive controls in reversible state; cancel playback
-  and asynchronous work when leaving or disposing the presentation.
+- Build presentation slides as React components. The course page creates a
+  `useCourseController` and selects its slide components and props with a switch.
+  Navigation changes the index directly; do not replay intermediate slides.
+- Keep controls and animation state in React. Use effect cleanup for animation,
+  subscriptions and explicit resources. Choose component keys deliberately:
+  a new key resets a step; the same key preserves state while props change.
 - Check slides with `npm run test:slides`, `npm run typecheck`, `npm run build`,
   and `npm run test:e2e`. Test desktop and mobile layouts; do not claim physical
   device coverage from viewport emulation.

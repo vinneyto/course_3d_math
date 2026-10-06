@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("catalogue, all slides, numerical controls and reversible navigation", async ({
+test("catalogue, all slide components, numerical controls and direct navigation", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -47,8 +47,9 @@ test("catalogue, all slides, numerical controls and reversible navigation", asyn
   const angle = page.getByRole("slider", { name: "z angle" });
   await angle.fill("70");
   await page.getByRole("button", { name: /^Next/ }).click();
+  await expect(page.locator("[data-slide]")).toHaveAttribute("data-slide", "4");
   await page.getByRole("button", { name: /Previous/ }).click();
-  await expect(angle).toHaveValue("70");
+  await expect(angle).toHaveValue("45");
   await picker.selectOption("15");
   await page.getByRole("slider", { name: "Time", exact: true }).fill("0.8");
   await expect(page.locator(".lock")).toContainText("coincide");
@@ -61,9 +62,77 @@ test("catalogue, all slides, numerical controls and reversible navigation", asyn
   await expect(
     page.getByRole("heading", { name: "Гимбал-лок: потеря независимости" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("slider", { name: "Время", exact: true }),
+  ).toHaveValue("0.8");
   await picker.selectOption("0");
   await expect(page.getByRole("button", { name: /Назад/ })).toBeDisabled();
   expect(errors).toEqual([]);
+});
+
+test("React resets independent steps, preserves shared components and stops playback", async ({
+  page,
+}) => {
+  await page.goto("/presentations/rotation");
+  const picker = page.getByRole("combobox", { name: "Choose slide" });
+  await picker.selectOption("15");
+  const time = page.getByRole("slider", { name: "Time", exact: true });
+  await time.fill("0.6");
+  await page.getByRole("button", { name: "▶ Play", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Ⅱ Pause", exact: true }),
+  ).toBeVisible();
+  await expect.poll(() => time.inputValue()).not.toBe("0.6");
+  await picker.selectOption("1");
+  await expect(time).toHaveValue("0");
+  await expect(
+    page.getByRole("button", { name: "▶ Play", exact: true }),
+  ).toBeVisible();
+  // An old RAF must not advance the freshly mounted translation component.
+  await page.waitForTimeout(200);
+  await expect(time).toHaveValue("0");
+  await picker.selectOption("15");
+  await expect(time).toHaveValue("0");
+
+  await picker.selectOption("17");
+  await expect(page.locator("[data-slide]")).toHaveAttribute(
+    "data-slide-key",
+    "quaternion",
+  );
+  const angle = page.getByRole("slider", { name: "θ", exact: true });
+  await angle.fill("140");
+  await expect(
+    page.locator(".range").filter({ has: angle }).locator("output"),
+  ).toHaveText("140°");
+  await page.getByRole("button", { name: /^Next/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Quaternion to rotation matrix" }),
+  ).toBeVisible();
+  await expect(angle).toHaveValue("140");
+  await page.getByRole("button", { name: /Previous/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Axis–angle becomes a quaternion" }),
+  ).toBeVisible();
+  await expect(angle).toHaveValue("140");
+
+  await picker.selectOption("4");
+  const basisAngle = page.getByRole("slider", { name: "x angle", exact: true });
+  await basisAngle.fill("65");
+  await page.getByRole("button", { name: /^Next/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "The same idea in Matrix4" }),
+  ).toBeVisible();
+  await expect(basisAngle).toHaveValue("65");
+
+  await picker.selectOption("11");
+  await page.getByRole("slider", { name: "Δ R[0,1]", exact: true }).fill("0.9");
+  await picker.selectOption("21");
+  await expect(page.getByRole("link", { name: /Finish/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Next/ })).toHaveCount(0);
+  await picker.selectOption("11");
+  await expect(
+    page.getByRole("slider", { name: "Δ R[0,1]", exact: true }),
+  ).toHaveValue("0");
 });
 
 test("range keyboard does not navigate, and graphics failure keeps the lesson usable", async ({
@@ -78,9 +147,15 @@ test("range keyboard does not navigate, and graphics failure keeps the lesson us
   await page.locator("h1").click();
   await page.keyboard.press("ArrowRight");
   await expect(page.locator("[data-slide]")).toHaveAttribute("data-slide", "4");
+  await expect(page.locator("canvas")).toHaveAttribute(
+    "data-webgl-ready",
+    "true",
+  );
   await page.locator("canvas").evaluate((canvas) => {
     const gl = (canvas as HTMLCanvasElement).getContext("webgl2");
-    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    const loss = gl?.getExtension("WEBGL_lose_context");
+    if (!loss) throw new Error("Context-loss extension is unavailable");
+    loss.loseContext();
   });
   await expect(page.locator(".context-lost")).toContainText(
     "Graphics context lost",

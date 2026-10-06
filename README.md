@@ -75,10 +75,13 @@ The browser checks emulate a mobile viewport/touch input; they do not replace
 testing on a physical phone. For a production server, run `npm run start -w slides`
 after building. Deployment is a separate step.
 
-The slide lifecycle is `apply(context, signal)` / `revert(context, signal)`, both
-asynchronous. The presentation queues transitions, visits every intermediate slide
-on a jump, and restores the pre-slide snapshot when reverting. User changes to the
-point, camera, and controls are part of those snapshots. See [slides/README.md](slides/README.md).
+The course page creates a `useCourseController` and selects React slide components
+and props with a switch. Navigation selects the requested index directly.
+`CourseControls` provides the shared navigation UI. React state and effect cleanup
+own interactions and playback. Rotation steps use explicit React keys, resetting
+controls and camera for independent examples. The basis/matrix and quaternion/matrix
+pairs share keys to preserve parameters while their panels change through props.
+See [slides/README.md](slides/README.md).
 
 ## Contents
 
