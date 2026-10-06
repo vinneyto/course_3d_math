@@ -1,5 +1,76 @@
 # Repository instructions
 
+## Reusable manual-authoring skill
+
+For new manuals or changes to their narrative, UI, navigation, or scene transitions,
+use [build-interactive-manuals](.agents/skills/build-interactive-manuals/SKILL.md).
+Its reference files describe the architecture, visual design, narrative structure,
+and geometry rules, including how to use the approach in a standalone project.
+
+## Monorepo and interactive slides
+
+- Keep `exercises`, `sandbox`, and `slides` as npm workspaces. Preserve root
+  exercise commands and relative lesson links when changing package organization.
+- `slides` uses Next.js, React Three Fiber, drei, and classic WebGLRenderer.
+  Do not switch to WebGPU without an explicit request.
+- Keep English primary and maintain the Russian presentation text alongside it.
+- Build presentation slides as React components. The course page creates a
+  `useCourseController` and selects its slide components and props with a switch.
+  Navigation changes the index directly; do not replay intermediate slides.
+- Keep controls and animation state in React. Use effect cleanup for animation,
+  subscriptions and explicit resources. Keep the Canvas and shared narrative
+  stage mounted across steps. Animate from the current visible transform to the
+  next destination, including reverse and interrupted transitions. Do not key
+  the renderer or shared scene by slide index. Use crossfades for different content
+  and respect reduced-motion preferences.
+- Check slides with `npm run test:slides`, `npm run typecheck`, `npm run build`,
+  and `npm run test:e2e`. Test desktop and mobile layouts; do not claim physical
+  device coverage from viewport emulation.
+- Exercise tasks intentionally contain TODOs. Do not solve them to make the
+  presentation CI pass; keep their tests independent.
+
+## Interactive manual contract
+
+- Treat this product as an interactive manual, not a conventional slide deck or
+  a parameter playground. A step is a complete, deterministic snapshot of course
+  progress: scene, explanation, sidebar layout, displayed parameters and values.
+- Keep independent operations as separate steps, especially successive Euler
+  rotations. Consolidate redundant intermediate angle samples and representations
+  of the same transform; display the basis, matrix and resulting coordinates
+  together. Scene transitions show the values between snapshots. Do not replace
+  authored steps with editable controls.
+- Course navigation is the only way to change lesson parameters. Do not add
+  editable sliders, numeric inputs, toggles, model-selection clicks, point dragging,
+  chart scrubbing, playback buttons or autonomous playback. Sidebar indicators may
+  resemble controls but must be read-only and derive their values from the frame.
+- Viewer interaction is limited to orbit/zoom/pan of the camera and hovering
+  scene/panel elements for tooltips. Camera and hover state are separate from the
+  authored snapshot and must never change its mathematical values.
+- The sidebar is part of each snapshot. Switch its text, formulas and layout
+  immediately without entry/exit motion, crossfades or animated height. Numeric
+  readouts and indicators follow the displayed scene during its transition.
+  Reset sidebar scroll immediately when the operation timeline group changes,
+  including reverse navigation. Preserve scroll within a group. On mobile, where
+  the document scrolls, return to the lesson heading if the reader is below it.
+- Every multi-step demonstration has an operation timeline with stage markers and
+  hover/focus tooltips. Use the current stage's descriptive name as its heading;
+  do not substitute completion percentages or an anonymous time/progress meter.
+  Label the timeline with the current stage name, not the word "Timeline".
+  Timeline markers inspect stages with a normal cursor; course navigation changes
+  the snapshot.
+  Treat each timeline group as a visible topic. Navigation entries and timeline
+  tooltips use "Topic: short stage description"; show the current topic above
+  the sidebar heading and in the scene label, including repeated demonstrations.
+- Keep the shared R3F Canvas, renderer and narrative scene mounted. Forward,
+  reverse and interrupted navigation transition from the current visible state.
+  Different content may crossfade; respect reduced-motion preferences.
+- Each snapshot supplies its full destination, without inheriting parameters from
+  the previous visit. Returning to a step must restore its authored scene and
+  sidebar values regardless of navigation history. React owns lifecycle and
+  cleanup; do not introduce imperative apply/revert slide methods.
+- Keep workspace/package and existing route names stable; use "interactive manual"
+  and "step" in user-facing copy. Do not rename packages merely for terminology.
+
 ## Exercise page navigation
 
 - End every exercise `README.md` with a navigation block separated from the

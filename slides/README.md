@@ -1,0 +1,134 @@
+# Interactive manuals
+
+Next.js + React Three Fiber + drei, using the classic Three.js WebGL renderer.
+Run `npm run dev` from the monorepo root, then open http://localhost:3000.
+
+## Routes
+
+- `/`: responsive tile catalogue.
+- `/presentations/rotation`: rotation manual in English and Russian.
+
+Existing workspace and route names remain stable. User-facing terminology is
+**interactive manual** and **step**. The rotation manual contains 58 snapshots
+covering 19 topics that follow timeline boundaries. Each snapshot describes the
+complete scene and sidebar.
+The initial point and rotation-centre steps keep the point-coordinate tooltip visible without hover.
+Sidebar scroll resets on entering another timeline group and stays in place
+within a group; on mobile this applies to the document's lesson section.
+
+## React structure
+
+The reusable [build-interactive-manuals skill](../.agents/skills/build-interactive-manuals/SKILL.md)
+documents the stack, snapshot authoring, persistent scene lifecycle, navigation,
+responsive sidebar, timelines, charts, axes, sectors, and tooltips. Invoke
+`$build-interactive-manuals` to add a course here or create another manual project.
+For another checkout, copy the complete skill folder, including its references
+and `agents/openai.yaml`, into that project's `.agents/skills/` directory.
+
+`RotationPresentation` creates `useCourseController(snapshots.length)` and selects
+`PointSlide`, `ModelSlide`, `GimbalSlide`, `InterpolationSlide`, `QuaternionSlide`
+or `ObjectSlide` through a switch on the snapshot kind, passing its complete scene.
+A component can serve multiple consecutive snapshots with different props.
+`CourseControls` handles next, previous, direct selection and keyboard navigation.
+
+`snapshots.ts` is the authored timeline. Its immutable destinations contain all
+lesson parameters; returning or jumping to a frame restores its exact values.
+Changes of angle, geometry representation, composition stage, parent transform or
+timeline sample are additional snapshots. Every multi-step demonstration has named
+operations in its heading and a timeline with stage markers and hover/focus tooltips.
+The playhead follows the displayed transition; the chronological sequence continues
+when an example resets its numerical time. Markers inspect stages without seeking. There are no editable lesson controls,
+chart seeking, point dragging, vertex-selection clicks or automatic playback.
+Viewer interaction consists of camera orbit/zoom/pan and hover tooltips.
+
+Step components declare destinations through context and a React layout effect.
+`RotationStage` stays mounted outside the switch and owns the animated scene.
+`useSceneTransition` animates from the visible state over 1.1s; a new destination
+cancels and retargets the previous RAF. Rotations generally use quaternion SLERP;
+the gimbal and Euler/SLERP examples follow their own mathematical paths, keeping
+angle graphs, sectors and model consistent. Position, camera and visibility interpolate.
+Reduced-motion preferences reach the destination immediately.
+
+`SnapshotSidebar` contains the full explanation, parameter indicators, formulas
+and numerical readouts. Panel text and layout switch immediately without
+entry/exit animation, crossfades or height transitions. Numbers and indicators
+follow the displayed scene. Timeline labels show the current operation name;
+markers use a normal cursor. Destination parameters never inherit edits or
+values from earlier visits. Viewer camera state is preserved between frames with
+the same authored camera; a changed framing animates to the new view. Language
+switching preserves course progress.
+
+The R3F Canvas, renderer and shared geometry remain mounted. Point, cube, model,
+grids and helpers crossfade; surface, wireframe and vertices also share mounted
+geometry. Labels use an effect-owned projected DOM layer. Geometry and explicit
+sky resources have disposal cleanup. Demand rendering runs while transitions,
+camera movement or hover updates require it. Leaving the manual cancels animation.
+
+To add a course, create its authored snapshots, React page/controller and switch,
+reuse `CourseControls`, then add a route and catalogue tile. Follow the contract
+in the root [AGENTS.md](../AGENTS.md).
+
+## Rotation topics
+
+The manual begins with local-frame rotation and an offset origin, followed by the basis in
+colored Matrix4 columns, world coordinate calculation, fixed axis points, recap.
+Matrix frames put their coordinates and code before the explanatory text and
+parameter indicators, so the combined example stays near the heading.
+The matrix table sits inside a displayed `new Matrix4().set(...)` call, followed
+by `positionLocal.clone().applyMatrix4(matrixLocalToWorld)`. The combined basis,
+matrix and world-position sequence uses the same point and X-axis rotation:
+0°, 90°, 180°, a return to 0°, then 45°. Colored column labels and coordinate
+expansions accompany each numeric matrix. Origin and axis points appear together.
+The complete [old-to-new step mapping](rotation-step-mapping.md) records all 104
+original steps, including unchanged destinations.
+Leaving the fixed-axis example first moves the point off X at an unchanged
+135° orientation, then turns the frame with fixed local coordinates. The orbit
+starts at this 135° reference and grows to the displayed point during the turn.
+The translation column and local-origin labels use T throughout. Euler
+composition uses successive moving axes, described as nested parent frames.
+Then: cube, torus knot, orthonormality versus deformation, axis formulas,
+Euler composition, order comparison, gimbal lock and angle boundary interpolation.
+Finally: axis–angle quaternion, quaternion matrix, SLERP, Object3D and recap.
+Steps 19–20 omit angle sectors; they appear in step 21 when the swept angle
+becomes the subject of the explanation.
+
+The order lesson reuses one model: reset after XYZ, then animate Y = 40°,
+X = 30° and Z = 25° in YXZ order. The resulting orientations differ despite
+identical final angle values.
+
+A transition step introduces Euler angle limitations in a sidebar table before
+gimbal lock. Navigation entries and timeline tooltips use `Topic: stage`; the
+sidebar and scene label show the current topic. Topics follow timeline boundaries.
+
+The gimbal lesson has two matching six-step passes, with separate operation
+timelines. First show an ordinary rotating basis, remember the original X₀ as a
+fixed dashed reference, turn X by +30°, then local Y by 90°.
+The new Z coincides with X₀ while current X and Z remain perpendicular.
+Z = −30° fully cancels the first turn.
+Setting X/Z to zero demonstrates the exact equivalent Y-only orientation.
+Simultaneous X/Z changes then show the loss of independence, with no sectors
+when the model does not rotate. Repeat the same authored angles with rings
+whose planes follow the successive Euler frames. Intermediate rings can move
+while their combined effect leaves the model still. Graphs share the per-pass
+authored path and highlight simultaneous cancellation in orange. Sector and
+ring geometry remain mounted. Graphs observe course time without seeking.
+
+Interpolation snapshots compare an actual vertex trajectory. Angular speeds are
+degrees per normalized time t. The duplicate single-axis comparison is merged
+into the first Euler/SLERP path demonstration; each comparison now has start,
+midpoint and endpoint snapshots. Quaternion values and their matrix appear
+together. Object3D shows rotation and quaternion together, then adds a parent
+rotation.
+
+The authoring scenario lives in [Google Docs](https://docs.google.com/document/d/1-fET7tLlbFPbg-6VB6uop51qskeiLZWIn274aTkDQFo/edit).
+
+## Validation
+
+From the root: `npm run typecheck`, `npm run test:slides`, `npm run build`.
+For browsers: `npx playwright install chromium`, then `npm run build` and
+`npm run test:e2e`. Browser tests run against the production server.
+An existing Chromium can be used via `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
+Tests cover all snapshots, read-only/reproducible values, renderer continuity,
+animated sidebar values, reverse/interrupted transitions, camera/hover, graphics
+failure, and desktop/mobile layouts. Mobile coverage is Chromium viewport emulation.
+Exercise task tests intentionally fail until solved and stay separate.

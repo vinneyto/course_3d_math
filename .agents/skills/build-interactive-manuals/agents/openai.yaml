@@ -1,0 +1,4 @@
+interface:
+  display_name: "Interactive Manuals"
+  short_description: "Build smooth 3D lessons with timelines and sidebars"
+  default_prompt: "Use $build-interactive-manuals to build or extend an interactive manual with persistent 3D scenes, atomic snapshots, and a responsive lesson sidebar."
