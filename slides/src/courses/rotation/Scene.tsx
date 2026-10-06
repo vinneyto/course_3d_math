@@ -13,7 +13,13 @@ import {
   type RefObject,
   type ReactNode,
 } from "react";
-import { Canvas, events, useFrame, useThree } from "@react-three/fiber";
+import {
+  Canvas,
+  events,
+  useFrame,
+  useThree,
+  type ThreeEvent,
+} from "@react-three/fiber";
 import { Line, OrbitControls } from "@react-three/drei";
 import {
   Euler,
@@ -169,17 +175,16 @@ function ScreenLabel({
     projected.setFromMatrixPosition(group.current.matrixWorld).project(camera);
     let x = ((projected.x + 1) * size.width) / 2;
     let y = ((1 - projected.y) * size.height) / 2;
-    if (tooltip) {
-      if (element.current) {
-        element.current.dataset.anchorX = String(x);
-        element.current.dataset.anchorY = String(y);
-      }
-      x = Math.max(112, Math.min(size.width - 112, x));
-      y = Math.max(125, y);
-    }
     const node = element.current;
     node.style.display =
       opacity < 0.001 || projected.z < -1 || projected.z > 1 ? "none" : "";
+    if (tooltip) {
+      node.dataset.anchorX = String(x);
+      node.dataset.anchorY = String(y);
+      const halfWidth = node.offsetWidth / 2 + 8;
+      x = Math.max(halfWidth, Math.min(size.width - halfWidth, x));
+      y = Math.max(node.offsetHeight + 26, Math.min(size.height - 8, y));
+    }
     node.style.zIndex = tooltip ? "25" : "10";
     node.style.transform = `translate(${x}px, ${y}px) translate(-50%, ${tooltip ? "calc(-100% - 18px)" : "-50%"})`;
   });
@@ -249,7 +254,7 @@ function Arrow({
         <ScreenLabel
           position={to}
           tooltip
-          text={`${label ?? "v"}\n${vectorText(from)} → ${vectorText(to)}\n|v| = ${length.toFixed(2)}`}
+          text={`${label ?? "v"}\n${vectorText(from)}\n→ ${vectorText(to)}\n|v| = ${length.toFixed(2)}`}
         />
       </Fade>
       {label && (
@@ -415,6 +420,10 @@ function Model({
   if (weights.parent > 0)
     matrix.premultiply(new Matrix4().makeRotationY(rad(35 * weights.parent)));
   matrix.setPosition(new Vector3(...position));
+  const inspectSurface = (e: ThreeEvent<PointerEvent>) => {
+    e.stopPropagation();
+    setHoverPoint(tuple(e.point.clone().applyMatrix4(matrix.clone().invert())));
+  };
   return (
     <group matrixAutoUpdate={false} matrix={matrix}>
       <Fade opacity={weights.cube}>
@@ -458,12 +467,8 @@ function Model({
       </Fade>
       <Fade opacity={weights.model}>
         <group
-          onPointerMove={(e) => {
-            e.stopPropagation();
-            setHoverPoint(
-              tuple(e.point.clone().applyMatrix4(matrix.clone().invert())),
-            );
-          }}
+          onPointerOver={inspectSurface}
+          onPointerMove={inspectSurface}
           onPointerOut={() => setHoverPoint(null)}
         >
           <Fade opacity={weights.surface}>

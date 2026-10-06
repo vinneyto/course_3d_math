@@ -303,6 +303,11 @@ export function SnapshotParameters({
           </>
         )}
       </dl>
+      {s.panel === "interpolation" && (
+        <p className="panel-caption">
+          Euler · lerp — {ru ? "углы левой модели" : "left model angles"}
+        </p>
+      )}
       {quaternion ? (
         <Indicator label="θ" value={s.angle} min={0} max={180} />
       ) : (

@@ -3,7 +3,7 @@ import { Matrix4, Vector3 } from "three";
 import { gimbalPass } from "./gimbal-story";
 import { snapshots, sequenceKey, sequenceFor } from "./snapshots";
 import { lessons } from "./content";
-import { orientation } from "./state";
+import { displayedEulerAngles, orientation } from "./state";
 import {
   worldPoint,
   blendScene,
@@ -263,6 +263,42 @@ describe("authored manual snapshots", () => {
     expect(
       modelOrientation(compound).angleTo(interpolation(compound.t, true).euler),
     ).toBeLessThan(1e-7);
+  });
+  it("shows the Euler model's interpolation angles during motion and at rest", () => {
+    for (const prefix of ["boundary", "slerp-compound"]) {
+      const start = scene(`${prefix}-0`),
+        midpoint = scene(`${prefix}-0.5`),
+        end = scene(`${prefix}-1`);
+      for (const state of [start, midpoint, end]) {
+        expect(displayedEulerAngles(state)).toEqual(
+          interpolation(state.t, state.compound).eulerAngles,
+        );
+      }
+      for (const [from, to] of [
+        [start, midpoint],
+        [midpoint, end],
+        [end, midpoint],
+        [midpoint, start],
+      ]) {
+        for (const t of [0, 0.25, 0.5, 0.75, 0.999, 1]) {
+          const frame = blendScene(from, to, t);
+          const angles = displayedEulerAngles(frame);
+          expect(
+            eulerQuaternion(angles).angleTo(modelOrientation(frame)),
+          ).toBeLessThan(1e-7);
+          interpolation(frame.t, frame.compound).eulerAngles.forEach(
+            (angle, i) => expect(angles[i]).toBeCloseTo(angle, 8),
+          );
+        }
+      }
+      const interrupted = blendScene(start, midpoint, 0.4);
+      expect(displayedEulerAngles(blendScene(interrupted, end, 0))).toEqual(
+        displayedEulerAngles(interrupted),
+      );
+    }
+    expect(displayedEulerAngles(scene("boundary-0"))).toEqual([0, 0, 179]);
+    expect(displayedEulerAngles(scene("boundary-0.5"))).toEqual([0, 0, 0]);
+    expect(displayedEulerAngles(scene("boundary-1"))).toEqual([0, 0, -179]);
   });
   it("retargets an interrupted entrance without snapping onto the new example's path", () => {
     for (const [first, next] of [

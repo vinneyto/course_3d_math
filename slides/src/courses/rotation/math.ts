@@ -34,6 +34,7 @@ export function interpolation(
   t: number,
   compound = false,
 ): {
+  eulerAngles: Triple;
   euler: Quaternion;
   slerp: Quaternion;
   speedEuler: number;
@@ -49,6 +50,7 @@ export function interpolation(
     lo = Math.max(0, t - dt),
     hi = Math.min(1, t + dt);
   return {
+    eulerAngles: start.map((a, i) => a + (end[i] - a) * t) as Triple,
     euler: at(t),
     slerp: qa.clone().slerp(qb, t),
     speedEuler: deg(at(lo).angleTo(at(hi))) / (hi - lo),

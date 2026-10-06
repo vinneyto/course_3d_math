@@ -67,10 +67,17 @@ export function displayedEulerAngles(s: RotationState): Triple {
   if (s.panel === "gimbal") return s.visual?.gimbalAngles ?? s.angles;
   if (s.visual)
     return new Euler()
-      .setFromQuaternion(orientation(s), displayedEulerOrder(s))
+      .setFromQuaternion(
+        s.panel === "interpolation"
+          ? new Quaternion(...s.visual.modelQuaternion)
+          : orientation(s),
+        displayedEulerOrder(s),
+      )
       .toArray()
       .slice(0, 3)
       .map((n) => (Number(n) * 180) / Math.PI) as Triple;
+  if (s.panel === "interpolation")
+    return interpolation(s.t, s.compound).eulerAngles;
   if (s.panel === "euler") {
     const angles = [...s.angles] as Triple;
     for (let i = 0; i < 3; i++)

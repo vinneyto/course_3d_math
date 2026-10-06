@@ -353,13 +353,15 @@ select {
 }
 .point-tooltip {
   width: 210px;
+  max-width: calc(100% - 16px);
   display: flex;
   flex-direction: column;
   gap: 4px;
   border: 1px solid #45566e;
   background: #0d182b;
   color: #dae6f7;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
   border-radius: 8px;
   padding: 8px 10px;
   font:

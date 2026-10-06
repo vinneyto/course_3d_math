@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { lessons } from "../src/courses/rotation/content";
 import { gimbalPass } from "../src/courses/rotation/gimbal-story";
 import { snapshots } from "../src/courses/rotation/snapshots";
+import { interpolation } from "../src/courses/rotation/math";
 
 const pane = (page: Page) => page.locator(".sidebar-active");
 async function go(page: Page, id: string, settle = true) {
@@ -395,6 +396,76 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
   expect(errors).toEqual([]);
 });
 
+test("interpolation readouts follow the left Euler model and keep their values after animation", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await page.goto("/presentations/rotation");
+  await expect(page.locator("canvas")).toHaveAttribute(
+    "data-webgl-ready",
+    "true",
+  );
+  for (const prefix of ["boundary", "slerp-compound"]) {
+    await go(page, `${prefix}-0`);
+    const trace = await page.evaluateHandle(() => {
+      const trace = {
+        samples: [] as { t: number; angles: number[] }[],
+        stop: () => observer.disconnect(),
+      };
+      const observer = new MutationObserver(() => {
+        const panel = document.querySelector(".sidebar-active")!;
+        const t = Number(
+          panel
+            .querySelector(".stage-timeline")
+            ?.getAttribute("data-timeline-position"),
+        );
+        const angles = Array.from(
+          panel.querySelectorAll('[role="meter"][aria-label$=" angle"]'),
+        ).map((meter) => Number(meter.getAttribute("aria-valuenow")));
+        if (angles.length === 3 && trace.samples.length < 1000)
+          trace.samples.push({ t, angles });
+      });
+      observer.observe(document.querySelector(".player-main")!, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        characterData: true,
+      });
+      return trace;
+    });
+    for (const t of [0.5, 1, 0.5, 0]) {
+      await go(page, `${prefix}-${t}`);
+      await expect(pane(page).locator(".panel-caption")).toContainText([
+        "left model angles",
+      ]);
+      const expected = interpolation(
+        t,
+        prefix === "slerp-compound",
+      ).eulerAngles;
+      for (const [i, axis] of ["x", "y", "z"].entries()) {
+        await expect(
+          pane(page).getByRole("meter", { name: `${axis} angle`, exact: true }),
+        ).toHaveAttribute("aria-valuenow", String(expected[i]));
+      }
+    }
+    const samples = await trace.evaluate((trace) => {
+      trace.stop();
+      return trace.samples;
+    });
+    await trace.dispose();
+    expect(samples.some(({ t }) => t > 0.05 && t < 0.45)).toBe(true);
+    for (const sample of samples) {
+      const expected = interpolation(
+        sample.t,
+        prefix === "slerp-compound",
+      ).eulerAngles;
+      sample.angles.forEach((angle, i) =>
+        expect(angle).toBeCloseTo(expected[i], 7),
+      );
+    }
+  }
+});
+
 test("camera and hover inspect a frame without changing its mathematical values", async ({
   page,
 }) => {
@@ -453,6 +524,49 @@ test("camera and hover inspect a frame without changing its mathematical values"
     "data-snapshot",
     "local-z-0",
   );
+  await go(page, "axis-X-60");
+  await page.getByRole("button", { name: "Reset camera" }).click();
+  const axisTooltip = page
+    .locator(".point-tooltip")
+    .filter({ hasText: /^Xw/ })
+    .first();
+  // Reproject after camera damping, then hover inside the cone rather than its tip.
+  await expect
+    .poll(async () => {
+      const anchor = await axisTooltip.evaluate((node) => ({
+        x: Number((node as HTMLElement).dataset.anchorX),
+        y: Number((node as HTMLElement).dataset.anchorY),
+      }));
+      const bounds = (await canvas.boundingBox())!;
+      const dx = bounds.width / 2 - anchor.x,
+        dy = bounds.height / 2 - anchor.y;
+      const length = Math.hypot(dx, dy);
+      await page.mouse.move(
+        bounds.x + anchor.x + (4 * dx) / length,
+        bounds.y + anchor.y + (4 * dy) / length,
+      );
+      return axisTooltip.isVisible();
+    })
+    .toBe(true);
+  await expect(axisTooltip).toBeVisible();
+  const axisCanvas = (await canvas.boundingBox())!;
+  await expect(axisTooltip).toContainText("→ (2.70, 0.00, 0.00)");
+  expect(
+    await axisTooltip.evaluate((node) =>
+      Array.from(node.children).every(
+        (child) => child.scrollWidth <= node.clientWidth,
+      ),
+    ),
+  ).toBe(true);
+  const axisBounds = (await axisTooltip.boundingBox())!;
+  expect(axisBounds.x).toBeGreaterThanOrEqual(axisCanvas.x);
+  expect(axisBounds.x + axisBounds.width).toBeLessThanOrEqual(
+    axisCanvas.x + axisCanvas.width,
+  );
+  expect(axisBounds.y).toBeGreaterThanOrEqual(axisCanvas.y);
+  await page.screenshot({
+    path: `test-results/${test.info().project.name}-axis-tooltip.png`,
+  });
 });
 
 test("changing timeline groups resets sidebar scroll while steps within a group preserve it", async ({
