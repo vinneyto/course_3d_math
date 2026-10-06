@@ -4,7 +4,12 @@ import { eulerQuaternion, deg, type Triple } from "./math";
 import { initialState, type RotationState } from "./state";
 
 export type StepKind =
-  "point" | "model" | "gimbal" | "interpolation" | "quaternion" | "object";
+  | "point"
+  | "model"
+  | "gimbal"
+  | "interpolation"
+  | "quaternion"
+  | "object";
 export interface RotationSnapshot {
   id: string;
   topic: number;
@@ -81,22 +86,20 @@ const authored: readonly RotationSnapshot[] = [
       origin: [3 * t, t, 0],
     }),
   ),
-  ...[0, 15, 30].map((x) =>
-    frame(`basis-${x}`, 4, "point", {
+  frame("basis-symbolic", 4, "point", {
+    ...point3D,
+    panel: "matrix",
+    angles: [0, 0, 0],
+  }),
+  ...[0, 90, 180, 0, 15, 30, 60].map((x, i) =>
+    frame(i === 3 ? "basis-reset" : `basis-${x}`, 4, "point", {
       ...point3D,
       panel: "basis",
       angles: [x, 0, 0],
     }),
   ),
-  ...[30, 60].map((x) =>
-    frame(`matrix-${x}`, 5, "point", {
-      ...point3D,
-      panel: "matrix",
-      angles: [x, 0, 0],
-    }),
-  ),
   ...[0, 45, 90].map((z) =>
-    frame(`compute-${z}`, 6, "point", {
+    frame(`compute-${z}`, 5, "point", {
       ...point3D,
       panel: "compute",
       angles: [0, 0, z],
@@ -104,14 +107,14 @@ const authored: readonly RotationSnapshot[] = [
     }),
   ),
   ...[0, 45, 90].map((x) =>
-    frame(`zero-${x}`, 7, "point", {
+    frame(`zero-${x}`, 6, "point", {
       ...point3D,
       zero: true,
       angles: [x, 0, 0],
     }),
   ),
   ...[90, 135].map((x) =>
-    frame(`axis-point-${x}`, 7, "point", {
+    frame(`axis-point-${x}`, 6, "point", {
       ...point3D,
       zero: true,
       axisPoint: true,
@@ -119,27 +122,27 @@ const authored: readonly RotationSnapshot[] = [
     }),
   ),
   ...[40, 80].map((x) =>
-    frame(`local-recap-${x}`, 8, "point", {
+    frame(`local-recap-${x}`, 7, "point", {
       ...point3D,
       panel: "basis",
       angles: [x, 0, 0],
     }),
   ),
   ...[0, 15, 30].map((z) =>
-    frame(`cube-${z}`, 9, "model", { mode: "cube", angles: [20, 25, z] }),
+    frame(`cube-${z}`, 8, "model", { mode: "cube", angles: [20, 25, z] }),
   ),
   ...(["surface", "wireframe", "vertices", "surface"] as const).map(
     (surface, i) =>
-      frame(`model-${i}`, 10, "model", { surface, angles: [20, 25, 30] }),
+      frame(`model-${i}`, 9, "model", { surface, angles: [20, 25, 30] }),
   ),
   ...[0, 0.3, 0.6, 0].map((shear, i) =>
-    frame(`conditions-${i}`, 11, "model", { panel: "conditions", shear }),
+    frame(`conditions-${i}`, 10, "model", { panel: "conditions", shear }),
   ),
   ...(["X", "Y", "Z"] as const).flatMap((axis) =>
     [0, 30, 60].map((angle) => {
       const angles: Triple = [0, 0, 0];
       angles["XYZ".indexOf(axis)] = angle;
-      return frame(`axis-${axis}-${angle}`, 12, "model", {
+      return frame(`axis-${axis}-${angle}`, 11, "model", {
         panel: "axis",
         angles,
         singleAxis: axis,
@@ -147,19 +150,19 @@ const authored: readonly RotationSnapshot[] = [
     }),
   ),
   ...[0, 1 / 3, 2 / 3, 1].map((stage, i) =>
-    frame(`euler-${i}`, 13, "model", {
+    frame(`euler-${i}`, 12, "model", {
       panel: "euler",
       angles: [30, 40, 25],
       stage,
     }),
   ),
-  frame("order", 14, "model", {
+  frame("order", 13, "model", {
     panel: "order",
     angles: [30, 40, 25],
     cameraPosition: [4, 3, 13],
   }),
   ...[0, 0.25, 0.5, 0.75, 1].map((t) =>
-    frame(`gimbal-90-${t}`, 15, "gimbal", {
+    frame(`gimbal-90-${t}`, 14, "gimbal", {
       panel: "gimbal",
       cameraPosition: [6, 4, 11],
       t,
@@ -167,7 +170,7 @@ const authored: readonly RotationSnapshot[] = [
     }),
   ),
   ...[0.5, 0.75, 1].map((t) =>
-    frame(`gimbal-80-${t}`, 15, "gimbal", {
+    frame(`gimbal-80-${t}`, 14, "gimbal", {
       panel: "gimbal",
       cameraPosition: [6, 4, 11],
       t,
@@ -181,7 +184,7 @@ const authored: readonly RotationSnapshot[] = [
       [30, 90, -30],
     ] as Triple[]
   ).map((angles, i) =>
-    frame(`gimbal-independent-${i}`, 15, "gimbal", {
+    frame(`gimbal-independent-${i}`, 14, "gimbal", {
       panel: "gimbal",
       cameraPosition: [6, 4, 11],
       t: i / 2,
@@ -190,21 +193,21 @@ const authored: readonly RotationSnapshot[] = [
     }),
   ),
   ...[0, 0.25, 0.5, 0.75, 1].map((t) =>
-    frame(`boundary-${t}`, 16, "interpolation", {
+    frame(`boundary-${t}`, 15, "interpolation", {
       panel: "interpolation",
       cameraPosition: [3, 2, 13],
       t,
     }),
   ),
   ...[0, 30, 75].map((angle) =>
-    frame(`quaternion-${angle}`, 17, "quaternion", {
+    frame(`quaternion-${angle}`, 16, "quaternion", {
       panel: "quaternion",
       axis: [1, 1, 0],
       angle,
     }),
   ),
   ...[75, 90].map((angle) =>
-    frame(`q-matrix-${angle}`, 18, "quaternion", {
+    frame(`q-matrix-${angle}`, 17, "quaternion", {
       panel: "q-matrix",
       axis: [1, 1, 0],
       angle,
@@ -214,24 +217,24 @@ const authored: readonly RotationSnapshot[] = [
     [0, 0.25, 0.5, 0.75, 1].map((t) =>
       frame(
         `slerp-${compound ? "compound" : "axis"}-${t}`,
-        19,
+        18,
         "interpolation",
         { panel: "interpolation", cameraPosition: [3, 2, 13], compound, t },
       ),
     ),
   ),
-  frame("object-euler", 20, "object", {
+  frame("object-euler", 19, "object", {
     panel: "object",
     angles: [30, 40, 25],
   }),
-  frame("object-quaternion", 20, "object", {
+  frame("object-quaternion", 19, "object", {
     panel: "object",
     angles: [30, 40, 25],
     input: "quaternion",
     axis: objectAxis,
     angle: objectAngle,
   }),
-  frame("object-parent", 20, "object", {
+  frame("object-parent", 19, "object", {
     panel: "object",
     angles: [30, 40, 25],
     input: "quaternion",
@@ -239,7 +242,7 @@ const authored: readonly RotationSnapshot[] = [
     angle: objectAngle,
     parent: true,
   }),
-  frame("summary", 21, "object", { panel: "summary", angles: [30, 40, 25] }),
+  frame("summary", 20, "object", { panel: "summary", angles: [30, 40, 25] }),
 ];
 export const snapshots: readonly RotationSnapshot[] = Object.freeze(
   authored.map((snapshot, index) => {

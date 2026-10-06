@@ -58,6 +58,38 @@ test("manual catalogue and all atomic snapshots fit desktop and mobile", async (
       ),
     ).toBe(true);
   }
+  await go(page, "basis-symbolic");
+  const matrixCode = pane(page).locator(".matrix-code");
+  await expect(matrixCode.locator(":scope > code").first()).toHaveText(
+    "const matrixLocalToWorld =\n  new Matrix4().set(",
+  );
+  await expect(matrixCode.getByRole("row").first()).toHaveText(
+    "X.x,Y.x,Z.x,O.x,",
+  );
+  await expect(matrixCode.locator(":scope > code").nth(1)).toHaveText(");");
+  await expect(matrixCode.locator(".matrix-application")).toContainText(
+    "positionLocal.clone()\n  .applyMatrix4(matrixLocalToWorld);",
+  );
+  await go(page, "basis-90");
+  await expect(matrixCode.getByRole("row").nth(1)).toHaveText(
+    "0.00,0.00,-1.00,1.00,",
+  );
+  await expect(matrixCode.getByRole("row").nth(2)).toHaveText(
+    "0.00,1.00,0.00,0.00,",
+  );
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.screenshot({
+    path: `test-results/${test.info().project.name}-basis-matrix.png`,
+    fullPage: true,
+  });
+  await go(page, "basis-180");
+  await expect(matrixCode.getByRole("row").nth(1)).toHaveText(
+    "0.00,-1.00,0.00,1.00,",
+  );
+  await go(page, "basis-reset");
+  await expect(matrixCode.getByRole("row").nth(1)).toHaveText(
+    "0.00,1.00,0.00,1.00,",
+  );
   await go(page, "compute-90");
   await expect(pane(page).locator(".readouts")).toContainText(
     "(2.00, 3.00, 0.00)",

@@ -63,9 +63,29 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
   ],
   4: [
     stage(
+      "Place the basis in matrix columns",
+      "Укладываем базис в столбцы матрицы",
+      "Matrix4.set(…); columns: X, Y, Z, O",
+    ),
+    stage(
       "Inspect the three basis vectors",
       "Рассматриваем три вектора базиса",
       "X, Y, Z; O = (3, 1, 0)",
+    ),
+    stage(
+      "90°: move the ones to new rows",
+      "90°: единицы переходят в другие строки",
+      "Rx(90°); X = (1, 0, 0), Y = (0, 0, 1), Z = (0, −1, 0)",
+    ),
+    stage(
+      "180°: reverse Y and Z",
+      "180°: Y и Z меняют направление",
+      "Rx(180°); X = (1, 0, 0), Y = (0, −1, 0), Z = (0, 0, −1)",
+    ),
+    stage(
+      "Return to 0° before smaller turns",
+      "Возвращаемся к 0° перед малыми поворотами",
+      "Rx(0°); X = (1, 0, 0), Y = (0, 1, 0), Z = (0, 0, 1)",
     ),
     stage("Turn Y and Z about X", "Поворачиваем Y и Z вокруг X", "Rx(15°)"),
     stage(
@@ -73,20 +93,13 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "Повернувшийся базис перемещает точку",
       "Rx(30°), p = (2, 1, 1)",
     ),
+    stage(
+      "60°: compare fractional components",
+      "60°: сравниваем дробные компоненты",
+      "Rx(60°); Y = (0, 0.5, √3/2), Z = (0, −√3/2, 0.5)",
+    ),
   ],
   5: [
-    stage(
-      "Read the basis from matrix columns",
-      "Читаем базис из столбцов матрицы",
-      "Matrix4.set(…); Rx(30°)",
-    ),
-    stage(
-      "A further turn changes the columns",
-      "Следующий поворот меняет столбцы",
-      "Rx(60°)",
-    ),
-  ],
-  6: [
     stage(
       "Substitute the local coordinates",
       "Подставляем локальные координаты",
@@ -103,7 +116,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "Rz(90°); Pworld = (2, 3, 0)",
     ),
   ],
-  7: [
+  6: [
     stage(
       "Place the point at the origin",
       "Помещаем точку в начало системы",
@@ -130,7 +143,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "p = (2, 0, 0), Rx(135°)",
     ),
   ],
-  8: [
+  7: [
     stage(
       "A turning frame moves its point",
       "Поворот системы перемещает её точку",
@@ -142,7 +155,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "Rx(80°)",
     ),
   ],
-  9: [
+  8: [
     stage(
       "Give eight vertices one frame",
       "Задаём восьми вершинам одну систему",
@@ -159,7 +172,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "Euler(20°, 25°, 30°), XYZ",
     ),
   ],
-  10: [
+  9: [
     stage(
       "Inspect the model's surface",
       "Рассматриваем поверхность модели",
@@ -181,7 +194,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "surface",
     ),
   ],
-  11: [
+  10: [
     stage(
       "Start with an orthonormal basis",
       "Начинаем с ортонормального базиса",
@@ -203,7 +216,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "Δ R[0,1] = 0",
     ),
   ],
-  12: [
+  11: [
     stage("Choose the X axis", "Выбираем ось X", "Rx(0°)"),
     stage("Sweep a sector about X", "Заметаем сектор вокруг X", "Rx(30°)"),
     stage("Widen the X sector", "Увеличиваем сектор вокруг X", "Rx(60°)"),
@@ -214,7 +227,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
     stage("Sweep a sector about Z", "Заметаем сектор вокруг Z", "Rz(30°)"),
     stage("Widen the Z sector", "Увеличиваем сектор вокруг Z", "Rz(60°)"),
   ],
-  13: [
+  12: [
     stage(
       "Start with the identity rotation",
       "Начинаем с единичного вращения",
@@ -236,7 +249,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "R = Rx(30°) · Ry(40°) · Rz(25°)",
     ),
   ],
-  15: [
+  14: [
     stage(
       "Start with three independent axes",
       "Начинаем с трёх независимых осей",
@@ -293,7 +306,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "z: 0° → −30°; x + z = 0°",
     ),
   ],
-  16: [
+  15: [
     stage(
       "Start near the angle boundary",
       "Начинаем у границы угла",
@@ -320,7 +333,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "−179° ≡ 181°",
     ),
   ],
-  17: [
+  16: [
     stage(
       "Choose a normalized rotation axis",
       "Выбираем нормированную ось вращения",
@@ -337,7 +350,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "θ = 75°",
     ),
   ],
-  18: [
+  17: [
     stage(
       "Convert the quaternion to a basis",
       "Преобразуем кватернион в базис",
@@ -349,7 +362,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "R(q); θ = 90°",
     ),
   ],
-  19: [
+  18: [
     stage(
       "Compare two single-axis paths",
       "Сравниваем два одноосевых пути",
@@ -401,7 +414,7 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "t = 1",
     ),
   ],
-  20: [
+  19: [
     stage(
       "Set Object3D through Euler angles",
       "Задаём Object3D углами Эйлера",

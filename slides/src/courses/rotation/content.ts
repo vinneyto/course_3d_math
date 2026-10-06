@@ -32,20 +32,15 @@ const en: LessonText[] = [
     hint: "Watch the frame and point move together between steps.",
   },
   {
-    title: "A frame is an origin and a basis",
-    body: "In 3D a frame has three basis vectors X, Y, Z and an origin O. Build a world position by adding the three weighted basis vectors to the origin.",
-    takeaway: "pworld = O + xX + yY + zZ",
-    hint: "Orbit the camera and follow the colored addition chain.",
-  },
-  {
-    title: "The same idea in Matrix4",
-    body: "The first three columns hold the basis. The fourth holds the origin. For this rigid transform, the upper-left 3×3 block is the rotation.",
-    takeaway: "Rotation is 3×3; the 4×4 matrix also carries translation.",
-    hint: "Advance to see the basis columns change.",
+    title: "The basis fits into a matrix",
+    body: "The three basis vectors X, Y, Z become the first three columns of Matrix4; the origin O becomes the fourth. Each column is expressed in world coordinates. Rotation changes X, Y and Z while O stays fixed.",
+    takeaway:
+      "Rotation is the 3×3 block; the fourth column carries translation.",
+    hint: "First turn by 90° and 180°: the rotation block contains only 0 and ±1. Then compare smaller angles and follow the colored addition chain.",
   },
   {
     title: "Computing the world position",
-    body: "Apply the local-to-world matrix to a copy of the local point. Keep O = (3,1,0) and p = (2,1,0); the following steps turn the frame around Z. At 90° the world position becomes (2,3,0).",
+    body: "Multiply each basis vector by the corresponding local component: X by x, Y by y, Z by z. Add these three vectors and the origin O. applyMatrix4 performs this calculation. For O = (3,1,0), p = (2,1,0) and a 90° turn around Z, the world position is (2,3,0).",
     takeaway: "One matrix maps a local position into world space.",
     hint: "Compare each world position with the matrix expansion.",
   },
@@ -169,20 +164,14 @@ const ru: LessonText[] = [
     hint: "Следите, как система и точка смещаются вместе между шагами.",
   },
   {
-    title: "Система — это начало и базис",
-    body: "В 3D система содержит три базисных вектора X, Y, Z и начало O. Складываем взвешенные базисные векторы и добавляем начало.",
-    takeaway: "pworld = O + xX + yY + zZ",
-    hint: "Покрутите камеру и проследите цепочку цветных слагаемых.",
-  },
-  {
-    title: "Тот же смысл в Matrix4",
-    body: "Первые три столбца хранят базис, четвёртый — начало. Для этого жёсткого преобразования верхний левый блок 3×3 задаёт вращение.",
-    takeaway: "Вращение — 3×3; матрица 4×4 добавляет смещение.",
-    hint: "Перейдите дальше и наблюдайте изменение столбцов базиса.",
+    title: "Базис укладывается в матрицу",
+    body: "Три базисных вектора X, Y, Z укладываем в первые три столбца Matrix4, начало O — в четвёртый. Каждый столбец записан в мировых координатах. При вращении меняются X, Y и Z; начало O остаётся на месте.",
+    takeaway: "Вращение — блок 3×3; четвёртый столбец хранит смещение.",
+    hint: "Сначала повороты на 90° и 180°: в блоке вращения только 0 и ±1. Затем сравните меньшие углы и проследите цепочку цветных слагаемых.",
   },
   {
     title: "Вычисляем мировую координату",
-    body: "Применяем матрицу к копии локальной точки, сохраняя оригинал. Фиксируем O = (3,1,0), p = (2,1,0); следующие шаги поворачивают систему вокруг Z. При 90° мировая координата станет (2,3,0).",
+    body: "Умножаем каждый базисный вектор на соответствующую локальную компоненту: X на x, Y на y, Z на z. Складываем эти три вектора и прибавляем начало O. applyMatrix4 выполняет этот расчёт. При O = (3,1,0), p = (2,1,0) и повороте вокруг Z на 90° мировая координата равна (2,3,0).",
     takeaway: "Одна матрица переводит локальное положение в мировое.",
     hint: "Сравнивайте мировое положение с разложением по матрице.",
   },
@@ -308,10 +297,10 @@ export const chapters = {
 export const chapterIndex = (index: number): number =>
   snapshots[index].topic < 4
     ? 0
-    : snapshots[index].topic < 9
+    : snapshots[index].topic < 8
       ? 1
-      : snapshots[index].topic < 12
+      : snapshots[index].topic < 11
         ? 2
-        : snapshots[index].topic < 17
+        : snapshots[index].topic < 16
           ? 3
           : 4;

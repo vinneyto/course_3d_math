@@ -58,7 +58,7 @@ npm run dev
 ```
 
 Open http://localhost:3000. The catalogue contains **Rotation in 3D**, an interactive
-manual with 85 atomic snapshots across 22 topics, English by default and a Russian
+manual with 88 atomic snapshots across 21 topics, English by default and a Russian
 language switch. On desktop the scene and sidebar sit side by side; on mobile they
 stack with persistent step navigation. Each step supplies its scene, explanation,
 formulas and read-only parameter indicators. Only navigation changes lesson values.

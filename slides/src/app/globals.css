@@ -587,6 +587,36 @@ select {
 .matrix-grid [role="row"]:nth-child(-n + 3) [role="cell"]:nth-child(-n + 3) {
   background: #a3e7d606;
 }
+.matrix-code {
+  border: 1px solid #425571;
+  border-radius: 8px;
+  padding: 12px;
+  background: #122036;
+  color: #b9cde4;
+  min-width: 0;
+  font:
+    10px/1.9 ui-monospace,
+    monospace;
+}
+.matrix-code > code {
+  display: block;
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.matrix-code .matrix-grid {
+  border: 0;
+  border-radius: 0;
+  padding: 4px 0 4px 8px;
+  background: none;
+  font: inherit;
+}
+.matrix-code .matrix-application {
+  margin-top: 12px;
+}
+.matrix-comma {
+  color: #b9cde4;
+}
 .formula {
   font-size: 12px;
   color: #c8d9ee;

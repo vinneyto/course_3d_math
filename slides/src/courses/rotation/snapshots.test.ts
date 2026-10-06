@@ -11,7 +11,7 @@ describe("authored manual snapshots", () => {
     expect(new Set(snapshots.map((step) => step.id)).size).toBe(
       snapshots.length,
     );
-    expect(new Set(snapshots.map((step) => step.topic)).size).toBe(22);
+    expect(new Set(snapshots.map((step) => step.topic)).size).toBe(21);
     expect(lessons.en.length).toBe(snapshots.length);
     expect(lessons.ru.length).toBe(snapshots.length);
     expect(snapshots.length).toBeGreaterThan(22);

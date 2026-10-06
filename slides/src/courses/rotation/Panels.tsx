@@ -21,10 +21,12 @@ function Matrix({
   matrix,
   symbolic = false,
   size = 4,
+  argumentsList = false,
 }: {
   matrix: Matrix4;
   symbolic?: boolean;
   size?: 3 | 4;
+  argumentsList?: boolean;
 }) {
   return (
     <div
@@ -44,10 +46,33 @@ function Matrix({
               {symbolic && r < 3
                 ? `${"XYZO"[c]}.${"xyz"[r]}`
                 : fmt(matrix.elements[c * 4 + r])}
+              {argumentsList && (r !== size - 1 || c !== size - 1) && (
+                <span className="matrix-comma">,</span>
+              )}
             </span>
           ))}
         </div>
       ))}
+    </div>
+  );
+}
+function TransformCode({
+  matrix,
+  symbolic,
+}: {
+  matrix: Matrix4;
+  symbolic: boolean;
+}) {
+  return (
+    <div className="matrix-code">
+      <code>{"const matrixLocalToWorld =\n  new Matrix4().set("}</code>
+      <Matrix matrix={matrix} symbolic={symbolic} argumentsList />
+      <code>{");"}</code>
+      <code className="matrix-application">
+        {
+          "const worldPosition = positionLocal.clone()\n  .applyMatrix4(matrixLocalToWorld);"
+        }
+      </code>
     </div>
   );
 }
@@ -320,33 +345,26 @@ export function Numbers({
       {showMatrix && (
         <>
           <div className="panel-caption">
-            {s.panel === "q-matrix" ? "R(q)" : "localToWorld · Matrix4.set(…)"}
+            {s.panel === "q-matrix" ? "R(q)" : "matrixLocalToWorld"}
             <span>
               {ru ? "столбцы: X · Y · Z · O" : "columns: X · Y · Z · O"}
             </span>
           </div>
-          <Matrix matrix={m} />
-          {s.panel === "matrix" && (
-            <div className="basis-components">
-              <p className="panel-caption">
-                {ru ? "Компоненты базиса" : "Basis components"}
-              </p>
-              <Matrix matrix={m} symbolic />
-              <code className="code-block">{`const m = new THREE.Matrix4();\nm.set(\n  X.x, Y.x, Z.x, O.x,\n  X.y, Y.y, Z.y, O.y,\n  X.z, Y.z, Z.z, O.z,\n    0,   0,   0,   1\n);`}</code>
-              <small>
-                {ru
-                  ? "set: по строкам · elements: по столбцам"
-                  : "set: row-major · elements: column-major"}
-              </small>
-            </div>
-          )}
+          <TransformCode matrix={m} symbolic={s.panel === "matrix"} />
+          <small>
+            {ru
+              ? "set: по строкам · elements: по столбцам"
+              : "set: row-major · elements: column-major"}
+          </small>
         </>
       )}
       {s.panel === "compute" && (
         <>
-          <code className="code-block">
-            {"const world = local.clone()\n  .applyMatrix4(localToWorld);"}
-          </code>
+          <small>
+            {ru
+              ? "clone() сохраняет positionLocal: applyMatrix4 изменяет вектор, к которому применяется."
+              : "clone() preserves positionLocal: applyMatrix4 changes the vector it is called on."}
+          </small>
           <div className="expansion">
             <p>O = {vectorText(s.origin)}</p>
             {basis.map((v, i) => (
