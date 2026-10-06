@@ -15,6 +15,7 @@ function FramePanel({
   scene: RotationState;
 }) {
   const text = lessons[language][index];
+  const matrixFirst = scene.panel === "compute";
   return (
     <>
       <p className="eyebrow">
@@ -24,6 +25,7 @@ function FramePanel({
         </span>
       </p>
       <h1 aria-live="polite">{text.title}</h1>
+      {matrixFirst && <Numbers s={scene} language={language} />}
       <p className="lesson-body">{text.body}</p>
       <div className="takeaway">
         <span>{language === "ru" ? "ИДЕЯ" : "THE IDEA"}</span>
@@ -31,7 +33,7 @@ function FramePanel({
       </div>
       <p className="try-it">{text.hint}</p>
       <SnapshotParameters s={scene} language={language} index={index} />
-      <Numbers s={scene} language={language} />
+      {!matrixFirst && <Numbers s={scene} language={language} />}
     </>
   );
 }

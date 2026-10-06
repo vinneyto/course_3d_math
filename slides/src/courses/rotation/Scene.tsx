@@ -351,11 +351,13 @@ function Point({
   world,
   language,
   forceTooltip = false,
+  name = "P",
 }: {
   point: Triple;
   world: Triple;
   language: Language;
   forceTooltip?: boolean;
+  name?: string;
 }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -375,7 +377,7 @@ function Point({
         <ScreenLabel
           position={world}
           tooltip
-          text={`P\n${language === "ru" ? "лок." : "local"} ${vectorText(point)}\n${language === "ru" ? "мир" : "world"} ${vectorText(world)}`}
+          text={`${name}\n${language === "ru" ? "лок." : "local"} ${vectorText(point)}\n${language === "ru" ? "мир" : "world"} ${vectorText(world)}`}
         />
       </Fade>
     </group>
@@ -740,6 +742,17 @@ function World({
             language={language}
             forceTooltip={s.pointTooltip}
           />
+          <Fade opacity={weights.fixedOrigin}>
+            <Point
+              point={[0, 0, 0]}
+              world={s.origin}
+              language={language}
+              name="P₀"
+            />
+            <Label position={[s.origin[0], s.origin[1] + 0.3, s.origin[2]]}>
+              P₀
+            </Label>
+          </Fade>
           <Fade opacity={weights.vector}>
             <Arrow from={s.origin} to={tuple(world)} color="#fff1a0" />
           </Fade>
@@ -853,7 +866,16 @@ function World({
           <Fade opacity={weights.gimbalReference}>
             <SavedXAxis s={s} />
           </Fade>
-          <Fade opacity={weights.gimbalAlignment}>
+          <Fade
+            opacity={
+              weights.gimbalAlignment *
+              Number(
+                new Vector3(0, 0, 1)
+                  .applyQuaternion(q)
+                  .distanceTo(new Vector3(...s.gimbalReferenceX)) < 0.001,
+              )
+            }
+          >
             <Label position={[0, 2.9, 0]} color={colors[2]}>
               Z = X₀ = (1, 0, 0)
             </Label>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Vector3 } from "three";
+import { Matrix4, Vector3 } from "three";
 import { gimbalPass } from "./gimbal-story";
 import { snapshots, sequenceKey, sequenceFor } from "./snapshots";
 import { lessons } from "./content";
@@ -15,12 +15,58 @@ import { eulerQuaternion, interpolation } from "./math";
 
 const scene = (id: string) => snapshots.find((step) => step.id === id)!.scene;
 describe("authored manual snapshots", () => {
+  it("accounts for every original step once and shares one transform across merged representations", () => {
+    expect(
+      snapshots.flatMap((step) => [...step.sourceSteps]).sort((a, b) => a - b),
+    ).toEqual(Array.from({ length: 104 }, (_, i) => i + 1));
+    for (const id of [
+      "basis-0",
+      "basis-90",
+      "basis-180",
+      "basis-reset",
+      "basis-45",
+    ]) {
+      const s = scene(id);
+      expect(s.point).toEqual([2, 1, 1]);
+      expect(s.angles.slice(1)).toEqual([0, 0]);
+      expect(s.panel).toBe("compute");
+      const m = new Matrix4().compose(
+        new Vector3(...s.origin),
+        orientation(s),
+        new Vector3(1, 1, 1),
+      );
+      expect(
+        new Vector3(...s.point).applyMatrix4(m).distanceTo(worldPoint(s)),
+      ).toBeLessThan(1e-12);
+    }
+    expect(visibility(scene("model-vertices")).wireframe).toBe(1);
+    expect(visibility(scene("model-vertices")).vertices).toBe(1);
+    for (const id of ["conditions-0", "conditions-2", "conditions-3"])
+      expect(scene(id).angles).toEqual(scene("model-vertices").angles);
+    expect(gimbalPass).toHaveLength(6);
+  });
+  it("keeps both origin and axis points fixed through the combined turn, then moves only the off-axis point", () => {
+    const start = scene("axis-point-0"),
+      end = scene("axis-point-135");
+    for (const t of [0, 0.25, 0.5, 0.75, 1]) {
+      const s = blendScene(start, end, t);
+      expect(worldPoint(s).distanceTo(new Vector3(5, 1, 0))).toBeLessThan(
+        1e-12,
+      );
+      expect(s.origin).toEqual([3, 1, 0]);
+      expect((s.visual?.visibility ?? visibility(s)).fixedOrigin).toBe(1);
+    }
+    expect(
+      orientation(end).angleTo(orientation(scene("local-recap-offset"))),
+    ).toBeLessThan(1e-7);
+    expect(scene("local-recap-offset").point).toEqual([2, 1, 1]);
+  });
   it("covers every topic in both languages with immutable, unique destinations", () => {
     expect(new Set(snapshots.map((step) => step.id)).size).toBe(
       snapshots.length,
     );
-    expect(new Set(snapshots.map((step) => step.topic)).size).toBe(19);
-    expect(snapshots).toHaveLength(104);
+    expect(new Set(snapshots.map((step) => step.topic)).size).toBe(17);
+    expect(snapshots).toHaveLength(58);
     expect(snapshots[0].id).toBe("local-z-0");
     expect(
       snapshots.some(
@@ -38,7 +84,7 @@ describe("authored manual snapshots", () => {
   });
   it("starts the off-axis orbit at the previous 135° position and ends at the displayed point", () => {
     const start = scene("local-recap-offset");
-    const target = scene("local-recap-40");
+    const target = scene("local-recap-80");
     const reference = worldPoint(start);
     expect(visibility(start).arc).toBe(0);
     for (const frame of [
@@ -69,11 +115,11 @@ describe("authored manual snapshots", () => {
     ).toBeLessThan(1e-12);
   });
   it("uses timeline boundaries for topic labels and introduces gimbal lock before the demonstration", () => {
-    expect(new Set(snapshots.map(sequenceKey)).size).toBe(21);
+    expect(new Set(snapshots.map(sequenceKey)).size).toBe(19);
     for (const language of ["en", "ru"] as const) {
       expect(
         new Set(lessons[language].map((lesson) => lesson.topicTitle)).size,
-      ).toBe(21);
+      ).toBe(19);
       snapshots.forEach((step, index) => {
         const lesson = lessons[language][index];
         expect(lesson.navigationTitle).toBe(
@@ -100,16 +146,16 @@ describe("authored manual snapshots", () => {
     expect(lessons.en[intro].body).toContain("gimbal lock");
     expect(lessons.ru[intro].body).toContain("гимбал лок");
   });
-  it("changes the representation without changing Object3D orientation", () => {
+  it("shows consistent Object3D representations and the common world-coordinate example", () => {
     expect(
       orientation(scene("object-euler")).angleTo(
-        orientation(scene("object-quaternion")),
+        eulerQuaternion(scene("object-euler").angles),
       ),
     ).toBeLessThan(1e-7);
-    worldPoint(scene("compute-90"))
+    worldPoint(scene("basis-90"))
       .toArray()
       .forEach((value, index) => {
-        expect(value).toBeCloseTo([2, 3, 0][index], 10);
+        expect(value).toBeCloseTo([5, 0, 1][index], 10);
       });
   });
   it("shows separate X/Z turns and compensation throughout simultaneous changes", () => {
@@ -122,8 +168,8 @@ describe("authored manual snapshots", () => {
       1e-7,
     );
     for (const [from, to] of [
-      ["gimbal-cancel-ready", "gimbal-cancel90"],
-      ["gimbal-cancel90", "gimbal-cancel-ready"],
+      ["gimbal-equivalent", "gimbal-cancel90"],
+      ["gimbal-cancel90", "gimbal-equivalent"],
     ]) {
       for (const t of [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1]) {
         const frame = blendScene(scene(from), scene(to), t);
@@ -139,16 +185,16 @@ describe("authored manual snapshots", () => {
       }
     }
     const interrupted = blendScene(
-      scene("gimbal-cancel-ready"),
+      scene("gimbal-equivalent"),
       scene("gimbal-cancel90"),
       0.4,
     );
-    const reversed = blendScene(interrupted, scene("gimbal-cancel45"), 0.5);
+    const reversed = blendScene(interrupted, scene("gimbal-equivalent"), 0.5);
     expect(base.angleTo(modelOrientation(reversed))).toBeLessThan(1e-7);
   });
   it("remembers the original X while the current Z aligns with it after the Y turn", () => {
     for (const prefix of ["gimbal-", "gimbal-rings-"]) {
-      const remembered = scene(`${prefix}remember-x`).gimbalReferenceX;
+      const remembered = scene(`${prefix}start`).gimbalReferenceX;
       expect(remembered).toEqual([1, 0, 0]);
       expect(Object.isFrozen(remembered)).toBe(true);
       const turned = scene(`${prefix}y90`),
@@ -210,7 +256,7 @@ describe("authored manual snapshots", () => {
       orientation(middle).angleTo(eulerQuaternion(middle.visual!.gimbalAngles)),
     ).toBeLessThan(1e-7);
     const compound = blendScene(
-      scene("slerp-compound-0.25"),
+      scene("slerp-compound-0"),
       scene("slerp-compound-0.5"),
       0.5,
     );
@@ -221,7 +267,7 @@ describe("authored manual snapshots", () => {
   it("retargets an interrupted entrance without snapping onto the new example's path", () => {
     for (const [first, next] of [
       ["gimbal-y90", "gimbal-x30"],
-      ["slerp-compound-0.25", "slerp-compound-0.5"],
+      ["slerp-compound-0", "slerp-compound-0.5"],
     ]) {
       const visible = blendScene(scene("cube-30"), scene(first), 0.4);
       const retargeted = blendScene(visible, scene(next), 0);

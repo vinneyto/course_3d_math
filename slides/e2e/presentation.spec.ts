@@ -73,13 +73,13 @@ test("manual catalogue and all atomic snapshots fit desktop and mobile", async (
       ),
     ).toBe(true);
   }
-  await go(page, "basis-symbolic");
+  await go(page, "basis-0");
   const matrixCode = pane(page).locator(".matrix-code");
   await expect(matrixCode.locator(":scope > code").first()).toHaveText(
     "const matrixLocalToWorld =\n  new Matrix4().set(",
   );
   await expect(matrixCode.getByRole("row").first()).toHaveText(
-    "X.x,Y.x,Z.x,T.x,",
+    "1.00,0.00,0.00,3.00,",
   );
   await expect(pane(page).locator(".snapshot-values dt")).toContainText([
     "Translation T",
@@ -95,6 +95,11 @@ test("manual catalogue and all atomic snapshots fit desktop and mobile", async (
   await expect(matrixCode.getByRole("row").nth(2)).toHaveText(
     "0.00,1.00,0.00,0.00,",
   );
+  if (test.info().project.name === "desktop") {
+    const table = (await matrixCode.getByRole("table").boundingBox())!;
+    const scene = (await page.locator("canvas").boundingBox())!;
+    expect(table.y + table.height).toBeLessThan(scene.y + scene.height);
+  }
   await page.evaluate(() => scrollTo(0, 0));
   await page.screenshot({
     path: `test-results/${test.info().project.name}-basis-matrix.png`,
@@ -108,9 +113,9 @@ test("manual catalogue and all atomic snapshots fit desktop and mobile", async (
   await expect(matrixCode.getByRole("row").nth(1)).toHaveText(
     "0.00,1.00,0.00,1.00,",
   );
-  await go(page, "compute-90");
+  await go(page, "basis-90");
   await expect(pane(page).locator(".readouts")).toContainText(
-    "(2.00, 3.00, 0.00)",
+    "(5.00, 0.00, 1.00)",
   );
   await expect(
     page.getByRole("table", { name: "Matrix4.set row order" }),
@@ -120,16 +125,16 @@ test("manual catalogue and all atomic snapshots fit desktop and mobile", async (
     path: `test-results/${test.info().project.name}-matrix.png`,
     fullPage: true,
   });
-  await go(page, "gimbal-cancel45");
+  await go(page, "gimbal-cancel90");
   await expect(pane(page).locator(".lock")).toContainText("coincide");
   await page.getByRole("button", { name: "Change language" }).click();
   await expect(pane(page).locator("h1")).toHaveText(
-    snapshots.find((step) => step.id === "gimbal-cancel45")!.caption!.ru,
+    snapshots.find((step) => step.id === "gimbal-cancel90")!.caption!.ru,
   );
   await expect(pane(page).locator(".stage-timeline")).toHaveAttribute(
     "data-timeline-position",
     String(
-      snapshots.find((step) => step.id === "gimbal-cancel45")!.scene.timeline!
+      snapshots.find((step) => step.id === "gimbal-cancel90")!.scene.timeline!
         .position,
     ),
   );
@@ -148,15 +153,15 @@ test("sidebar is read-only and revisiting a snapshot restores exactly its author
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/presentations/rotation");
-  await go(page, "compute-90");
+  await go(page, "basis-90");
   const expected = await pane(page).innerText();
-  await go(page, "quaternion-75");
+  await go(page, "q-matrix-75");
   await expect(
     pane(page).getByRole("meter", { name: "θ", exact: true }),
   ).toHaveAttribute("aria-valuenow", "75");
   await go(page, "summary");
   await expect(page.getByRole("link", { name: /Finish/ })).toBeVisible();
-  await go(page, "compute-90");
+  await go(page, "basis-90");
   await expect(pane(page)).toHaveText(expected, { useInnerText: true });
   await expect(
     page.locator(
@@ -164,7 +169,7 @@ test("sidebar is read-only and revisiting a snapshot restores exactly its author
     ),
   ).toHaveCount(0);
   await expect(page.getByRole("slider")).toHaveCount(0);
-  await go(page, "gimbal-cancel45");
+  await go(page, "gimbal-cancel90");
   const frozen = await pane(page).innerText();
   await pane(page).getByRole("img", { name: "x angle over time" }).click();
   // Charts are observations, never a separate way to seek lesson time.
@@ -173,12 +178,15 @@ test("sidebar is read-only and revisiting a snapshot restores exactly its author
   await expect(pane(page).locator(".stage-timeline")).toHaveAttribute(
     "data-timeline-position",
     String(
-      snapshots.find((step) => step.id === "gimbal-cancel45")!.scene.timeline!
+      snapshots.find((step) => step.id === "gimbal-cancel90")!.scene.timeline!
         .position,
     ),
   );
   await go(page, "axis-point-135");
-  const localPosition = pane(page).locator(".readouts span:first-child b");
+  const localPosition = pane(page)
+    .locator(".readouts")
+    .first()
+    .locator("span:first-child b");
   const xAngle = pane(page).getByRole("meter", {
     name: "x angle",
     exact: true,
@@ -199,10 +207,10 @@ test("sidebar is read-only and revisiting a snapshot restores exactly its author
   await page.getByRole("button", { name: /^Next/ }).click();
   await expect(page.locator("[data-snapshot]")).toHaveAttribute(
     "data-snapshot",
-    "local-recap-40",
+    "local-recap-80",
   );
   await expect(localPosition).toHaveText("(2.00, 1.00, 1.00)");
-  await expect(xAngle).toHaveAttribute("aria-valuenow", "40");
+  await expect(xAngle).toHaveAttribute("aria-valuenow", "80");
   await page.screenshot({
     path: `test-results/${test.info().project.name}-orbit-from-135.png`,
     fullPage: true,
@@ -242,7 +250,7 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
       if (
         document
           .querySelector("[data-snapshot]")
-          ?.getAttribute("data-snapshot") !== "local-z-15"
+          ?.getAttribute("data-snapshot") !== "local-z-45"
       )
         return;
       const active = document.querySelector(".sidebar-active")!;
@@ -284,7 +292,7 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
   expect(sample.position).toBeGreaterThan(0);
   expect(sample.position).toBeLessThan(0.5);
   expect(sample.world).not.toBe("(2.00, 1.00, 0.00)");
-  expect(sample.world).not.toBe("(1.67, 1.48, 0.00)");
+  expect(sample.world).not.toBe("(0.71, 2.12, 0.00)");
   const timeline = pane(page).locator(".stage-timeline");
   await page.getByRole("button", { name: /Previous/ }).click();
   await expect(page.locator(".player-main")).toHaveAttribute(
@@ -295,13 +303,13 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
   for (const id of [
     "local-z-45",
     "origin-1",
-    "basis-30",
+    "basis-45",
     "cube-30",
-    "model-1",
-    "model-2",
-    "gimbal-cancel45",
+    "model-vertices",
+    "conditions-0",
+    "gimbal-cancel90",
     "boundary-0.5",
-    "quaternion-75",
+    "q-matrix-75",
     "slerp-compound-0.5",
     "object-parent",
     "summary",
@@ -313,7 +321,7 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
     );
     await expect(page.locator(".scene-loading")).toHaveCount(0);
   }
-  await go(page, "quaternion-75", false);
+  await go(page, "q-matrix-75", false);
   await page.locator(".back-link").click();
   await page.getByRole("link", { name: /Rotation in 3D/ }).click();
   await expect(page.locator("[data-snapshot]")).toHaveAttribute(
@@ -338,8 +346,8 @@ test("camera and hover inspect a frame without changing its mathematical values"
     .locator(".point-tooltip")
     .filter({ hasText: /^P/ })
     .first();
-  // The point's coordinates remain visible without hover on the first six steps.
-  for (const step of snapshots.slice(0, 6)) {
+  // The point's coordinates remain visible without hover on the initial point/rotation-centre steps.
+  for (const step of snapshots.filter((step) => step.scene.pointTooltip)) {
     await go(page, step.id);
     await expect(pointTooltip).toBeVisible();
     await expect(pointTooltip).toContainText("local (2.00, 1.00, 0.00)");
@@ -347,7 +355,7 @@ test("camera and hover inspect a frame without changing its mathematical values"
       await pane(page).locator(".readouts span:nth-child(2) b").innerText(),
     );
   }
-  await go(page, "basis-symbolic");
+  await go(page, "basis-0");
   await expect(pointTooltip).not.toBeVisible();
   // Later steps still use hover to inspect the point.
   await expect(pointTooltip).toHaveAttribute("data-anchor-x", /[0-9]/);
@@ -418,7 +426,7 @@ test("changing timeline groups resets sidebar scroll while steps within a group 
   expect(await offset()).toBeGreaterThan(50);
   await go(page, "basis-90");
   expect(await offset()).toBeCloseTo(80, 0);
-  await go(page, "compute-0");
+  await go(page, "axis-point-0");
   expect(await offset()).toBeCloseTo(0, 0);
   // The two gimbal passes are different timelines despite sharing a topic.
   await go(page, "gimbal-cancel90");
@@ -442,7 +450,7 @@ test("keyboard navigation and graphics failure keep the snapshot manual usable",
   await page.keyboard.press("ArrowRight");
   await expect(page.locator("[data-snapshot]")).toHaveAttribute(
     "data-snapshot",
-    "local-z-15",
+    "local-z-45",
   );
   await page.locator("canvas").evaluate((canvas) => {
     const loss = (canvas as HTMLCanvasElement)
@@ -457,7 +465,7 @@ test("keyboard navigation and graphics failure keep the snapshot manual usable",
   await page.getByRole("button", { name: /^Next/ }).click();
   await expect(page.locator("[data-snapshot]")).toHaveAttribute(
     "data-snapshot",
-    "local-z-30",
+    "origin-1",
   );
 });
 
@@ -493,20 +501,22 @@ test("operation timelines explain stages without changing the selected snapshot"
     path: `test-results/${test.info().project.name}-gimbal-topic-start.png`,
     fullPage: true,
   });
-  await go(page, "gimbal-y45");
+  await go(page, "gimbal-x30");
   const timeline = pane(page).locator(".stage-timeline");
   await expect(timeline.locator("li")).toHaveCount(gimbalPass.length);
   const heading = await pane(page).locator("h1").innerText();
   await expect(timeline.locator(".stage-timeline-title")).toHaveText(
     `Gimbal lock: ${heading}`,
   );
-  const marker = timeline.locator('[data-timeline-stage="gimbal-align"]');
+  const marker = timeline.locator('[data-timeline-stage="gimbal-y90"]');
   await marker.hover();
   expect(await marker.evaluate((node) => getComputedStyle(node).cursor)).toBe(
     "default",
   );
   const tooltip = timeline.getByRole("tooltip");
-  await expect(tooltip).toContainText("The new Z coincides with the saved X");
+  await expect(tooltip).toContainText(
+    "Turn local Y by 90°: Z coincides with X₀",
+  );
   await expect(tooltip).toContainText("Gimbal lock:");
   await expect(tooltip).toContainText("Ry(90°)");
   const panelBounds = (await pane(page).boundingBox())!;
@@ -518,7 +528,7 @@ test("operation timelines explain stages without changing the selected snapshot"
   await marker.click();
   await expect(page.locator("[data-snapshot]")).toHaveAttribute(
     "data-snapshot",
-    "gimbal-y45",
+    "gimbal-x30",
   );
   await expect(pane(page).locator("h1")).toHaveText(heading);
   await marker.focus();
@@ -526,11 +536,11 @@ test("operation timelines explain stages without changing the selected snapshot"
   await timeline.screenshot({
     path: `test-results/${test.info().project.name}-timeline.png`,
   });
-  await go(page, "gimbal-z-ready");
+  await go(page, "gimbal-z-minus30");
   await expect(timeline).toHaveAttribute(
     "data-timeline-position",
     String(
-      snapshots.find((step) => step.id === "gimbal-z-ready")!.scene.timeline!
+      snapshots.find((step) => step.id === "gimbal-z-minus30")!.scene.timeline!
         .position,
     ),
   );
@@ -576,16 +586,15 @@ test("separate X/Z turns move the model but simultaneous compensation leaves the
     path: `test-results/${test.info().project.name}-yxz.png`,
     fullPage: true,
   });
-  await go(page, "gimbal-align");
+  await go(page, "gimbal-y90");
   await page.screenshot({
     path: `test-results/${test.info().project.name}-saved-axis.png`,
     fullPage: true,
   });
-  await go(page, "gimbal-remember-x");
+  await go(page, "gimbal-start");
   const beforeX = await sceneImage();
   await go(page, "gimbal-x30");
   expect(beforeX.equals(await sceneImage())).toBe(false);
-  await go(page, "gimbal-y45");
   await expect(pane(page).locator(".gimbal-basis-readouts")).toContainText(
     "X₀ = (1.00, 0.00, 0.00)",
   );
@@ -593,15 +602,12 @@ test("separate X/Z turns move the model but simultaneous compensation leaves the
   await expect(pane(page).locator(".gimbal-basis-readouts")).toContainText(
     "Z = (1.00, 0.00, 0.00)",
   );
-  await go(page, "gimbal-z-minus15");
+  await go(page, "gimbal-z-minus30");
   await expect(
     pane(page).getByRole("meter", { name: "z angle", exact: true }),
-  ).toHaveAttribute("aria-valuenow", "-15");
-  await go(page, "gimbal-z-minus30");
+  ).toHaveAttribute("aria-valuenow", "-30");
   await go(page, "gimbal-equivalent");
   const beforeCancel = await sceneImage();
-  await go(page, "gimbal-cancel-ready");
-  expect(beforeCancel.equals(await sceneImage())).toBe(true);
   const angleTrace = await page.evaluateHandle(() => {
     const trace = {
       changedWhileAnimating: false,
@@ -617,8 +623,8 @@ test("separate X/Z turns move the model but simultaneous compensation leaves the
         document
           .querySelector(".player-main")
           ?.getAttribute("data-transitioning") === "true" &&
-        angle > 30.01 &&
-        angle < 44.99;
+        angle > 0.01 &&
+        angle < 89.99;
     });
     observer.observe(document.querySelector(".player-main")!, {
       subtree: true,
@@ -626,7 +632,7 @@ test("separate X/Z turns move the model but simultaneous compensation leaves the
     });
     return trace;
   });
-  await go(page, "gimbal-cancel45");
+  await go(page, "gimbal-cancel90");
   expect(
     await angleTrace.evaluate((trace) => {
       trace.stop();
@@ -635,7 +641,6 @@ test("separate X/Z turns move the model but simultaneous compensation leaves the
   ).toBe(true);
   await angleTrace.dispose();
   expect(beforeCancel.equals(await sceneImage())).toBe(true);
-  await go(page, "gimbal-cancel90");
   await expect(
     pane(page).getByRole("meter", { name: "x angle", exact: true }),
   ).toHaveAttribute("aria-valuenow", "90");
@@ -660,7 +665,7 @@ test("separate X/Z turns move the model but simultaneous compensation leaves the
   await expect(pane(page).locator(".stage-timeline")).not.toContainText(
     "Start with an ordinary basis",
   );
-  await go(page, "gimbal-rings-align");
+  await go(page, "gimbal-rings-y90");
   await expect(pane(page).locator(".gimbal-basis-readouts")).toContainText(
     "Z = (1.00, 0.00, 0.00)",
   );

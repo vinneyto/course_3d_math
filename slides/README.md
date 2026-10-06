@@ -9,10 +9,10 @@ Run `npm run dev` from the monorepo root, then open http://localhost:3000.
 - `/presentations/rotation`: rotation manual in English and Russian.
 
 Existing workspace and route names remain stable. User-facing terminology is
-**interactive manual** and **step**. The rotation manual contains 104 atomic snapshots
-covering 21 topics that follow timeline boundaries. Each snapshot describes the
+**interactive manual** and **step**. The rotation manual contains 58 snapshots
+covering 19 topics that follow timeline boundaries. Each snapshot describes the
 complete scene and sidebar.
-The first six steps keep the point-coordinate tooltip visible without hover.
+The initial point and rotation-centre steps keep the point-coordinate tooltip visible without hover.
 Sidebar scroll resets on entering another timeline group and stays in place
 within a group; on mobile this applies to the document's lesson section.
 
@@ -65,10 +65,15 @@ in the root [AGENTS.md](../AGENTS.md).
 
 The manual begins with local-frame rotation and an offset origin, followed by the basis in
 colored Matrix4 columns, world coordinate calculation, fixed axis points, recap.
+Matrix frames put their coordinates and code before the explanatory text and
+parameter indicators, so the combined example stays near the heading.
 The matrix table sits inside a displayed `new Matrix4().set(...)` call, followed
-by `positionLocal.clone().applyMatrix4(matrixLocalToWorld)`. The combined basis
-and matrix sequence starts with symbolic columns, then 0°, 90° and 180° turns
-around X, a return to 0°, and 15°, 30° and 60° examples.
+by `positionLocal.clone().applyMatrix4(matrixLocalToWorld)`. The combined basis,
+matrix and world-position sequence uses the same point and X-axis rotation:
+0°, 90°, 180°, a return to 0°, then 45°. Colored column labels and coordinate
+expansions accompany each numeric matrix. Origin and axis points appear together.
+The complete [old-to-new step mapping](rotation-step-mapping.md) records all 104
+original steps, including unchanged destinations.
 Leaving the fixed-axis example first moves the point off X at an unchanged
 135° orientation, then turns the frame with fixed local coordinates. The orbit
 starts at this 135° reference and grows to the displayed point during the turn.
@@ -86,11 +91,11 @@ A transition step introduces Euler angle limitations in a sidebar table before
 gimbal lock. Navigation entries and timeline tooltips use `Topic: stage`; the
 sidebar and scene label show the current topic. Topics follow timeline boundaries.
 
-The gimbal lesson has two matching 13-step passes, with separate operation
+The gimbal lesson has two matching six-step passes, with separate operation
 timelines. First show an ordinary rotating basis, remember the original X₀ as a
-fixed dashed reference, turn X by +30°, then local Y through 45° to 90°.
+fixed dashed reference, turn X by +30°, then local Y by 90°.
 The new Z coincides with X₀ while current X and Z remain perpendicular.
-Z = −15° partially cancels the first turn; Z = −30° fully cancels it.
+Z = −30° fully cancels the first turn.
 Setting X/Z to zero demonstrates the exact equivalent Y-only orientation.
 Simultaneous X/Z changes then show the loss of independence, with no sectors
 when the model does not rotate. Repeat the same authored angles with rings
@@ -100,9 +105,11 @@ authored path and highlight simultaneous cancellation in orange. Sector and
 ring geometry remain mounted. Graphs observe course time without seeking.
 
 Interpolation snapshots compare an actual vertex trajectory. Angular speeds are
-degrees per normalized time t. Single-axis and compound comparisons share their
-endpoint orientations. Object3D snapshots first show Euler input, then the same
-orientation as a quaternion, then add a parent rotation.
+degrees per normalized time t. The duplicate single-axis comparison is merged
+into the first Euler/SLERP path demonstration; each comparison now has start,
+midpoint and endpoint snapshots. Quaternion values and their matrix appear
+together. Object3D shows rotation and quaternion together, then adds a parent
+rotation.
 
 The authoring scenario lives in [Google Docs](https://docs.google.com/document/d/1-fET7tLlbFPbg-6VB6uop51qskeiLZWIn274aTkDQFo/edit).
 

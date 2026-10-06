@@ -89,7 +89,10 @@ export function AngleCharts({
   const planePosition =
     gimbalPass.findIndex((step) => step.angles[1] === 90) /
     (gimbalPass.length - 1);
-  const cancelIndex = gimbalPass.findIndex((step) => step.view === "cancel");
+  const cancelIndex = Math.max(
+    0,
+    gimbalPass.findIndex((step) => step.view === "cancel") - 1,
+  );
   const cancelPosition = cancelIndex / (gimbalPass.length - 1);
   const graphPoints = (axis: number, start = 0) =>
     gimbalPass
@@ -249,6 +252,9 @@ export function SnapshotParameters({
                 surface: ru ? "поверхность" : "surface",
                 wireframe: ru ? "каркас" : "wireframe",
                 vertices: ru ? "вершины" : "vertices",
+                "wireframe-vertices": ru
+                  ? "каркас и вершины"
+                  : "wireframe and vertices",
               }[s.surface]
             : s.mode}
         </dd>
@@ -280,7 +286,7 @@ export function SnapshotParameters({
         {s.panel === "object" && (
           <>
             <dt>{ru ? "Представление" : "Representation"}</dt>
-            <dd>{s.input}</dd>
+            <dd>rotation ↔ quaternion</dd>
             <dt>{ru ? "Родитель" : "Parent"}</dt>
             <dd>{s.parent ? "Ry(35°)" : ru ? "нет" : "none"}</dd>
           </>
@@ -398,7 +404,19 @@ export function Numbers({
           </span>
         </div>
       )}
-      {s.panel === "basis" && (
+      {s.fixedPoints && (
+        <div className="readouts">
+          <span>
+            P₀ {ru ? "локальная" : "local"}
+            <b>(0.00, 0.00, 0.00)</b>
+          </span>
+          <span>
+            P₀ {ru ? "мировая" : "world"}
+            <b>{vectorText(s.origin)}</b>
+          </span>
+        </div>
+      )}
+      {(s.panel === "basis" || s.panel === "compute") && (
         <div className="formula">
           pworld = T + <i style={{ color: colors[0] }}>xX</i> +{" "}
           <i style={{ color: colors[1] }}>yY</i> +{" "}
@@ -413,6 +431,16 @@ export function Numbers({
               {ru ? "столбцы: X · Y · Z · T" : "columns: X · Y · Z · T"}
             </span>
           </div>
+          {s.panel === "compute" && (
+            <small className="matrix-column-key">
+              {colors.map((color, i) => (
+                <span
+                  key={i}
+                  style={{ color }}
+                >{`${"XYZT"[i]} = (${"XYZT"[i]}.x, ${"XYZT"[i]}.y, ${"XYZT"[i]}.z) `}</span>
+              ))}
+            </small>
+          )}
           <TransformCode matrix={m} symbolic={s.panel === "matrix"} />
           <small>
             {ru
@@ -445,9 +473,10 @@ export function Numbers({
             X₀ = {vectorText(s.gimbalReferenceX)}
           </p>
           <p style={{ color: colors[2] }}>Z = {vectorText(tuple(basis[2]))}</p>
-          {(s.gimbalView === "align" ||
-            s.gimbalView === "equivalent" ||
-            s.gimbalView === "cancel") && <p>Z₃ = X₀</p>}
+          {basis[2].distanceTo(new Vector3(...s.gimbalReferenceX)) < 0.001 &&
+            (s.gimbalView === "align" ||
+              s.gimbalView === "equivalent" ||
+              s.gimbalView === "cancel") && <p>Z₃ = X₀</p>}
           {(s.gimbalView === "equivalent" || s.gimbalView === "cancel") && (
             <p>
               Rx(30°) · Ry(90°) · Rz(−30°)

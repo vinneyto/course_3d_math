@@ -126,7 +126,7 @@ describe("operation timeline", () => {
       );
     }
     const before = scene("gimbal-z-minus30"),
-      after = scene("gimbal-cancel45");
+      after = scene("gimbal-cancel90");
     expect(orientation(after).angleTo(orientation(before))).toBeLessThan(1e-7);
     expect(after.timeline!.position).toBeGreaterThan(before.timeline!.position);
     const middle = blendScene(before, after, 0.5);

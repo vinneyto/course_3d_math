@@ -27,9 +27,11 @@
 - Treat this product as an interactive manual, not a conventional slide deck or
   a parameter playground. A step is a complete, deterministic snapshot of course
   progress: scene, explanation, sidebar layout, displayed parameters and values.
-- Prefer many atomic steps with a small meaningful delta over fewer steps with
-  editable controls. Author angle changes, geometry modes, comparison options,
-  composition stages and timeline samples as additional snapshots.
+- Keep independent operations as separate steps, especially successive Euler
+  rotations. Consolidate redundant intermediate angle samples and representations
+  of the same transform; display the basis, matrix and resulting coordinates
+  together. Scene transitions show the values between snapshots. Do not replace
+  authored steps with editable controls.
 - Course navigation is the only way to change lesson parameters. Do not add
   editable sliders, numeric inputs, toggles, model-selection clicks, point dragging,
   chart scrubbing, playback buttons or autonomous playback. Sidebar indicators may

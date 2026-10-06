@@ -48,7 +48,7 @@ const en: LessonText[] = [
     title: "A point on the rotation axis",
     body: "At the local origin, the point stays at T for any rotation with a fixed T. A nonzero point on the rotation axis also stays put. A point has no observable orientation of its own.",
     takeaway: "Rotation leaves points on its axis fixed.",
-    hint: "Advance to compare the origin and a point on the axis.",
+    hint: "Watch both points as the shared frame turns.",
   },
   {
     title: "Rotation through a local frame",
@@ -66,7 +66,7 @@ const en: LessonText[] = [
     title: "The same rule, many more vertices",
     body: "A torus knot is just a more complex collection of vertices. Each gets the same transform. The renderer computes transformed positions without rewriting the original geometry.",
     takeaway: "One common rotation makes a whole model turn.",
-    hint: "Advance to inspect the surface, wireframe and vertices.",
+    hint: "Compare the surface with its edges and vertices shown together.",
   },
   {
     title: "Nine numbers, with constraints",
@@ -108,9 +108,9 @@ const en: LessonText[] = [
   },
   {
     title: "Axis–angle becomes a quaternion",
-    body: "A unit quaternion has four components (x,y,z,w). It encodes an axis a and an angle θ using the half-angle: the axis and angle are not stored directly.",
+    body: "A unit quaternion has four components (x,y,z,w). It encodes a normalized axis a and angle θ using the half-angle; they are not stored directly. Converting it to a rotation matrix gives the same rotated X, Y and Z basis. A quaternion can also rotate a vector directly.",
     takeaway: "qxyz = a sin(θ/2), qw = cos(θ/2)",
-    hint: "Advance to see the angle encoded in four components.",
+    hint: "Compare the four quaternion components with the rotated matrix columns.",
   },
   {
     title: "Quaternion to rotation matrix",
@@ -123,13 +123,13 @@ const en: LessonText[] = [
     title: "A smooth path with SLERP",
     body: "Spherical interpolation follows a shortest orientation path. With linear time, it has constant angular speed. At exactly 180° the shortest path is ambiguous; intentional full turns need extra keys or a specified path.",
     takeaway: "Use quaternion SLERP between orientations.",
-    hint: "Advance through the single-axis and compound examples.",
+    hint: "Compare the compound paths; the earlier angle-boundary topic shows the single-axis case.",
   },
   {
     title: "Inside Object3D",
     body: "rotation (Euler) and quaternion are synchronized views of the same local orientation. matrix combines local position, orientation and scale; matrixWorld also includes the parents. Update the matrices before reading them manually.",
     takeaway: "Input angles → quaternion → transform matrix → world vertices.",
-    hint: "Advance from Euler to quaternion and then to a rotated parent.",
+    hint: "Compare the synchronized rotation and quaternion, then add a rotated parent.",
   },
   {
     title: "From parameters to positions",
@@ -180,7 +180,7 @@ const ru: LessonText[] = [
     title: "Точка на оси вращения",
     body: "В локальном нуле точка остаётся в T при любом повороте с фиксированным T. Ненулевая точка на оси тоже неподвижна. У отдельной точки нет наблюдаемой собственной ориентации.",
     takeaway: "Вращение сохраняет положение точек на оси.",
-    hint: "Пройдите дальше, чтобы сравнить начало и точку на оси.",
+    hint: "Наблюдайте за обеими точками во время поворота общей системы.",
   },
   {
     title: "Вращение через локальную систему",
@@ -198,7 +198,7 @@ const ru: LessonText[] = [
     title: "То же правило, больше вершин",
     body: "Тороидальный узел — более сложный набор вершин. Каждая получает одно преобразование. Рендерер вычисляет положения без перезаписи исходной геометрии.",
     takeaway: "Общее вращение поворачивает всю модель.",
-    hint: "Пройдите шаги с поверхностью, каркасом и вершинами.",
+    hint: "Сравните поверхность с её рёбрами и вершинами, показанными вместе.",
   },
   {
     title: "Девять чисел с ограничениями",
@@ -239,9 +239,9 @@ const ru: LessonText[] = [
   },
   {
     title: "Ось–угол превращается в кватернион",
-    body: "Единичный кватернион имеет четыре компоненты (x,y,z,w). Он кодирует ось a и угол θ через половину угла: ось и угол не хранятся напрямую.",
+    body: "Единичный кватернион имеет четыре компоненты (x,y,z,w). Он кодирует нормированную ось a и угол θ через половину угла; они не хранятся напрямую. Преобразование в матрицу даёт тот же повёрнутый базис X, Y и Z. Кватернион может и непосредственно повернуть вектор.",
     takeaway: "qxyz = a sin(θ/2), qw = cos(θ/2)",
-    hint: "Перейдите дальше и наблюдайте кодирование угла четырьмя компонентами.",
+    hint: "Сравните четыре компоненты кватерниона с повёрнутыми столбцами матрицы.",
   },
   {
     title: "Из кватерниона в матрицу",
@@ -254,13 +254,13 @@ const ru: LessonText[] = [
     title: "Плавный путь через SLERP",
     body: "Сферическая интерполяция идёт по кратчайшему пути ориентации с постоянной угловой скоростью при линейном времени. При ровно 180° путь неоднозначен. Полные обороты требуют дополнительных ключей или траектории.",
     takeaway: "Между ориентациями используем quaternion SLERP.",
-    hint: "Пройдите одноосевой и составной примеры.",
+    hint: "Сравните составные траектории; одноосевой случай показан ранее у границы угла.",
   },
   {
     title: "Внутри Object3D",
     body: "rotation (Euler) и quaternion синхронизированы и задают одну локальную ориентацию. matrix объединяет положение, ориентацию и масштаб; matrixWorld учитывает родителей. Перед ручным чтением обновляем матрицы.",
     takeaway: "Углы → кватернион → матрица → мировые вершины.",
-    hint: "Пройдите от Euler к кватерниону, затем к повёрнутому родителю.",
+    hint: "Сравните синхронизированные rotation и quaternion, затем добавьте повёрнутого родителя.",
   },
   {
     title: "От параметров к положениям",
@@ -273,7 +273,10 @@ export const topics = { en, ru };
 const sequenceTitles: Record<string, { en: string; ru: string }> = {
   "topic-2": { en: "Local rotation", ru: "Локальное вращение" },
   "topic-3": { en: "Rotation centre", ru: "Центр вращения" },
-  "topic-4": { en: "Basis and matrix", ru: "Базис и матрица" },
+  "topic-4": {
+    en: "Basis, matrix and world position",
+    ru: "Базис, матрица и мировая координата",
+  },
   "topic-5": { en: "World position", ru: "Мировая координата" },
   "topic-6": { en: "Fixed points", ru: "Неподвижные точки" },
   "topic-7": { en: "Off-axis point", ru: "Точка вне оси" },
@@ -289,8 +292,8 @@ const sequenceTitles: Record<string, { en: string; ru: string }> = {
   },
   "gimbal-basis": { en: "Gimbal lock", ru: "Гимбал лок" },
   "gimbal-rings": { en: "Gimbal lock with rings", ru: "Гимбал лок с кольцами" },
-  "topic-15": { en: "Angle interpolation", ru: "Интерполяция углов" },
-  "topic-16": { en: "Quaternion", ru: "Кватернион" },
+  "topic-15": { en: "Euler and SLERP paths", ru: "Траектории Эйлера и SLERP" },
+  "topic-16": { en: "Quaternion and matrix", ru: "Кватернион и матрица" },
   "topic-17": { en: "Quaternion matrix", ru: "Матрица кватерниона" },
   "topic-18": { en: "SLERP", ru: "SLERP" },
   "topic-19": { en: "Object3D", ru: "Object3D" },

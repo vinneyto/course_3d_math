@@ -19,6 +19,7 @@ export function visibility(s: RotationState) {
   const model = s.mode !== "point";
   return {
     point: Number(!model),
+    fixedOrigin: Number(!model && s.fixedPoints),
     cube: Number(s.mode === "cube"),
     model: Number(s.mode === "model"),
     local: Number(s.local && !comparison),
@@ -30,7 +31,7 @@ export function visibility(s: RotationState) {
     gimbalAlignment: Number(s.panel === "gimbal" && s.gimbalView === "align"),
     gimbalRings: Number(s.panel === "gimbal" && s.gimbalRings),
     gimbalX: Number(s.gimbalView === "turn-x"),
-    gimbalY: Number(s.gimbalView === "turn-y"),
+    gimbalY: Number(s.gimbalView === "turn-y" || s.gimbalView === "align"),
     gimbalZ: Number(s.gimbalView === "turn-z"),
     comparison: Number(comparison),
     axis: Number(
@@ -43,11 +44,16 @@ export function visibility(s: RotationState) {
     cubePoint: Number(s.mode === "cube"),
     eulerSectors: Number(
       ["axis", "euler", "order"].includes(s.panel) ||
-        (s.panel === "gimbal" && s.gimbalView.startsWith("turn-")),
+        (s.panel === "gimbal" &&
+          (s.gimbalView.startsWith("turn-") || s.gimbalView === "align")),
     ),
     surface: Number(s.surface === "surface"),
-    wireframe: Number(s.surface === "wireframe"),
-    vertices: Number(s.surface === "vertices"),
+    wireframe: Number(
+      s.surface === "wireframe" || s.surface === "wireframe-vertices",
+    ),
+    vertices: Number(
+      s.surface === "vertices" || s.surface === "wireframe-vertices",
+    ),
   };
 }
 export function localPoint(s: RotationState): Triple {

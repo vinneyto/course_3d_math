@@ -43,11 +43,11 @@ The starter files deliberately contain `TODO` markers, so tests begin to pass as
 
 The three npm workspaces stay at their existing top-level paths:
 
-| Package | Purpose |
-| --- | --- |
-| `exercises` | TypeScript tasks, task tests, and lesson pages |
-| `sandbox` | Vite exercise viewer and shared Three.js visualization utilities |
-| `slides` | Next.js catalogue and interactive manuals using React Three Fiber, drei, and classic WebGL |
+| Package     | Purpose                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| `exercises` | TypeScript tasks, task tests, and lesson pages                                             |
+| `sandbox`   | Vite exercise viewer and shared Three.js visualization utilities                           |
+| `slides`    | Next.js catalogue and interactive manuals using React Three Fiber, drei, and classic WebGL |
 
 Install once at the repository root. Existing exercise commands above keep working.
 
@@ -58,7 +58,7 @@ npm run dev
 ```
 
 Open http://localhost:3000. The catalogue contains **Rotation in 3D**, an interactive
-manual with 104 atomic snapshots across 21 topics, English by default and a Russian
+manual with 58 snapshots across 19 topics, English by default and a Russian
 language switch. On desktop the scene and sidebar sit side by side; on mobile they
 stack with persistent step navigation. Each step supplies its scene, explanation,
 formulas and read-only parameter indicators. Only navigation changes lesson values.

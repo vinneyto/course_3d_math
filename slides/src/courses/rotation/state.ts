@@ -43,9 +43,10 @@ export interface RotationState {
   translation: boolean;
   zero: boolean;
   axisPoint: boolean;
+  fixedPoints: boolean;
   shear: number;
   compound: boolean;
-  surface: "surface" | "wireframe" | "vertices";
+  surface: "surface" | "wireframe" | "vertices" | "wireframe-vertices";
   input: "euler" | "quaternion";
   stage: number;
   parent: boolean;
@@ -95,6 +96,7 @@ export const initialState: RotationState = {
   translation: false,
   zero: false,
   axisPoint: false,
+  fixedPoints: false,
   shear: 0,
   compound: false,
   surface: "surface",
