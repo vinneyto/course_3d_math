@@ -9,8 +9,8 @@ Run `npm run dev` from the monorepo root, then open http://localhost:3000.
 - `/presentations/rotation`: rotation manual in English and Russian.
 
 Existing workspace and route names remain stable. User-facing terminology is
-**interactive manual** and **step**. The rotation manual contains 107 atomic snapshots
-covering 21 topics. Each snapshot describes the complete scene and sidebar.
+**interactive manual** and **step**. The rotation manual contains 103 atomic snapshots
+covering 19 topics. Each snapshot describes the complete scene and sidebar.
 
 ## React structure
 
@@ -59,18 +59,20 @@ in the root [AGENTS.md](../AGENTS.md).
 
 ## Rotation topics
 
-1–4: point, translation, local-frame rotation, offset origin. 5–8: the basis in
+The manual begins with local-frame rotation and an offset origin, followed by the basis in
 colored Matrix4 columns, world coordinate calculation, fixed axis points, recap.
 The matrix table sits inside a displayed `new Matrix4().set(...)` call, followed
 by `positionLocal.clone().applyMatrix4(matrixLocalToWorld)`. The combined basis
 and matrix sequence starts with symbolic columns, then 0°, 90° and 180° turns
 around X, a return to 0°, and 15°, 30° and 60° examples.
 Leaving the fixed-axis example first moves the point off X at an unchanged
-135° orientation, then turns the frame with fixed local coordinates. Euler
+135° orientation, then turns the frame with fixed local coordinates. The orbit
+starts at this 135° reference and grows to the displayed point during the turn.
+The translation column and local-origin labels use T throughout. Euler
 composition uses successive moving axes, described as nested parent frames.
-9–11: cube, torus knot, orthonormality versus deformation. 12–16: axis formulas,
-Euler composition, order comparison, gimbal lock, angle boundary interpolation.
-17–21: axis–angle quaternion, quaternion matrix, SLERP, Object3D, recap.
+Then: cube, torus knot, orthonormality versus deformation, axis formulas,
+Euler composition, order comparison, gimbal lock and angle boundary interpolation.
+Finally: axis–angle quaternion, quaternion matrix, SLERP, Object3D and recap.
 
 The order lesson reuses one model: reset after XYZ, then animate Y = 40°,
 X = 30° and Z = 25° in YXZ order. The resulting orientations differ despite

@@ -70,10 +70,6 @@ const objectAngle = deg(2 * Math.acos(rotation.w));
 
 /** Every destination is authored in full; no replay or previous-frame patches. */
 const authored: readonly RotationSnapshot[] = [
-  frame("point", 0, "point", {}),
-  ...[0, 0.5, 1].map((t) =>
-    frame(`translation-${t}`, 1, "point", { translation: true, t }),
-  ),
   ...[0, 15, 30, 45].map((z) =>
     frame(`local-z-${z}`, 2, "point", {
       local: true,
@@ -128,6 +124,7 @@ const authored: readonly RotationSnapshot[] = [
     ...point3D,
     panel: "basis",
     arc: false,
+    arcStartAngles: [135, 0, 0],
     angles: [135, 0, 0],
   }),
   ...[40, 80].map((x) =>
@@ -135,6 +132,7 @@ const authored: readonly RotationSnapshot[] = [
       ...point3D,
       panel: "basis",
       angles: [x, 0, 0],
+      arcStartAngles: [135, 0, 0],
     }),
   ),
   ...[0, 15, 30].map((z) =>

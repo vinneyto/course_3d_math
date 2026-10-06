@@ -53,24 +53,24 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
     stage(
       "Shift the centre of rotation",
       "Смещаем центр вращения",
-      "O = (1.5, 0.5, 0), Rz(45°)",
+      "T = (1.5, 0.5, 0), Rz(45°)",
     ),
     stage(
       "Rotate about a local origin",
       "Вращаем вокруг локального начала",
-      "O = (3, 1, 0), Rz(45°)",
+      "T = (3, 1, 0), Rz(45°)",
     ),
   ],
   4: [
     stage(
       "Place the basis in matrix columns",
       "Укладываем базис в столбцы матрицы",
-      "Matrix4.set(…); columns: X, Y, Z, O",
+      "Matrix4.set(…); columns: X, Y, Z, T",
     ),
     stage(
       "Inspect the three basis vectors",
       "Рассматриваем три вектора базиса",
-      "X, Y, Z; O = (3, 1, 0)",
+      "X, Y, Z; T = (3, 1, 0)",
     ),
     stage(
       "90°: move the ones to new rows",
@@ -103,12 +103,12 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
     stage(
       "Substitute the local coordinates",
       "Подставляем локальные координаты",
-      "O + 2X + Y; Rz(0°)",
+      "T + 2X + Y; Rz(0°)",
     ),
     stage(
       "Rotate the basis before the sum",
       "Поворачиваем базис перед сложением",
-      "O + 2X + Y; Rz(45°)",
+      "T + 2X + Y; Rz(45°)",
     ),
     stage(
       "Obtain the world position",

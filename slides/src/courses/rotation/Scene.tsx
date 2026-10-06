@@ -31,7 +31,6 @@ import { createSky } from "@course/sandbox/sky";
 import { createKnotGeometry, modelVertex } from "./geometry";
 import {
   axisQuaternion,
-  eulerQuaternion,
   interpolation,
   rad,
   tuple,
@@ -50,6 +49,7 @@ import type { Language } from "./content";
 import {
   comparisonOrientation,
   modelOrientation,
+  rotationPath,
   visibility,
   worldPoint,
 } from "./transition";
@@ -673,7 +673,6 @@ function World({
   const q = orientation(s),
     origin = new Vector3(...s.origin);
   const p: Triple = s.zero ? (s.axisPoint ? [2, 0, 0] : [0, 0, 0]) : s.point;
-  const localPoint = new Vector3(...p);
   const world = worldPoint(s);
   const comparison = s.panel === "interpolation";
   const offset: Triple = [
@@ -682,14 +681,7 @@ function World({
     s.origin[2],
   ];
   const modelQ = modelOrientation(s);
-  const path = Array.from({ length: 65 }, (_, i) => {
-    const u = i / 64;
-    const quat = eulerQuaternion(
-      s.angles.map((angle) => angle * u) as Triple,
-      s.order,
-    );
-    return tuple(localPoint.clone().applyQuaternion(quat).add(origin));
-  });
+  const path = rotationPath(s);
   const addends = [origin.clone()];
   for (let i = 0; i < 3; i++)
     addends.push(
@@ -787,7 +779,7 @@ function World({
             )}
           </Fade>
           <Label position={[s.origin[0], s.origin[1] - 0.3, s.origin[2]]}>
-            O {vectorText(s.origin)}
+            T {vectorText(s.origin)}
           </Label>
         </>
       </Fade>

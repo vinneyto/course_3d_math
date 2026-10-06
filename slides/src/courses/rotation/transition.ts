@@ -63,6 +63,23 @@ export function worldPoint(s: RotationState): Vector3 {
     .applyQuaternion(orientation(s))
     .add(new Vector3(...pointOrigin(s)));
 }
+
+/** A snapshot's orbit starts at its authored reference, not necessarily at 0°. */
+export function rotationPath(s: RotationState): Triple[] {
+  const start = eulerQuaternion(s.arcStartAngles, s.order);
+  const end = orientation(s);
+  const point = new Vector3(...localPoint(s));
+  const origin = new Vector3(...s.origin);
+  return Array.from(
+    { length: 65 },
+    (_, i) =>
+      point
+        .clone()
+        .applyQuaternion(start.clone().slerp(end, i / 64))
+        .add(origin)
+        .toArray() as Triple,
+  );
+}
 const triple = (a: Triple, b: Triple, t: number): Triple =>
   a.map((n, i) => n + (b[i] - n) * t) as Triple;
 

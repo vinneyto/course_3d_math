@@ -65,8 +65,11 @@ test("manual catalogue and all atomic snapshots fit desktop and mobile", async (
     "const matrixLocalToWorld =\n  new Matrix4().set(",
   );
   await expect(matrixCode.getByRole("row").first()).toHaveText(
-    "X.x,Y.x,Z.x,O.x,",
+    "X.x,Y.x,Z.x,T.x,",
   );
+  await expect(pane(page).locator(".snapshot-values dt")).toContainText([
+    "Translation T",
+  ]);
   await expect(matrixCode.locator(":scope > code").nth(1)).toHaveText(");");
   await expect(matrixCode.locator(".matrix-application")).toContainText(
     "positionLocal.clone()\n  .applyMatrix4(matrixLocalToWorld);",
@@ -121,7 +124,7 @@ test("manual catalogue and all atomic snapshots fit desktop and mobile", async (
     path: `test-results/${test.info().project.name}-gimbal.png`,
     fullPage: true,
   });
-  await go(page, "point");
+  await go(page, "local-z-0");
   await expect(page.getByRole("button", { name: /Назад/ })).toBeDisabled();
   expect(errors).toEqual([]);
 });
@@ -175,6 +178,10 @@ test("sidebar is read-only and revisiting a snapshot restores exactly its author
   );
   await expect(localPosition).toHaveText("(2.00, 1.00, 1.00)");
   await expect(xAngle).toHaveAttribute("aria-valuenow", "135");
+  await page.screenshot({
+    path: `test-results/${test.info().project.name}-orbit-start-135.png`,
+    fullPage: true,
+  });
   await page.getByRole("button", { name: /^Next/ }).click();
   await expect(page.locator("[data-snapshot]")).toHaveAttribute(
     "data-snapshot",
@@ -182,6 +189,10 @@ test("sidebar is read-only and revisiting a snapshot restores exactly its author
   );
   await expect(localPosition).toHaveText("(2.00, 1.00, 1.00)");
   await expect(xAngle).toHaveAttribute("aria-valuenow", "40");
+  await page.screenshot({
+    path: `test-results/${test.info().project.name}-orbit-from-135.png`,
+    fullPage: true,
+  });
 });
 
 test("scene animates with synchronized readouts and an immediate sidebar", async ({
@@ -194,7 +205,7 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
   const canvas = page.locator("canvas");
   await expect(canvas).toHaveAttribute("data-webgl-ready", "true");
   const original = await canvas.elementHandle();
-  await go(page, "translation-0");
+  await go(page, "local-z-0");
   // Observe whole React commits: slow mobile rendering can finish between two
   // Playwright reads, and formatted coordinates round before the endpoint.
   const sidebarTrace = await page.evaluateHandle(() => {
@@ -217,7 +228,7 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
       if (
         document
           .querySelector("[data-snapshot]")
-          ?.getAttribute("data-snapshot") !== "translation-0.5"
+          ?.getAttribute("data-snapshot") !== "local-z-15"
       )
         return;
       const active = document.querySelector(".sidebar-active")!;
@@ -259,7 +270,7 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
   expect(sample.position).toBeGreaterThan(0);
   expect(sample.position).toBeLessThan(0.5);
   expect(sample.world).not.toBe("(2.00, 1.00, 0.00)");
-  expect(sample.world).not.toBe("(2.50, 2.00, 0.00)");
+  expect(sample.world).not.toBe("(1.67, 1.48, 0.00)");
   const timeline = pane(page).locator(".stage-timeline");
   await page.getByRole("button", { name: /Previous/ }).click();
   await expect(page.locator(".player-main")).toHaveAttribute(
@@ -280,7 +291,7 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
     "slerp-compound-0.5",
     "object-parent",
     "summary",
-    "point",
+    "local-z-0",
   ]) {
     await go(page, id);
     expect(await canvas.evaluate((node, old) => node === old, original)).toBe(
@@ -293,7 +304,7 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
   await page.getByRole("link", { name: /Rotation in 3D/ }).click();
   await expect(page.locator("[data-snapshot]")).toHaveAttribute(
     "data-snapshot",
-    "point",
+    "local-z-0",
   );
   await expect(pane(page).locator(".readouts")).toContainText(
     "(2.00, 1.00, 0.00)",
@@ -344,7 +355,7 @@ test("camera and hover inspect a frame without changing its mathematical values"
   await expect(pane(page)).toHaveText(original, { useInnerText: true });
   await expect(page.locator("[data-snapshot]")).toHaveAttribute(
     "data-snapshot",
-    "point",
+    "local-z-0",
   );
 });
 
@@ -360,7 +371,7 @@ test("keyboard navigation and graphics failure keep the snapshot manual usable",
   await page.keyboard.press("ArrowRight");
   await expect(page.locator("[data-snapshot]")).toHaveAttribute(
     "data-snapshot",
-    "translation-0",
+    "local-z-15",
   );
   await page.locator("canvas").evaluate((canvas) => {
     const loss = (canvas as HTMLCanvasElement)
@@ -375,7 +386,7 @@ test("keyboard navigation and graphics failure keep the snapshot manual usable",
   await page.getByRole("button", { name: /^Next/ }).click();
   await expect(page.locator("[data-snapshot]")).toHaveAttribute(
     "data-snapshot",
-    "translation-0.5",
+    "local-z-30",
   );
 });
 

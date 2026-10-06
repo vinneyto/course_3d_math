@@ -41,10 +41,10 @@ function Matrix({
               role="cell"
               key={c}
               style={{ color: colors[c] }}
-              title={`${"XYZO"[c]}.${"xyz"[r] || "w"}`}
+              title={`${"XYZT"[c]}.${"xyz"[r] || "w"}`}
             >
               {symbolic && r < 3
-                ? `${"XYZO"[c]}.${"xyz"[r]}`
+                ? `${"XYZT"[c]}.${"xyz"[r]}`
                 : fmt(matrix.elements[c * 4 + r])}
               {argumentsList && (r !== size - 1 || c !== size - 1) && (
                 <span className="matrix-comma">,</span>
@@ -252,7 +252,7 @@ export function SnapshotParameters({
               }[s.surface]
             : s.mode}
         </dd>
-        <dt>{ru ? "Начало O" : "Origin O"}</dt>
+        <dt>{ru ? "Смещение T" : "Translation T"}</dt>
         <dd>{vectorText(s.origin)}</dd>
         {(s.panel === "euler" ||
           s.panel === "order" ||
@@ -373,7 +373,7 @@ export function Numbers({
       )}
       {s.panel === "basis" && (
         <div className="formula">
-          pworld = O + <i style={{ color: colors[0] }}>xX</i> +{" "}
+          pworld = T + <i style={{ color: colors[0] }}>xX</i> +{" "}
           <i style={{ color: colors[1] }}>yY</i> +{" "}
           <i style={{ color: colors[2] }}>zZ</i>
         </div>
@@ -383,7 +383,7 @@ export function Numbers({
           <div className="panel-caption">
             {s.panel === "q-matrix" ? "R(q)" : "matrixLocalToWorld"}
             <span>
-              {ru ? "столбцы: X · Y · Z · O" : "columns: X · Y · Z · O"}
+              {ru ? "столбцы: X · Y · Z · T" : "columns: X · Y · Z · T"}
             </span>
           </div>
           <TransformCode matrix={m} symbolic={s.panel === "matrix"} />
@@ -402,7 +402,7 @@ export function Numbers({
               : "clone() preserves positionLocal: applyMatrix4 changes the vector it is called on."}
           </small>
           <div className="expansion">
-            <p>O = {vectorText(s.origin)}</p>
+            <p>T = {vectorText(s.origin)}</p>
             {basis.map((v, i) => (
               <p key={i} style={{ color: colors[i] }}>
                 {p[i]}·{"XYZ"[i]} = {vectorText(tuple(v.multiplyScalar(p[i])))}

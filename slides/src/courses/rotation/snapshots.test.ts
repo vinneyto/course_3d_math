@@ -9,6 +9,7 @@ import {
   blendScene,
   modelOrientation,
   visibility,
+  rotationPath,
 } from "./transition";
 import { eulerQuaternion, interpolation } from "./math";
 
@@ -18,7 +19,14 @@ describe("authored manual snapshots", () => {
     expect(new Set(snapshots.map((step) => step.id)).size).toBe(
       snapshots.length,
     );
-    expect(new Set(snapshots.map((step) => step.topic)).size).toBe(21);
+    expect(new Set(snapshots.map((step) => step.topic)).size).toBe(19);
+    expect(snapshots).toHaveLength(103);
+    expect(snapshots[0].id).toBe("local-z-0");
+    expect(
+      snapshots.some(
+        (step) => step.id === "point" || step.id.startsWith("translation-"),
+      ),
+    ).toBe(false);
     expect(lessons.en.length).toBe(snapshots.length);
     expect(lessons.ru.length).toBe(snapshots.length);
     expect(snapshots.length).toBeGreaterThan(22);
@@ -27,6 +35,38 @@ describe("authored manual snapshots", () => {
       expect(Object.isFrozen(step.scene.angles)).toBe(true);
       expect(step.scene.visual).toBeUndefined();
     }
+  });
+  it("starts the off-axis orbit at the previous 135° position and ends at the displayed point", () => {
+    const start = scene("local-recap-offset");
+    const target = scene("local-recap-40");
+    const reference = worldPoint(start);
+    expect(visibility(start).arc).toBe(0);
+    for (const frame of [
+      start,
+      ...[0, 0.1, 0.5, 0.9, 1].map((t) => blendScene(start, target, t)),
+      blendScene(target, start, 0.4),
+      blendScene(blendScene(start, target, 0.4), start, 0.2),
+      scene("local-recap-80"),
+    ]) {
+      const path = rotationPath(frame);
+      expect(new Vector3(...path[0]).distanceTo(reference)).toBeLessThan(1e-12);
+      expect(
+        new Vector3(...path.at(-1)!).distanceTo(worldPoint(frame)),
+      ).toBeLessThan(1e-12);
+      for (const sample of path) {
+        // Fixed X component and radius in the plane perpendicular to X.
+        expect(sample[0]).toBeCloseTo(5, 12);
+        expect(Math.hypot(sample[1] - 1, sample[2])).toBeCloseTo(
+          Math.SQRT2,
+          12,
+        );
+      }
+    }
+    // At half of the first turn, the growing arc matches the model's path.
+    const middle = worldPoint(blendScene(start, target, 0.5));
+    expect(
+      new Vector3(...rotationPath(target)[32]).distanceTo(middle),
+    ).toBeLessThan(1e-12);
   });
   it("changes the representation without changing Object3D orientation", () => {
     expect(
