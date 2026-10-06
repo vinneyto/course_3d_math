@@ -145,9 +145,14 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
   ],
   7: [
     stage(
+      "Move the point off the axis without turning",
+      "Смещаем точку с оси без поворота",
+      "p: (2, 0, 0) → (2, 1, 1); Rx(135°) stays fixed",
+    ),
+    stage(
       "A turning frame moves its point",
       "Поворот системы перемещает её точку",
-      "Rx(40°)",
+      "p = (2, 1, 1); Rx: 135° → 40°",
     ),
     stage(
       "A new basis gives a new world position",

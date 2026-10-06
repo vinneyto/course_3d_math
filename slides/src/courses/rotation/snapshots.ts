@@ -121,6 +121,12 @@ const authored: readonly RotationSnapshot[] = [
       angles: [x, 0, 0],
     }),
   ),
+  frame("local-recap-offset", 7, "point", {
+    ...point3D,
+    panel: "basis",
+    arc: false,
+    angles: [135, 0, 0],
+  }),
   ...[40, 80].map((x) =>
     frame(`local-recap-${x}`, 7, "point", {
       ...point3D,

@@ -153,6 +153,28 @@ test("sidebar is read-only and revisiting a snapshot restores exactly its author
     "data-timeline-position",
     "0.3",
   );
+  await go(page, "axis-point-135");
+  const localPosition = pane(page).locator(".readouts span:first-child b");
+  const xAngle = pane(page).getByRole("meter", {
+    name: "x angle",
+    exact: true,
+  });
+  await expect(localPosition).toHaveText("(2.00, 0.00, 0.00)");
+  await expect(xAngle).toHaveAttribute("aria-valuenow", "135");
+  await page.getByRole("button", { name: /^Next/ }).click();
+  await expect(page.locator("[data-snapshot]")).toHaveAttribute(
+    "data-snapshot",
+    "local-recap-offset",
+  );
+  await expect(localPosition).toHaveText("(2.00, 1.00, 1.00)");
+  await expect(xAngle).toHaveAttribute("aria-valuenow", "135");
+  await page.getByRole("button", { name: /^Next/ }).click();
+  await expect(page.locator("[data-snapshot]")).toHaveAttribute(
+    "data-snapshot",
+    "local-recap-40",
+  );
+  await expect(localPosition).toHaveText("(2.00, 1.00, 1.00)");
+  await expect(xAngle).toHaveAttribute("aria-valuenow", "40");
 });
 
 test("scene animates with synchronized readouts and an immediate sidebar", async ({

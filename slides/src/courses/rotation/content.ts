@@ -52,9 +52,9 @@ const en: LessonText[] = [
   },
   {
     title: "Rotation through a local frame",
-    body: "We represent the rotation by turning a local frame while keeping the point’s local position fixed. This is a useful representation, not a requirement that every point has its own container.",
+    body: "First move the point off the X axis, from (2,0,0) to (2,1,1), keeping the frame at 135°. Only then turn the frame while keeping these local coordinates fixed. The off-axis point now moves around the axis.",
     takeaway: "Off-axis points trace circles around the rotation axis.",
-    hint: "Compare the local coordinates with the world position.",
+    hint: "First change only the point’s local coordinates; next change only the frame’s rotation.",
   },
   {
     title: "Eight points become a cube",
@@ -82,9 +82,9 @@ const en: LessonText[] = [
   },
   {
     title: "Three angles: Euler rotation",
-    body: "Three.js uses intrinsic rotations around successive local axes. For order XYZ and column vectors, R = Rx · Ry · Rz. A product applied directly to a vector acts from right to left; that is not the same wording as successive turns about moving axes.",
+    body: "Three.js uses rotations around successive local axes. For XYZ: turn around X, then the Y axis already turned by X, then the Z axis turned by both previous rotations. Think of nested frames: the frame produced by each rotation acts as the parent for the next.",
     takeaway: "Euler angles include an order and an axis convention.",
-    hint: "Advance one composition stage at a time; go back to reverse it.",
+    hint: "For XYZ, R = Rx · Ry · Rz. A matrix product applied to a column vector acts from right to left; the local-axis sequence above describes rotations of the frame.",
   },
   {
     title: "Order changes the result",
@@ -183,9 +183,9 @@ const ru: LessonText[] = [
   },
   {
     title: "Вращение через локальную систему",
-    body: "Представляем вращение через поворот локальной системы при постоянных локальных координатах точки. Это удобная модель, а не требование иметь отдельный контейнер для каждой точки.",
+    body: "Сначала смещаем точку с оси X: из (2,0,0) в (2,1,1), сохраняя поворот системы 135°. Только затем поворачиваем систему, оставляя эти локальные координаты постоянными. Теперь точка вне оси движется вокруг неё.",
     takeaway: "Точки вне оси движутся по окружностям вокруг оси.",
-    hint: "Сравните локальные координаты с мировым положением.",
+    hint: "На первом шаге меняются только локальные координаты точки, на следующем — только поворот системы.",
   },
   {
     title: "Восемь точек образуют куб",
@@ -213,9 +213,9 @@ const ru: LessonText[] = [
   },
   {
     title: "Три угла: вращение Эйлера",
-    body: "Three.js использует последовательные локальные оси. Для XYZ и векторов-столбцов R = Rx · Ry · Rz. При применении произведения к вектору правый множитель действует первым; это отличается от описания поворотов вокруг движущихся осей.",
+    body: "Three.js использует последовательные локальные оси. Для XYZ: поворот вокруг X, затем вокруг уже повёрнутой оси Y, затем вокруг оси Z, повёрнутой первыми двумя вращениями. Можно представить вложенные системы: результат каждого поворота служит родительской системой для следующего.",
     takeaway: "Углы Эйлера включают порядок и соглашение об осях.",
-    hint: "Проходите композицию по одному этапу; назад — для обратного движения.",
+    hint: "Для XYZ: R = Rx · Ry · Rz. На вектор-столбец матричное произведение действует справа налево; описанная выше последовательность относится к поворотам локальной системы.",
   },
   {
     title: "Порядок меняет результат",

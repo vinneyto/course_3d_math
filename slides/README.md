@@ -9,7 +9,7 @@ Run `npm run dev` from the monorepo root, then open http://localhost:3000.
 - `/presentations/rotation`: rotation manual in English and Russian.
 
 Existing workspace and route names remain stable. User-facing terminology is
-**interactive manual** and **step**. The rotation manual contains 88 atomic snapshots
+**interactive manual** and **step**. The rotation manual contains 89 atomic snapshots
 covering 21 topics. Each snapshot describes the complete scene and sidebar.
 
 ## React structure
@@ -65,6 +65,9 @@ The matrix table sits inside a displayed `new Matrix4().set(...)` call, followed
 by `positionLocal.clone().applyMatrix4(matrixLocalToWorld)`. The combined basis
 and matrix sequence starts with symbolic columns, then 0°, 90° and 180° turns
 around X, a return to 0°, and 15°, 30° and 60° examples.
+Leaving the fixed-axis example first moves the point off X at an unchanged
+135° orientation, then turns the frame with fixed local coordinates. Euler
+composition uses successive moving axes, described as nested parent frames.
 9–11: cube, torus knot, orthonormality versus deformation. 12–16: axis formulas,
 Euler composition, order comparison, gimbal lock, angle boundary interpolation.
 17–21: axis–angle quaternion, quaternion matrix, SLERP, Object3D, recap.
