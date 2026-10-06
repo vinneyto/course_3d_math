@@ -30,13 +30,6 @@ export function localToWorld(
     new Matrix4().compose(new Vector3(...origin), q, new Vector3(1, 1, 1)),
   );
 }
-export function gimbalAngles(t: number, locked: boolean): Triple {
-  // Approach the singularity, then demonstrate the cancelling x/z motion.
-  const middle = locked ? 90 : 80;
-  return t <= 0.5
-    ? [0, middle * t * 2, 0]
-    : [(t - 0.5) * 180, middle, -(t - 0.5) * 180];
-}
 export function interpolation(
   t: number,
   compound = false,

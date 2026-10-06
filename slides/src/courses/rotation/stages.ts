@@ -1,3 +1,4 @@
+import { gimbalStory } from "./gimbal-story";
 export type Localized = { en: string; ru: string };
 export interface ManualStage {
   name: Localized;
@@ -254,63 +255,29 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "R = Rx(30°) · Ry(40°) · Rz(25°)",
     ),
   ],
-  14: [
+  13: [
     stage(
-      "Start with three independent axes",
-      "Начинаем с трёх независимых осей",
-      "x = 0°, y = 0°, z = 0°",
+      "Reset the same model for YXZ",
+      "Возвращаем ту же модель к началу для YXZ",
+      "R = I; same target angles: x = 30°, y = 40°, z = 25°",
     ),
     stage(
-      "Turn Y toward the singularity",
-      "Поворачиваем Y к сингулярности",
-      "y: 0° → 45°; x = z = 0°",
+      "YXZ: first turn about Y",
+      "YXZ: сначала поворачиваем вокруг Y",
+      "R = Ry(40°)",
     ),
     stage(
-      "The first and third axes coincide",
-      "Первая и третья оси совпали",
-      "y = 90°; X₁ = Z₃",
+      "YXZ: then turn about the rotated X",
+      "YXZ: затем вокруг повёрнутой X",
+      "R = Ry(40°) · Rx(30°)",
     ),
     stage(
-      "Change x and z in opposite directions",
-      "Меняем x и z в противоположные стороны",
-      "x: 0° → 45°; z: 0° → −45°; x + z = 0°",
-    ),
-    stage(
-      "Angles change, orientation stays fixed",
-      "Углы меняются, ориентация сохраняется",
-      "x = 90°, y = 90°, z = −90°; x + z = 0°",
-    ),
-    stage(
-      "Move away from the singularity",
-      "Отходим от сингулярности",
-      "x = 0°, y = 80°, z = 0°",
-    ),
-    stage(
-      "The same changes now turn the model",
-      "Те же изменения теперь вращают модель",
-      "x = 45°, y = 80°, z = −45°",
-    ),
-    stage(
-      "The rotations no longer cancel",
-      "Повороты больше не компенсируются",
-      "x = 90°, y = 80°, z = −90°",
-    ),
-    stage(
-      "Return to coinciding axes",
-      "Возвращаем совпавшие оси",
-      "x = 0°, y = 90°, z = 0°",
-    ),
-    stage(
-      "Change x alone: the model turns",
-      "Меняем только x: модель вращается",
-      "x: 0° → 30°; y = 90°, z = 0°",
-    ),
-    stage(
-      "Change z: the orientation returns",
-      "Меняем z: ориентация возвращается",
-      "z: 0° → −30°; x + z = 0°",
+      "YXZ: add Z and compare the result",
+      "YXZ: добавляем Z и сравниваем результат",
+      "R = Ry(40°) · Rx(30°) · Rz(25°) ≠ Rx(30°) · Ry(40°) · Rz(25°)",
     ),
   ],
+  14: gimbalStory,
   15: [
     stage(
       "Start near the angle boundary",

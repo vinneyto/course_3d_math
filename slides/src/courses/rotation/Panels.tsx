@@ -1,12 +1,12 @@
 "use client";
 
+import { gimbalStory } from "./gimbal-story";
 import { worldPoint } from "./transition";
 import { Matrix4, Object3D, Vector3 } from "three";
 import {
   axisQuaternion,
   deg,
   fmt,
-  gimbalAngles,
   interpolation,
   tuple,
   vectorText,
@@ -83,16 +83,22 @@ export function AngleCharts({
   s: RotationState;
   language: Language;
 }) {
-  const angles =
-    s.visual?.gimbalAngles ??
-    (s.gimbalManual ? s.angles : gimbalAngles(s.t, s.locked));
+  const angles = displayedEulerAngles(s);
   const active = Math.abs(angles[1] - 90) < 0.001;
-  const sample = (t: number): Triple =>
-    s.gimbalManual
-      ? t <= 0.5
-        ? [60 * t, 90, 0]
-        : [30, 90, -60 * (t - 0.5)]
-      : gimbalAngles(t, s.locked);
+  const position = s.timeline?.position ?? s.t;
+  const planePosition =
+    gimbalStory.findIndex((step) => step.view === "planes") /
+    (gimbalStory.length - 1);
+  const cancelIndex = gimbalStory.findIndex((step) => step.view === "cancel");
+  const cancelPosition = cancelIndex / (gimbalStory.length - 1);
+  const graphPoints = (axis: number, start = 0) =>
+    gimbalStory
+      .slice(start)
+      .map(
+        (step, i) =>
+          `${((i + start) / (gimbalStory.length - 1)) * 260},${32 - (step.angles[axis] / 90) * 26}`,
+      )
+      .join(" ");
   return (
     <div className="angle-charts">
       <p className={active ? "lock active" : "lock"}>
@@ -115,36 +121,46 @@ export function AngleCharts({
             role="img"
             aria-label={`${"xyz"[axis]} angle over time`}
           >
-            <title>{`t = ${fmt(s.t)}, ${"xyz"[axis]} = ${fmt(angle)}°`}</title>
-            {s.locked && (
-              <rect
-                x={s.gimbalManual ? 0 : 130}
-                y="0"
-                width={s.gimbalManual ? 260 : 130}
-                height="64"
-                fill="#ffb966"
-                opacity="0.08"
-              />
-            )}
+            <title>{`t = ${fmt(position)}, ${"xyz"[axis]} = ${fmt(angle)}°`}</title>
+            <rect
+              x={planePosition * 260}
+              y="0"
+              width={(1 - planePosition) * 260}
+              height="64"
+              fill="#ffb966"
+              opacity="0.06"
+            />
+            <rect
+              x={cancelPosition * 260}
+              y="0"
+              width={(1 - cancelPosition) * 260}
+              height="64"
+              fill="#ffb966"
+              opacity="0.12"
+            />
             <path d="M0 32H260" stroke="#485972" strokeDasharray="3 3" />
             <polyline
-              points={Array.from(
-                { length: 81 },
-                (_, i) =>
-                  `${(i / 80) * 260},${32 - (sample(i / 80)[axis] / 90) * 26}`,
-              ).join(" ")}
+              points={graphPoints(axis)}
               fill="none"
               stroke={colors[axis]}
               strokeWidth="2"
             />
+            {axis !== 1 && (
+              <polyline
+                points={graphPoints(axis, cancelIndex)}
+                fill="none"
+                stroke="#ffb966"
+                strokeWidth="2.5"
+              />
+            )}
             <path
-              d="M130 0V64"
-              stroke={s.locked ? "#ffb966" : "#485972"}
+              d={`M${planePosition * 260} 0V64`}
+              stroke="#ffb966"
               strokeDasharray="3 3"
             />
-            <path d={`M${s.t * 260} 0V64`} stroke="#e7eef7" />
+            <path d={`M${position * 260} 0V64`} stroke="#e7eef7" />
             <circle
-              cx={s.t * 260}
+              cx={position * 260}
               cy={32 - (angle / 90) * 26}
               r="3"
               fill={colors[axis]}
@@ -153,10 +169,15 @@ export function AngleCharts({
         </div>
       ))}
       <div className="chart-times">
-        <span>0</span>
-        <span>y = {s.locked ? 90 : 80}°</span>
-        <span>1</span>
+        <span>{language === "ru" ? "Начало" : "Start"}</span>
+        <span>Y = 90°</span>
+        <span>X ↑ Z ↓</span>
       </div>
+      <p className="panel-caption">
+        {language === "ru"
+          ? "Оранжевый участок: X и Z меняются вместе, модель неподвижна."
+          : "Orange segment: X and Z change together, the model stays still."}
+      </p>
     </div>
   );
 }
@@ -235,6 +256,7 @@ export function SnapshotParameters({
         <dd>{vectorText(s.origin)}</dd>
         {(s.panel === "euler" ||
           s.panel === "order" ||
+          s.panel === "gimbal" ||
           s.panel === "object") && (
           <>
             <dt>Euler order</dt>
@@ -397,7 +419,7 @@ export function Numbers({
           </code>
         </>
       )}
-      {s.panel === "euler" && (
+      {(s.panel === "euler" || s.panel === "order") && (
         <p className="formula">
           order = {s.order} · R ={" "}
           {s.order

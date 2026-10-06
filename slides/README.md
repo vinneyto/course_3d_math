@@ -9,7 +9,7 @@ Run `npm run dev` from the monorepo root, then open http://localhost:3000.
 - `/presentations/rotation`: rotation manual in English and Russian.
 
 Existing workspace and route names remain stable. User-facing terminology is
-**interactive manual** and **step**. The rotation manual contains 89 atomic snapshots
+**interactive manual** and **step**. The rotation manual contains 93 atomic snapshots
 covering 21 topics. Each snapshot describes the complete scene and sidebar.
 
 ## React structure
@@ -35,7 +35,7 @@ Step components declare destinations through context and a React layout effect.
 `useSceneTransition` animates from the visible state over 1.1s; a new destination
 cancels and retargets the previous RAF. Rotations generally use quaternion SLERP;
 the gimbal and Euler/SLERP examples follow their own mathematical paths, keeping
-rings, angles and model consistent. Position, camera and visibility interpolate.
+angle graphs, sectors and model consistent. Position, camera and visibility interpolate.
 Reduced-motion preferences reach the destination immediately.
 
 `SnapshotSidebar` contains the full explanation, parameter indicators, formulas
@@ -72,15 +72,19 @@ composition uses successive moving axes, described as nested parent frames.
 Euler composition, order comparison, gimbal lock, angle boundary interpolation.
 17–21: axis–angle quaternion, quaternion matrix, SLERP, Object3D, recap.
 
-For XYZ, scripted gimbal snapshots reach y=90°, then increase x and decrease z
-equally. Further snapshots compare y=80° and change x then z separately at the
-singularity: either angle still rotates the model, but their effects become
-linearly dependent. Rings show successive rotation frames. Translucent signed angle
-sectors follow those same moving Euler axes, including negative angles. The axis,
-Euler-composition and order-comparison examples also show these sectors. Indicators
-show the angles actually applied so far. Sector buffers stay mounted and update
-through the transition. Graphs observe the
-snapshot time; clicking them cannot change it.
+The order lesson reuses one model: reset after XYZ, then animate Y = 40°,
+X = 30° and Z = 25° in YXZ order. The resulting orientations differ despite
+identical final angle values.
+
+The gimbal sequence first turns Y to 90°, briefly shows the coinciding X/Z
+rotation planes, then hides them. Separate X = +30° and Z = −30° turns cancel
+in sequence. Subsequent snapshots change X and Z simultaneously while keeping
+X + Z = 0°: the model stays still throughout each transition. There are no
+gimbal rings. Only the active turn has a signed sector; compensation has none.
+Angle graphs share the authored snapshot path and highlight the simultaneous
+cancellation segment in orange. The axis and Euler sequences also show signed
+sectors in the successive moving frames. Geometry buffers stay mounted.
+Graphs observe course time; clicking them cannot change it.
 
 Interpolation snapshots compare an actual vertex trajectory. Angular speeds are
 degrees per normalized time t. Single-axis and compound comparisons share their

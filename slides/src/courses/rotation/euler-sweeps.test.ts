@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { Matrix4, Quaternion, Vector3, type EulerOrder } from "three";
-import { eulerSweeps, sweepAxis, sweepVertex } from "./euler-sweeps";
+import {
+  eulerSweeps,
+  gimbalTurnSweeps,
+  sweepAxis,
+  sweepVertex,
+} from "./euler-sweeps";
 import { eulerQuaternion, rad, type Triple } from "./math";
 import { displayedEulerAngles, orientation } from "./state";
 import { snapshots, sequenceFor } from "./snapshots";
@@ -56,6 +61,18 @@ describe("Euler angle sectors", () => {
     );
     expect(sweepVertex("Z", -Math.PI / 2, 2)[1]).toBeCloseTo(-2, 12);
   });
+  it("draws the Z undo sector along the X sector in reverse", () => {
+    const sweeps = gimbalTurnSweeps([30, 90, -30]);
+    const point = (i: number, angle: number) =>
+      new Vector3(
+        ...sweepVertex(sweeps[i].axis, rad(angle), 2),
+      ).applyQuaternion(new Quaternion(...sweeps[i].frame));
+    expect(point(0, 30).distanceTo(point(2, 0))).toBeLessThan(1e-10);
+    expect(point(0, 0).distanceTo(point(2, -30))).toBeLessThan(1e-10);
+    expect(sweepAxis(sweeps[0]).distanceTo(sweepAxis(sweeps[2]))).toBeLessThan(
+      1e-10,
+    );
+  });
   it("shows only Euler angles applied so far and follows the displayed transform", () => {
     const expected = [
       [0, 0, 0],
@@ -77,7 +94,7 @@ describe("Euler angle sectors", () => {
 });
 
 describe("operation timeline", () => {
-  it("names every multi-step stage and keeps the sequence moving when example time resets", () => {
+  it("names every multi-step stage and keeps the sequence moving while model motion cancels", () => {
     for (const [index, step] of snapshots.entries()) {
       const group = sequenceFor(index);
       if (group.length === 1) continue;
@@ -91,9 +108,9 @@ describe("operation timeline", () => {
         group.length,
       );
     }
-    const before = scene("gimbal-90-1"),
-      after = scene("gimbal-80-0.5");
-    expect(after.t).toBeLessThan(before.t);
+    const before = scene("gimbal-z-minus30"),
+      after = scene("gimbal-cancel45");
+    expect(orientation(after).angleTo(orientation(before))).toBeLessThan(1e-7);
     expect(after.timeline!.position).toBeGreaterThan(before.timeline!.position);
     const middle = blendScene(before, after, 0.5);
     expect(middle.timeline!.position).toBeGreaterThan(

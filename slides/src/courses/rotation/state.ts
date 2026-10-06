@@ -2,7 +2,6 @@ import { Euler, Quaternion, type EulerOrder } from "three";
 import {
   axisQuaternion,
   eulerQuaternion,
-  gimbalAngles,
   interpolation,
   type Triple,
 } from "./math";
@@ -42,24 +41,19 @@ export interface RotationState {
   zero: boolean;
   axisPoint: boolean;
   shear: number;
-  locked: boolean;
   compound: boolean;
   surface: "surface" | "wireframe" | "vertices";
   input: "euler" | "quaternion";
   stage: number;
   parent: boolean;
-  gimbalManual: boolean;
+  gimbalView: import("./gimbal-story").GimbalView;
   singleAxis: "X" | "Y" | "Z";
   cameraPosition: Triple;
   cameraTarget: Triple;
 }
 /** Match angle indicators and sectors to the displayed orientation. */
 export function displayedEulerAngles(s: RotationState): Triple {
-  if (s.panel === "gimbal")
-    return (
-      s.visual?.gimbalAngles ??
-      (s.gimbalManual ? s.angles : gimbalAngles(s.t, s.locked))
-    );
+  if (s.panel === "gimbal") return s.visual?.gimbalAngles ?? s.angles;
   if (s.visual)
     return new Euler()
       .setFromQuaternion(orientation(s), s.order)
@@ -94,23 +88,19 @@ export const initialState: RotationState = {
   zero: false,
   axisPoint: false,
   shear: 0,
-  locked: true,
   compound: false,
   surface: "surface",
   input: "euler",
   stage: 1,
   parent: false,
-  gimbalManual: false,
+  gimbalView: "turn-y",
   singleAxis: "X",
   cameraPosition: [1, 1, 12],
   cameraTarget: [1, 1, 0],
 };
 export function orientation(s: RotationState): Quaternion {
   if (s.visual) return new Quaternion(...s.visual.quaternion);
-  if (s.panel === "gimbal")
-    return eulerQuaternion(
-      s.gimbalManual ? s.angles : gimbalAngles(s.t, s.locked),
-    );
+  if (s.panel === "gimbal") return eulerQuaternion(s.angles, s.order);
   if (s.panel === "interpolation") return interpolation(s.t, s.compound).slerp;
   if (s.panel === "quaternion" || s.panel === "q-matrix")
     return axisQuaternion(s.axis, s.angle);

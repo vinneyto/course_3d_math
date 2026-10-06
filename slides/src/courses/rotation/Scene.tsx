@@ -32,7 +32,6 @@ import { createKnotGeometry, modelVertex } from "./geometry";
 import {
   axisQuaternion,
   eulerQuaternion,
-  gimbalAngles,
   interpolation,
   rad,
   tuple,
@@ -40,7 +39,13 @@ import {
   type Triple,
 } from "./math";
 import { displayedEulerAngles, orientation, type RotationState } from "./state";
-import { eulerSweeps, sweepVertex, type EulerSweep } from "./euler-sweeps";
+import {
+  eulerSweeps,
+  gimbalTurnSweeps,
+  sweepVertex,
+  sweepAxis,
+  type EulerSweep,
+} from "./euler-sweeps";
 import type { Language } from "./content";
 import {
   comparisonOrientation,
@@ -580,7 +585,7 @@ function EulerSectors({
   language: Language;
   comparison?: boolean;
 }) {
-  const order = s.panel === "order" ? (comparison ? "YXZ" : "XYZ") : s.order;
+  const order = s.order;
   const angles: Triple =
     s.panel === "gimbal"
       ? displayedEulerAngles(s)
@@ -596,60 +601,86 @@ function EulerSectors({
         : displayedEulerAngles(s);
   return (
     <>
-      {eulerSweeps(angles, order).map((sweep, i) => (
-        <SweptSector
+      {(s.panel === "gimbal"
+        ? gimbalTurnSweeps(angles)
+        : eulerSweeps(angles, order)
+      ).map((sweep, i) => (
+        <Fade
           key={sweep.axis}
-          sweep={sweep}
-          radius={2.15 - i * 0.2}
-          language={language}
-        />
+          opacity={
+            s.panel === "gimbal"
+              ? (s.visual?.visibility ?? visibility(s))[`gimbal${sweep.axis}`]
+              : 1
+          }
+        >
+          <SweptSector
+            sweep={sweep}
+            radius={s.panel === "gimbal" ? 2.15 : 2.15 - i * 0.2}
+            language={language}
+          />
+        </Fade>
       ))}
     </>
   );
 }
-function Gimbals({ s }: { s: RotationState }) {
-  const [x, y, z] = (
-    s.visual?.gimbalAngles ??
-    (s.gimbalManual ? s.angles : gimbalAngles(s.t, s.locked))
-  ).map(rad);
-  const qx = new Quaternion().setFromEuler(new Euler(x, 0, 0));
-  const qxy = new Quaternion().setFromEuler(new Euler(x, y, 0, "XYZ"));
-  const active = Math.abs(Math.abs(y) - Math.PI / 2) < 1e-5;
+/** Filled planes appear only while explaining the coinciding Euler axes. */
+function RotationPlanes({
+  s,
+  language,
+}: {
+  s: RotationState;
+  language: Language;
+}) {
+  const sweeps = eulerSweeps(displayedEulerAngles(s), "XYZ");
   return (
     <>
-      <Arrow
-        to={[2.8, 0, 0]}
-        color={active ? "#ffb966" : colors[0]}
-        label="X₁"
-      />
-      <Arrow
-        to={tuple(new Vector3(0, 2.8, 0).applyQuaternion(qx))}
-        color={colors[1]}
-        label="Y₂"
-      />
-      <Arrow
-        to={tuple(new Vector3(0, 0, 3.2).applyQuaternion(qxy))}
-        color={active ? "#ffb966" : colors[2]}
-        label="Z₃"
-      />
-      <group rotation={[x, 0, 0]}>
-        <mesh rotation={[0, Math.PI / 2, 0]}>
-          <torusGeometry args={[2.15, 0.025, 12, 80]} />
-          <meshStandardMaterial color={colors[0]} />
-        </mesh>
-        <group rotation={[0, y, 0]}>
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[1.95, 0.025, 12, 80]} />
-            <meshStandardMaterial color={colors[1]} />
-          </mesh>
-          <group rotation={[0, 0, z]}>
-            <mesh>
-              <torusGeometry args={[1.75, 0.025, 12, 80]} />
-              <meshStandardMaterial color={colors[2]} />
+      {[sweeps[0], sweeps[2]].map((sweep, i) => {
+        const color = colors["XYZ".indexOf(sweep.axis)];
+        const normal = sweepAxis(sweep);
+        const radius = i === 0 ? 2.4 : 2.05;
+        const frame = new Quaternion().setFromUnitVectors(
+          new Vector3(0, 0, 1),
+          normal,
+        );
+        const outline = [
+          [-radius, -radius, 0],
+          [radius, -radius, 0],
+          [radius, radius, 0],
+          [-radius, radius, 0],
+          [-radius, -radius, 0],
+        ].map((point) => tuple(new Vector3(...point).applyQuaternion(frame)));
+        return (
+          <group key={sweep.axis}>
+            <mesh quaternion={frame}>
+              <planeGeometry args={[radius * 2, radius * 2]} />
+              <meshBasicMaterial
+                color={color}
+                transparent
+                opacity={0.13}
+                side={DoubleSide}
+                depthWrite={false}
+                polygonOffset
+                polygonOffsetFactor={i + 1}
+                polygonOffsetUnits={i + 1}
+              />
             </mesh>
+            <Line points={outline} color={color} lineWidth={1.5} />
+            <Arrow
+              to={tuple(normal.multiplyScalar(i === 0 ? 3 : 3.5))}
+              color={color}
+              label={i === 0 ? "X₁" : "Z₃"}
+            />
+            <Label
+              position={[0, radius + (i === 0 ? 0.4 : -0.35), 0]}
+              color={color}
+            >
+              {language === "ru"
+                ? `Плоскость вращения ${sweep.axis}`
+                : `${sweep.axis} rotation plane`}
+            </Label>
           </group>
-        </group>
-      </group>
+        );
+      })}
     </>
   );
 }
@@ -668,7 +699,7 @@ function World({
   const p: Triple = s.zero ? (s.axisPoint ? [2, 0, 0] : [0, 0, 0]) : s.point;
   const localPoint = new Vector3(...p);
   const world = worldPoint(s);
-  const comparison = s.panel === "order" || s.panel === "interpolation";
+  const comparison = s.panel === "interpolation";
   const offset: Triple = [
     s.origin[0] - 2.6 * weights.comparison,
     s.origin[1],
@@ -811,10 +842,10 @@ function World({
                 position={[2.6 * weights.comparison, 0, 0]}
               />
               <Label position={[-2.6, -1.65, 0]} color="#ffbd80">
-                {s.panel === "order" ? "XYZ" : "Euler · lerp"}
+                Euler · lerp
               </Label>
               <Label position={[2.6, -1.65, 0]} color="#a3e7d6">
-                {s.panel === "order" ? "YXZ" : "Quaternion · SLERP"}
+                Quaternion · SLERP
               </Label>
               {s.panel === "interpolation" &&
                 [false, true].map((short, i) => (
@@ -844,8 +875,8 @@ function World({
               <EulerSectors s={s} language={language} comparison />
             </Fade>
           </group>
-          <Fade opacity={weights.gimbal}>
-            <Gimbals s={s} />
+          <Fade opacity={weights.gimbalPlanes}>
+            <RotationPlanes s={s} language={language} />
           </Fade>
           <Fade opacity={weights.axis}>
             <Arrow

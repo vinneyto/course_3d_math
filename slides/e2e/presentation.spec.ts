@@ -102,15 +102,18 @@ test("manual catalogue and all atomic snapshots fit desktop and mobile", async (
     path: `test-results/${test.info().project.name}-matrix.png`,
     fullPage: true,
   });
-  await go(page, "gimbal-90-0.75");
+  await go(page, "gimbal-cancel45");
   await expect(pane(page).locator(".lock")).toContainText("coincide");
   await page.getByRole("button", { name: "Change language" }).click();
   await expect(pane(page).locator("h1")).toHaveText(
-    snapshots.find((step) => step.id === "gimbal-90-0.75")!.caption!.ru,
+    snapshots.find((step) => step.id === "gimbal-cancel45")!.caption!.ru,
   );
   await expect(pane(page).locator(".stage-timeline")).toHaveAttribute(
     "data-timeline-position",
-    "0.3",
+    String(
+      snapshots.find((step) => step.id === "gimbal-cancel45")!.scene.timeline!
+        .position,
+    ),
   );
   await page.evaluate(() => scrollTo(0, 0));
   await page.screenshot({
@@ -143,7 +146,7 @@ test("sidebar is read-only and revisiting a snapshot restores exactly its author
     ),
   ).toHaveCount(0);
   await expect(page.getByRole("slider")).toHaveCount(0);
-  await go(page, "gimbal-90-0.75");
+  await go(page, "gimbal-cancel45");
   const frozen = await pane(page).innerText();
   await pane(page).getByRole("img", { name: "x angle over time" }).click();
   // Charts are observations, never a separate way to seek lesson time.
@@ -151,7 +154,10 @@ test("sidebar is read-only and revisiting a snapshot restores exactly its author
   await expect(pane(page)).toHaveText(frozen, { useInnerText: true });
   await expect(pane(page).locator(".stage-timeline")).toHaveAttribute(
     "data-timeline-position",
-    "0.3",
+    String(
+      snapshots.find((step) => step.id === "gimbal-cancel45")!.scene.timeline!
+        .position,
+    ),
   );
   await go(page, "axis-point-135");
   const localPosition = pane(page).locator(".readouts span:first-child b");
@@ -267,7 +273,7 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
     "cube-30",
     "model-1",
     "model-2",
-    "gimbal-90-0.75",
+    "gimbal-cancel45",
     "boundary-0.5",
     "quaternion-75",
     "slerp-compound-0.5",
@@ -377,18 +383,20 @@ test("operation timelines explain stages without changing the selected snapshot"
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/presentations/rotation");
-  await go(page, "gimbal-90-0.25");
+  await go(page, "gimbal-y45");
   const timeline = pane(page).locator(".stage-timeline");
-  await expect(timeline.locator("li")).toHaveCount(11);
+  await expect(timeline.locator("li")).toHaveCount(
+    snapshots.filter((step) => step.topic === 14).length,
+  );
   const heading = await pane(page).locator("h1").innerText();
   await expect(timeline.locator(".stage-timeline-title")).toHaveText(heading);
-  const marker = timeline.locator('[data-timeline-stage="gimbal-90-0.5"]');
+  const marker = timeline.locator('[data-timeline-stage="gimbal-planes"]');
   await marker.hover();
   expect(await marker.evaluate((node) => getComputedStyle(node).cursor)).toBe(
     "default",
   );
   const tooltip = timeline.getByRole("tooltip");
-  await expect(tooltip).toContainText("first and third axes coincide");
+  await expect(tooltip).toContainText("X and Z now rotate in the same plane");
   await expect(tooltip).toContainText("y = 90°");
   const panelBounds = (await pane(page).boundingBox())!;
   const tooltipBounds = (await tooltip.boundingBox())!;
@@ -399,7 +407,7 @@ test("operation timelines explain stages without changing the selected snapshot"
   await marker.click();
   await expect(page.locator("[data-snapshot]")).toHaveAttribute(
     "data-snapshot",
-    "gimbal-90-0.25",
+    "gimbal-y45",
   );
   await expect(pane(page).locator("h1")).toHaveText(heading);
   await marker.focus();
@@ -407,8 +415,14 @@ test("operation timelines explain stages without changing the selected snapshot"
   await timeline.screenshot({
     path: `test-results/${test.info().project.name}-timeline.png`,
   });
-  await go(page, "gimbal-80-0.5");
-  await expect(timeline).toHaveAttribute("data-timeline-position", "0.5");
+  await go(page, "gimbal-z-ready");
+  await expect(timeline).toHaveAttribute(
+    "data-timeline-position",
+    String(
+      snapshots.find((step) => step.id === "gimbal-z-ready")!.scene.timeline!
+        .position,
+    ),
+  );
   await go(page, "euler-0");
   for (const axis of ["x", "y", "z"])
     await expect(
@@ -426,4 +440,80 @@ test("operation timelines explain stages without changing the selected snapshot"
     path: `test-results/${test.info().project.name}-euler-sectors.png`,
     fullPage: true,
   });
+});
+
+test("separate X/Z turns move the model but simultaneous compensation leaves the rendered scene still", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await page.goto("/presentations/rotation");
+  const canvas = page.locator("canvas");
+  await expect(canvas).toHaveAttribute("data-webgl-ready", "true");
+  await go(page, "order-0");
+  const orderStart = await canvas.screenshot();
+  await go(page, "order-1");
+  expect(orderStart.equals(await canvas.screenshot())).toBe(false);
+  await go(page, "order-3");
+  await page.screenshot({
+    path: `test-results/${test.info().project.name}-yxz.png`,
+    fullPage: true,
+  });
+  await go(page, "gimbal-planes");
+  await page.screenshot({
+    path: `test-results/${test.info().project.name}-planes.png`,
+    fullPage: true,
+  });
+  await go(page, "gimbal-x-ready");
+  const beforeX = await canvas.screenshot();
+  await go(page, "gimbal-x30");
+  expect(beforeX.equals(await canvas.screenshot())).toBe(false);
+  await go(page, "gimbal-z-minus30");
+  await go(page, "gimbal-cancel-ready");
+  const beforeCancel = await canvas.screenshot();
+  const angleTrace = await page.evaluateHandle(() => {
+    const trace = {
+      changedWhileAnimating: false,
+      stop: () => observer.disconnect(),
+    };
+    const observer = new MutationObserver(() => {
+      const angle = Number(
+        document
+          .querySelector('[aria-label="x angle"]')
+          ?.getAttribute("aria-valuenow"),
+      );
+      trace.changedWhileAnimating ||=
+        document
+          .querySelector(".player-main")
+          ?.getAttribute("data-transitioning") === "true" &&
+        angle > 30.01 &&
+        angle < 44.99;
+    });
+    observer.observe(document.querySelector(".player-main")!, {
+      subtree: true,
+      attributes: true,
+    });
+    return trace;
+  });
+  await go(page, "gimbal-cancel45");
+  expect(
+    await angleTrace.evaluate((trace) => {
+      trace.stop();
+      return trace.changedWhileAnimating;
+    }),
+  ).toBe(true);
+  await angleTrace.dispose();
+  expect(beforeCancel.equals(await canvas.screenshot())).toBe(true);
+  await go(page, "gimbal-cancel90");
+  await expect(
+    pane(page).getByRole("meter", { name: "x angle", exact: true }),
+  ).toHaveAttribute("aria-valuenow", "90");
+  await expect(
+    pane(page).getByRole("meter", { name: "z angle", exact: true }),
+  ).toHaveAttribute("aria-valuenow", "-90");
+  expect(beforeCancel.equals(await canvas.screenshot())).toBe(true);
+  await pane(page)
+    .locator(".angle-charts")
+    .screenshot({
+      path: `test-results/${test.info().project.name}-compensation-graphs.png`,
+    });
 });

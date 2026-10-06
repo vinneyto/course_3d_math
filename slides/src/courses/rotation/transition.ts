@@ -1,11 +1,6 @@
 import { Quaternion, Vector3 } from "three";
 import { orientation, type RotationState } from "./state";
-import {
-  eulerQuaternion,
-  gimbalAngles,
-  interpolation,
-  type Triple,
-} from "./math";
+import { eulerQuaternion, interpolation, type Triple } from "./math";
 
 export const transitionDuration = 1100;
 export type Visibility = ReturnType<typeof visibility>;
@@ -20,18 +15,22 @@ export interface SceneVisual {
 }
 
 export function visibility(s: RotationState) {
-  const comparison = s.panel === "order" || s.panel === "interpolation";
+  const comparison = s.panel === "interpolation";
   const model = s.mode !== "point";
   return {
     point: Number(!model),
     cube: Number(s.mode === "cube"),
     model: Number(s.mode === "model"),
+    // The final object basis is not the successive Euler rotation axes X₁/Z₃.
     local: Number(s.local && !comparison && s.panel !== "gimbal"),
     arc: Number(s.arc && !s.zero),
     translation: Number(s.translation),
     vector: Number(!model && s.local),
     addends: Number(!model && (s.panel === "basis" || s.panel === "compute")),
-    gimbal: Number(s.panel === "gimbal"),
+    gimbalPlanes: Number(s.panel === "gimbal" && s.gimbalView === "planes"),
+    gimbalX: Number(s.gimbalView === "turn-x"),
+    gimbalY: Number(s.gimbalView === "turn-y"),
+    gimbalZ: Number(s.gimbalView === "turn-z"),
     comparison: Number(comparison),
     axis: Number(
       s.panel === "quaternion" ||
@@ -42,7 +41,8 @@ export function visibility(s: RotationState) {
     grid3D: Number(s.dimension === 3),
     cubePoint: Number(s.mode === "cube"),
     eulerSectors: Number(
-      ["axis", "euler", "order", "gimbal"].includes(s.panel),
+      ["axis", "euler", "order"].includes(s.panel) ||
+        (s.panel === "gimbal" && s.gimbalView.startsWith("turn-")),
     ),
     surface: Number(s.surface === "surface"),
     wireframe: Number(s.surface === "wireframe"),
@@ -67,15 +67,12 @@ const triple = (a: Triple, b: Triple, t: number): Triple =>
 
 export function modelOrientation(s: RotationState): Quaternion {
   if (s.visual) return new Quaternion(...s.visual.modelQuaternion);
-  if (s.panel === "order") return eulerQuaternion(s.angles, "XYZ");
   if (s.panel === "interpolation") return interpolation(s.t, s.compound).euler;
   return orientation(s);
 }
 export function comparisonOrientation(s: RotationState): Quaternion {
   if (s.visual) return new Quaternion(...s.visual.comparisonQuaternion);
-  return s.panel === "order"
-    ? eulerQuaternion(s.angles, "YXZ")
-    : orientation(s);
+  return orientation(s);
 }
 
 /** Interpolate actual transforms, rather than lerping Euler representations. */
@@ -87,12 +84,7 @@ export function blendScene(
   if (progress >= 1) return to;
   const u = Math.max(0, progress);
   const t = u * u * (3 - 2 * u);
-  const gimbal = triple(
-    from.visual?.gimbalAngles ??
-      (from.gimbalManual ? from.angles : gimbalAngles(from.t, from.locked)),
-    to.gimbalManual ? to.angles : gimbalAngles(to.t, to.locked),
-    t,
-  );
+  const gimbal = triple(from.visual?.gimbalAngles ?? from.angles, to.angles, t);
   const timeline = from.t + (to.t - from.t) * t;
   const sameGimbal =
     from.panel === "gimbal" &&

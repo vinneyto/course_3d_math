@@ -88,15 +88,16 @@ const en: LessonText[] = [
   },
   {
     title: "Order changes the result",
-    body: "Compare XYZ and YXZ with exactly the same angles. Rotations generally do not commute. A different order can produce a different final orientation.",
+    body: "We have turned this model in XYZ order. Return it to the starting orientation, then apply the same angles in YXZ order: Y = 40°, X = 30°, Z = 25°. Watch each turn and compare the final orientation with the preceding group.",
     takeaway: "Angles alone do not fully specify an Euler orientation.",
-    hint: "Orbit the camera and compare the two models.",
+    hint: "Step backward and forward between the XYZ and YXZ sequences.",
   },
   {
     title: "Gimbal lock: losing independence",
-    body: "For XYZ, at y = 90°, the first and third rotation axes coincide. Then increasing x while decreasing z by the same amount leaves the orientation unchanged. Neither control is simply disabled: they have become dependent.",
-    takeaway: "Gimbal lock is a singularity of the Euler parameterization.",
-    hint: "Advance through the singularity and the separate angle changes.",
+    body: "For XYZ, at Y = 90°, the X and Z rotation axes and planes coincide. Either angle still turns the model on its own. Increasing X while decreasing Z by the same amount cancels their effects: the angles change, but the model stays still.",
+    takeaway:
+      "At Y = 90°, X and Z no longer provide independent rotation directions.",
+    hint: "First turn X alone, then undo it with Z. Finally change both angles together.",
   },
   {
     title: "Interpolation can take the long way",
@@ -219,15 +220,16 @@ const ru: LessonText[] = [
   },
   {
     title: "Порядок меняет результат",
-    body: "Сравните XYZ и YXZ при одинаковых углах. Вращения в общем случае не коммутируют; другой порядок может дать другую ориентацию.",
+    body: "Мы уже повернули эту модель в порядке XYZ. Вернём её к началу и применим те же углы в порядке YXZ: Y = 40°, X = 30°, Z = 25°. Проследите каждый поворот и сравните конечную ориентацию с предыдущей группой.",
     takeaway: "Одних углов недостаточно: нужен порядок.",
-    hint: "Покрутите камеру и сравните две модели.",
+    hint: "Пройдите назад и вперёд через последовательности XYZ и YXZ.",
   },
   {
     title: "Гимбал-лок: потеря независимости",
-    body: "Для XYZ при y = 90° оси первого и третьего вращений совпадают. Рост x и равное уменьшение z сохраняют ориентацию. Управления не выключаются — они становятся зависимыми.",
-    takeaway: "Гимбал-лок — сингулярность параметризации Эйлера.",
-    hint: "Пройдите сингулярность и отдельные изменения углов.",
+    body: "Для XYZ при Y = 90° оси и плоскости вращения X и Z совпадают. По отдельности оба угла поворачивают модель. Если увеличивать X и на столько же уменьшать Z, повороты компенсируются: углы меняются, а модель неподвижна.",
+    takeaway:
+      "При Y = 90° углы X и Z больше не дают независимых направлений вращения.",
+    hint: "Сначала поверните X, затем отмените поворот через Z. После этого меняйте оба угла вместе.",
   },
   {
     title: "Интерполяция может выбрать длинный путь",

@@ -1,3 +1,4 @@
+import { gimbalStory } from "./gimbal-story";
 import { stageDefinitions } from "./stages";
 import { Vector3 } from "three";
 import { eulerQuaternion, deg, type Triple } from "./math";
@@ -162,40 +163,27 @@ const authored: readonly RotationSnapshot[] = [
       stage,
     }),
   ),
-  frame("order", 13, "model", {
-    panel: "order",
-    angles: [30, 40, 25],
-    cameraPosition: [4, 3, 13],
-  }),
-  ...[0, 0.25, 0.5, 0.75, 1].map((t) =>
-    frame(`gimbal-90-${t}`, 14, "gimbal", {
-      panel: "gimbal",
-      cameraPosition: [6, 4, 11],
-      t,
-      locked: true,
-    }),
-  ),
-  ...[0.5, 0.75, 1].map((t) =>
-    frame(`gimbal-80-${t}`, 14, "gimbal", {
-      panel: "gimbal",
-      cameraPosition: [6, 4, 11],
-      t,
-      locked: false,
-    }),
-  ),
   ...(
     [
-      [0, 90, 0],
-      [30, 90, 0],
-      [30, 90, -30],
+      [0, 0, 0],
+      [0, 40, 0],
+      [30, 40, 0],
+      [30, 40, 25],
     ] as Triple[]
   ).map((angles, i) =>
-    frame(`gimbal-independent-${i}`, 14, "gimbal", {
+    frame(`order-${i}`, 13, "model", {
+      panel: "order",
+      order: "YXZ",
+      angles,
+    }),
+  ),
+  ...gimbalStory.map((step, i) =>
+    frame(step.id, 14, "gimbal", {
       panel: "gimbal",
       cameraPosition: [6, 4, 11],
-      t: i / 2,
-      gimbalManual: true,
-      angles,
+      t: i / (gimbalStory.length - 1),
+      angles: step.angles,
+      gimbalView: step.view,
     }),
   ),
   ...[0, 0.25, 0.5, 0.75, 1].map((t) =>

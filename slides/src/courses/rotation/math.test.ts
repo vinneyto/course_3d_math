@@ -3,7 +3,6 @@ import { Matrix4, Vector3 } from "three";
 import {
   axisQuaternion,
   eulerQuaternion,
-  gimbalAngles,
   interpolation,
   localToWorld,
   rad,
@@ -41,13 +40,11 @@ describe("lesson mathematics", () => {
     );
   });
   it("x/z compensate at y=90°, but not at 80°", () => {
-    const a = eulerQuaternion(gimbalAngles(0.5, true)),
-      b = eulerQuaternion(gimbalAngles(1, true));
+    const a = eulerQuaternion([0, 90, 0]),
+      b = eulerQuaternion([90, 90, -90]);
     expect(a.angleTo(b)).toBeLessThan(1e-7);
     expect(
-      eulerQuaternion(gimbalAngles(0.5, false)).angleTo(
-        eulerQuaternion(gimbalAngles(1, false)),
-      ),
+      eulerQuaternion([0, 80, 0]).angleTo(eulerQuaternion([90, 80, -90])),
     ).toBeGreaterThan(0.1);
   });
   it("SLERP crosses the 179° boundary in 2° and respects both endpoints", () => {

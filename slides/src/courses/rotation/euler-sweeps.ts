@@ -40,3 +40,12 @@ export function sweepAxis(sweep: EulerSweep) {
     new Quaternion(...sweep.frame),
   );
 }
+
+/** At Y=90°, use the same physical reference ray to show Z undoing the X sector. */
+export function gimbalTurnSweeps(angles: Triple): EulerSweep[] {
+  const sweeps = eulerSweeps(angles, "XYZ");
+  sweeps[2].frame = new Quaternion(...sweeps[2].frame)
+    .multiply(axisQuaternion([0, 0, 1], 90))
+    .toArray();
+  return sweeps;
+}
