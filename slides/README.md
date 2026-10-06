@@ -9,8 +9,9 @@ Run `npm run dev` from the monorepo root, then open http://localhost:3000.
 - `/presentations/rotation`: rotation manual in English and Russian.
 
 Existing workspace and route names remain stable. User-facing terminology is
-**interactive manual** and **step**. The rotation manual contains 103 atomic snapshots
-covering 19 topics. Each snapshot describes the complete scene and sidebar.
+**interactive manual** and **step**. The rotation manual contains 104 atomic snapshots
+covering 21 topics that follow timeline boundaries. Each snapshot describes the
+complete scene and sidebar.
 The first six steps keep the point-coordinate tooltip visible without hover.
 Sidebar scroll resets on entering another timeline group and stays in place
 within a group; on mobile this applies to the document's lesson section.
@@ -80,6 +81,10 @@ Finally: axis–angle quaternion, quaternion matrix, SLERP, Object3D and recap.
 The order lesson reuses one model: reset after XYZ, then animate Y = 40°,
 X = 30° and Z = 25° in YXZ order. The resulting orientations differ despite
 identical final angle values.
+
+A transition step introduces Euler angle limitations in a sidebar table before
+gimbal lock. Navigation entries and timeline tooltips use `Topic: stage`; the
+sidebar and scene label show the current topic. Topics follow timeline boundaries.
 
 The gimbal lesson has two matching 13-step passes, with separate operation
 timelines. First show an ordinary rotating basis, remember the original X₀ as a

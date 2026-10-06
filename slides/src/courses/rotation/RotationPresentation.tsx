@@ -72,7 +72,7 @@ export default function RotationPresentation() {
       <RotationStage {...props}>{slide}</RotationStage>
       <CourseControls
         controller={controller}
-        titles={lessons[language].map((lesson) => lesson.title)}
+        titles={lessons[language].map((lesson) => lesson.navigationTitle)}
         language={language}
       />
     </main>

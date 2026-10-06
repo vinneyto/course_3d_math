@@ -1,6 +1,6 @@
 "use client";
 import { useId, useState } from "react";
-import type { Language } from "./content";
+import { stepLabel, type Language } from "./content";
 import type { RotationState } from "./state";
 import { sequenceFor, snapshots } from "./snapshots";
 
@@ -28,7 +28,7 @@ export function StageTimeline({
   return (
     <div className="stage-timeline" data-timeline-position={position}>
       <p className="panel-caption stage-timeline-title">
-        {group[current].caption![language]}
+        {stepLabel(group[current], language)}
       </p>
       <div className="stage-timeline-track">
         <div className="stage-timeline-rail" aria-hidden="true">
@@ -55,7 +55,7 @@ export function StageTimeline({
                 tabIndex={0}
                 data-timeline-stage={step.id}
                 aria-current={i === current ? "step" : undefined}
-                aria-label={step.caption![language]}
+                aria-label={stepLabel(step, language)}
                 aria-describedby={hovered === i ? tooltipId : undefined}
                 onMouseEnter={() => setHovered(i)}
                 onMouseLeave={() => setHovered(null)}
@@ -81,7 +81,7 @@ export function StageTimeline({
               left: `clamp(0px, calc(${(hovered! / (group.length - 1)) * 100}% - 110px), calc(100% - 220px))`,
             }}
           >
-            <strong>{inspected.caption![language]}</strong>
+            <strong>{stepLabel(inspected, language)}</strong>
             <span>{inspected.operation}</span>
           </div>
         )}

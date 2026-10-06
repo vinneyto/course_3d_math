@@ -49,6 +49,9 @@
   Label the timeline with the current stage name, not the word "Timeline".
   Timeline markers inspect stages with a normal cursor; course navigation changes
   the snapshot.
+  Treat each timeline group as a visible topic. Navigation entries and timeline
+  tooltips use "Topic: short stage description"; show the current topic above
+  the sidebar heading and in the scene label, including repeated demonstrations.
 - Keep the shared R3F Canvas, renderer and narrative scene mounted. Forward,
   reverse and interrupted navigation transition from the current visible state.
   Different content may crossfade; respect reduced-motion preferences.

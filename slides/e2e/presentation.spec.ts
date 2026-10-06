@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { lessons } from "../src/courses/rotation/content";
 import { gimbalPass } from "../src/courses/rotation/gimbal-story";
 import { snapshots } from "../src/courses/rotation/snapshots";
 
@@ -41,6 +42,19 @@ test("manual catalogue and all atomic snapshots fit desktop and mobile", async (
   );
   for (const step of snapshots) {
     await go(page, step.id);
+    const index = snapshots.findIndex((item) => item.id === step.id);
+    const lesson = lessons.en[index];
+    await expect(pane(page).locator(".topic-name")).toHaveText(
+      lesson.topicTitle,
+    );
+    await expect(page.locator(".scene-chip")).toContainText(lesson.topicTitle);
+    await expect(
+      page
+        .getByRole("combobox", { name: "Choose step" })
+        .locator(`option[value="${index}"]`),
+    ).toHaveText(
+      `${String(index + 1).padStart(2, "0")} · ${lesson.navigationTitle}`,
+    );
     await expect(pane(page).locator("h1")).toBeVisible();
     await expect(pane(page).locator("h1")).not.toContainText("%");
     if (step.scene.timeline) {
@@ -452,11 +466,40 @@ test("operation timelines explain stages without changing the selected snapshot"
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/presentations/rotation");
+  await go(page, "order-3");
+  await page.getByRole("button", { name: /^Next/ }).click();
+  await expect(page.locator("[data-snapshot]")).toHaveAttribute(
+    "data-snapshot",
+    "gimbal-intro",
+  );
+  await expect(pane(page).locator(".topic-name")).toHaveText(
+    "Euler angle limitations",
+  );
+  await expect(
+    pane(page).getByRole("table", { name: "Euler angle limitations" }),
+  ).toContainText("Gimbal lock");
+  await expect(pane(page).locator(".stage-timeline")).toHaveCount(0);
+  await page.screenshot({
+    path: `test-results/${test.info().project.name}-gimbal-intro.png`,
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: /^Next/ }).click();
+  await expect(page.locator("[data-snapshot]")).toHaveAttribute(
+    "data-snapshot",
+    "gimbal-start",
+  );
+  await expect(pane(page).locator(".topic-name")).toHaveText("Gimbal lock");
+  await page.screenshot({
+    path: `test-results/${test.info().project.name}-gimbal-topic-start.png`,
+    fullPage: true,
+  });
   await go(page, "gimbal-y45");
   const timeline = pane(page).locator(".stage-timeline");
   await expect(timeline.locator("li")).toHaveCount(gimbalPass.length);
   const heading = await pane(page).locator("h1").innerText();
-  await expect(timeline.locator(".stage-timeline-title")).toHaveText(heading);
+  await expect(timeline.locator(".stage-timeline-title")).toHaveText(
+    `Gimbal lock: ${heading}`,
+  );
   const marker = timeline.locator('[data-timeline-stage="gimbal-align"]');
   await marker.hover();
   expect(await marker.evaluate((node) => getComputedStyle(node).cursor)).toBe(
@@ -464,6 +507,7 @@ test("operation timelines explain stages without changing the selected snapshot"
   );
   const tooltip = timeline.getByRole("tooltip");
   await expect(tooltip).toContainText("The new Z coincides with the saved X");
+  await expect(tooltip).toContainText("Gimbal lock:");
   await expect(tooltip).toContainText("Ry(90°)");
   const panelBounds = (await pane(page).boundingBox())!;
   const tooltipBounds = (await tooltip.boundingBox())!;

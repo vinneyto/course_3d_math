@@ -179,6 +179,32 @@ const authored: readonly RotationSnapshot[] = [
       angles,
     }),
   ),
+  Object.freeze({
+    ...frame("gimbal-intro", 14, "model", {
+      panel: "euler-limits",
+      order: "YXZ",
+      angles: [30, 40, 25],
+    }),
+    sequence: "euler-limits",
+    caption: Object.freeze({
+      en: "Euler angles have limitations",
+      ru: "У углов Эйлера есть недостатки",
+    }),
+    explanation: Object.freeze({
+      body: Object.freeze({
+        en: "Euler angles are easy to specify, but their rotation directions are not always independent. In certain orientations, two successive axes coincide: this is called gimbal lock. We will examine it step by step in XYZ order.",
+        ru: "Углы Эйлера удобно задавать, но направления поворотов не всегда независимы. В некоторых положениях две последовательные оси поворота совпадают. Это называется гимбал лок. Далее разберём его по шагам в порядке XYZ.",
+      }),
+      takeaway: Object.freeze({
+        en: "At gimbal lock, three angle parameters provide only two independent rotation directions.",
+        ru: "При гимбал локе три угла дают только два независимых направления поворота.",
+      }),
+      hint: Object.freeze({
+        en: "Next, start with an ordinary basis and follow how the first X axis and the third Z axis align.",
+        ru: "На следующем шаге начнём с обычного базиса и проследим, как первая ось X и третья ось Z совпадают.",
+      }),
+    }),
+  }),
   ...gimbalStory.map((step) =>
     Object.freeze({
       ...frame(step.id, 14, "gimbal", {
@@ -252,8 +278,7 @@ const authored: readonly RotationSnapshot[] = [
 export const snapshots: readonly RotationSnapshot[] = Object.freeze(
   authored.map((snapshot, index) => {
     const group = authored.filter(
-      (step) =>
-        step.topic === snapshot.topic && step.sequence === snapshot.sequence,
+      (step) => sequenceKey(step) === sequenceKey(snapshot),
     );
     if (group.length === 1) return snapshot;
     const position = group.findIndex((step) => step.id === snapshot.id);
@@ -286,7 +311,11 @@ export const snapshots: readonly RotationSnapshot[] = Object.freeze(
 export function sequenceFor(index: number) {
   const step = snapshots[index];
   return snapshots.filter(
-    (snapshot) =>
-      snapshot.topic === step.topic && snapshot.sequence === step.sequence,
+    (snapshot) => sequenceKey(snapshot) === sequenceKey(step),
   );
+}
+
+/** Timeline boundaries also define the visible topics of the manual. */
+export function sequenceKey(step: RotationSnapshot): string {
+  return step.sequence ?? `topic-${step.topic}`;
 }

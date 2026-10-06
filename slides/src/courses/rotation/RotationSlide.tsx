@@ -13,7 +13,7 @@ import {
 import dynamic from "next/dynamic";
 import { useSceneTransition } from "./use-scene-transition";
 import { initialState, type RotationState } from "./state";
-import { chapterIndex, chapters, type Language } from "./content";
+import { lessons, type Language } from "./content";
 import { SnapshotSidebar } from "./SnapshotSidebar";
 
 const Scene = dynamic(() => import("./Scene"), {
@@ -124,7 +124,7 @@ export function RotationStage({
           <div className="scene-top">
             <span className="scene-chip">
               <i />
-              {state.dimension}D / {chapters[language][chapterIndex(index)]}
+              {state.dimension}D / {lessons[language][index].topicTitle}
             </span>
             <button
               className="icon-button"

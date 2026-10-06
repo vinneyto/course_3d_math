@@ -1,4 +1,4 @@
-import { snapshots } from "./snapshots";
+import { snapshots, sequenceKey, type RotationSnapshot } from "./snapshots";
 export type Language = "en" | "ru";
 export interface LessonText {
   title: string;
@@ -270,21 +270,58 @@ const ru: LessonText[] = [
   },
 ];
 export const topics = { en, ru };
+const sequenceTitles: Record<string, { en: string; ru: string }> = {
+  "topic-2": { en: "Local rotation", ru: "Локальное вращение" },
+  "topic-3": { en: "Rotation centre", ru: "Центр вращения" },
+  "topic-4": { en: "Basis and matrix", ru: "Базис и матрица" },
+  "topic-5": { en: "World position", ru: "Мировая координата" },
+  "topic-6": { en: "Fixed points", ru: "Неподвижные точки" },
+  "topic-7": { en: "Off-axis point", ru: "Точка вне оси" },
+  "topic-8": { en: "Cube rotation", ru: "Вращение куба" },
+  "topic-9": { en: "Model vertices", ru: "Вершины модели" },
+  "topic-10": { en: "Rotation basis", ru: "Базис вращения" },
+  "topic-11": { en: "Single-axis rotation", ru: "Поворот вокруг оси" },
+  "topic-12": { en: "Euler angles · XYZ", ru: "Углы Эйлера · XYZ" },
+  "topic-13": { en: "Rotation order · YXZ", ru: "Порядок поворотов · YXZ" },
+  "euler-limits": {
+    en: "Euler angle limitations",
+    ru: "Недостатки углов Эйлера",
+  },
+  "gimbal-basis": { en: "Gimbal lock", ru: "Гимбал лок" },
+  "gimbal-rings": { en: "Gimbal lock with rings", ru: "Гимбал лок с кольцами" },
+  "topic-15": { en: "Angle interpolation", ru: "Интерполяция углов" },
+  "topic-16": { en: "Quaternion", ru: "Кватернион" },
+  "topic-17": { en: "Quaternion matrix", ru: "Матрица кватерниона" },
+  "topic-18": { en: "SLERP", ru: "SLERP" },
+  "topic-19": { en: "Object3D", ru: "Object3D" },
+  "topic-20": { en: "Summary", ru: "Итоги" },
+};
+export function topicTitle(step: RotationSnapshot, language: Language): string {
+  const name = sequenceTitles[sequenceKey(step)];
+  if (!name) throw new Error(`Missing topic title for ${step.id}`);
+  return name[language];
+}
+export function stepLabel(step: RotationSnapshot, language: Language): string {
+  const description =
+    step.caption?.[language] ?? topics[language][step.topic].title;
+  return `${topicTitle(step, language)}: ${description}`;
+}
+function localizedLessons(language: Language) {
+  return snapshots.map((step) => ({
+    ...topics[language][step.topic],
+    topicTitle: topicTitle(step, language),
+    navigationTitle: stepLabel(step, language),
+    title: step.caption?.[language] ?? topics[language][step.topic].title,
+    body: step.explanation?.body[language] ?? topics[language][step.topic].body,
+    takeaway:
+      step.explanation?.takeaway[language] ??
+      topics[language][step.topic].takeaway,
+    hint: step.explanation?.hint[language] ?? topics[language][step.topic].hint,
+  }));
+}
 export const lessons = {
-  en: snapshots.map((step) => ({
-    ...en[step.topic],
-    title: step.caption?.en ?? en[step.topic].title,
-    body: step.explanation?.body.en ?? en[step.topic].body,
-    takeaway: step.explanation?.takeaway.en ?? en[step.topic].takeaway,
-    hint: step.explanation?.hint.en ?? en[step.topic].hint,
-  })),
-  ru: snapshots.map((step) => ({
-    ...ru[step.topic],
-    title: step.caption?.ru ?? ru[step.topic].title,
-    body: step.explanation?.body.ru ?? ru[step.topic].body,
-    takeaway: step.explanation?.takeaway.ru ?? ru[step.topic].takeaway,
-    hint: step.explanation?.hint.ru ?? ru[step.topic].hint,
-  })),
+  en: localizedLessons("en"),
+  ru: localizedLessons("ru"),
 };
 export const chapters = {
   en: [

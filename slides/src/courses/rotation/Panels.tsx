@@ -359,6 +359,33 @@ export function Numbers({
   object.updateWorldMatrix(true, false);
   return (
     <div className="numbers">
+      {s.panel === "euler-limits" && (
+        <table
+          className="limitations-table"
+          aria-label={
+            ru ? "Недостатки углов Эйлера" : "Euler angle limitations"
+          }
+        >
+          <tbody>
+            <tr>
+              <th scope="row">{ru ? "Гимбал лок" : "Gimbal lock"}</th>
+              <td>
+                {ru
+                  ? "Две последовательные оси поворота могут совпасть — теряется одно независимое направление вращения."
+                  : "Two successive rotation axes can coincide, losing one independent rotation direction."}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">{ru ? "Анимация" : "Animation"}</th>
+              <td>
+                {ru
+                  ? "Прямое смешивание углов может вести по длинной дуге. Это отдельная проблема, её рассмотрим позже."
+                  : "Blending angle values directly can take the long arc. This is a separate problem we will examine later."}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      )}
       {(s.mode === "point" || s.mode === "cube") && (
         <div className="readouts">
           <span>

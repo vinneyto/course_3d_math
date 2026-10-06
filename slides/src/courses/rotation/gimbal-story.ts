@@ -285,14 +285,8 @@ export const gimbalStory = [false, true].flatMap((rings) =>
     position: i / (gimbalPass.length - 1),
     name: rings
       ? {
-          en:
-            i === 0
-              ? "Repeat the same turns with rings"
-              : `Rings: ${item.name.en}`,
-          ru:
-            i === 0
-              ? "Повторяем те же повороты с кольцами"
-              : `С кольцами: ${item.name.ru}`,
+          en: i === 0 ? "Repeat the same turns with rings" : item.name.en,
+          ru: i === 0 ? "Повторяем те же повороты с кольцами" : item.name.ru,
         }
       : item.name,
     explanation:

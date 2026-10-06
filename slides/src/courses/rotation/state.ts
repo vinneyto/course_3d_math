@@ -16,6 +16,7 @@ export type Panel =
   | "axis"
   | "euler"
   | "order"
+  | "euler-limits"
   | "gimbal"
   | "interpolation"
   | "quaternion"

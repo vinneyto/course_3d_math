@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Vector3 } from "three";
 import { gimbalPass } from "./gimbal-story";
-import { snapshots } from "./snapshots";
+import { snapshots, sequenceKey, sequenceFor } from "./snapshots";
 import { lessons } from "./content";
 import { orientation } from "./state";
 import {
@@ -20,7 +20,7 @@ describe("authored manual snapshots", () => {
       snapshots.length,
     );
     expect(new Set(snapshots.map((step) => step.topic)).size).toBe(19);
-    expect(snapshots).toHaveLength(103);
+    expect(snapshots).toHaveLength(104);
     expect(snapshots[0].id).toBe("local-z-0");
     expect(
       snapshots.some(
@@ -67,6 +67,38 @@ describe("authored manual snapshots", () => {
     expect(
       new Vector3(...rotationPath(target)[32]).distanceTo(middle),
     ).toBeLessThan(1e-12);
+  });
+  it("uses timeline boundaries for topic labels and introduces gimbal lock before the demonstration", () => {
+    expect(new Set(snapshots.map(sequenceKey)).size).toBe(21);
+    for (const language of ["en", "ru"] as const) {
+      expect(
+        new Set(lessons[language].map((lesson) => lesson.topicTitle)).size,
+      ).toBe(21);
+      snapshots.forEach((step, index) => {
+        const lesson = lessons[language][index];
+        expect(lesson.navigationTitle).toBe(
+          `${lesson.topicTitle}: ${lesson.title}`,
+        );
+        for (const member of sequenceFor(index)) {
+          const memberIndex = snapshots.findIndex(
+            (item) => item.id === member.id,
+          );
+          expect(lessons[language][memberIndex].topicTitle).toBe(
+            lesson.topicTitle,
+          );
+        }
+      });
+    }
+    const intro = snapshots.findIndex((step) => step.id === "gimbal-intro");
+    expect(snapshots[intro - 1].id).toBe("order-3");
+    expect(snapshots[intro + 1].id).toBe("gimbal-start");
+    expect(sequenceFor(intro)).toHaveLength(1);
+    expect(sequenceFor(intro + 1)).toHaveLength(gimbalPass.length);
+    expect(
+      orientation(scene("gimbal-intro")).angleTo(orientation(scene("order-3"))),
+    ).toBeLessThan(1e-7);
+    expect(lessons.en[intro].body).toContain("gimbal lock");
+    expect(lessons.ru[intro].body).toContain("гимбал лок");
   });
   it("changes the representation without changing Object3D orientation", () => {
     expect(

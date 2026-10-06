@@ -1,7 +1,7 @@
 "use client";
 import { useLayoutEffect, useRef } from "react";
-import { snapshots } from "./snapshots";
-import { chapterIndex, chapters, lessons, type Language } from "./content";
+import { snapshots, sequenceKey } from "./snapshots";
+import { lessons, type Language } from "./content";
 import type { RotationState } from "./state";
 import { Numbers, SnapshotParameters } from "./Panels";
 
@@ -18,7 +18,7 @@ function FramePanel({
   return (
     <>
       <p className="eyebrow">
-        {chapters[language][chapterIndex(index)]}
+        <span className="topic-name">{text.topicTitle}</span>
         <span>
           {String(index + 1).padStart(2, "0")} / {lessons.en.length}
         </span>
@@ -50,7 +50,7 @@ export function SnapshotSidebar({
 }) {
   const panel = useRef<HTMLElement>(null);
   const snapshot = snapshots[index];
-  const group = snapshot.scene.timeline?.group ?? snapshot.id;
+  const group = sequenceKey(snapshot);
   const previousGroup = useRef(group);
   useLayoutEffect(() => {
     if (previousGroup.current === group) return;
