@@ -913,59 +913,6 @@ details .code-block {
   }
 }
 
-.narration {
-  animation: narration-enter 420ms ease-out;
-}
-@keyframes narration-enter {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .narration {
-    animation: none;
-  }
-}
-
-.sidebar-stack {
-  position: relative;
-  overflow: hidden;
-  transition: height 420ms ease;
-}
-.sidebar-active {
-  animation: frame-panel-in 420ms ease both;
-}
-.sidebar-outgoing {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  animation: frame-panel-out 420ms ease both;
-}
-@keyframes frame-panel-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes frame-panel-out {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-}
 .snapshot-parameters {
   border-top: 1px solid var(--line);
   padding-top: 16px;
@@ -1011,19 +958,6 @@ details .code-block {
   height: 100%;
   background: var(--accent);
 }
-@media (prefers-reduced-motion: reduce) {
-  .sidebar-active,
-  .sidebar-outgoing {
-    animation: none;
-  }
-  .sidebar-outgoing {
-    display: none;
-  }
-  .sidebar-stack {
-    transition: none;
-  }
-}
-
 .stage-timeline {
   margin: 24px 0 30px;
 }
@@ -1062,7 +996,7 @@ details .code-block {
   width: 24px;
   height: 30px;
   border-radius: 5px;
-  cursor: help;
+  cursor: default;
 }
 .stage-timeline-track li > span > i {
   display: block;
@@ -1117,5 +1051,12 @@ details .code-block {
 .stage-timeline-tooltip span {
   margin-top: 5px;
   color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.stage-timeline-title {
+  display: block;
+  min-height: 2.9em;
+  line-height: 1.45;
   overflow-wrap: anywhere;
 }

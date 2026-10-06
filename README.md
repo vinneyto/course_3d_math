@@ -79,8 +79,9 @@ after building. Deployment is a separate step.
 The course page creates a `useCourseController` and selects React step components
 and props with a switch. `CourseControls` provides navigation. Each destination is
 a full immutable snapshot, so revisiting it restores the same mathematical values
-regardless of navigation history. A persistent React stage animates the scene and
-entire sidebar from the currently visible state. The WebGL canvas remains mounted
+regardless of navigation history. A persistent React stage animates the scene from the currently visible state;
+sidebar content switches immediately and readouts follow the displayed transform.
+The WebGL canvas remains mounted
 across forward, reverse and interrupted transitions. Camera and hover belong to
 the viewer; they cannot edit lesson parameters. See [slides/README.md](slides/README.md)
 and the interactive manual contract in [AGENTS.md](AGENTS.md).

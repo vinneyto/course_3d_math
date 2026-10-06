@@ -123,7 +123,7 @@ test("sidebar is read-only and revisiting a snapshot restores exactly its author
   );
 });
 
-test("scene and entire sidebar animate together without replacing the renderer", async ({
+test("scene animates with synchronized readouts and an immediate sidebar", async ({
   page,
 }) => {
   test.setTimeout(60_000);
@@ -138,15 +138,17 @@ test("scene and entire sidebar animate together without replacing the renderer",
   // Playwright reads, and formatted coordinates round before the endpoint.
   const sidebarTrace = await page.evaluateHandle(() => {
     const trace = {
-      outgoingSeen: false,
+      panelMotionSeen: false,
       transitioningSeen: false,
       samples: [] as { position: number; world: string }[],
       stop: () => observer.disconnect(),
     };
     const observer = new MutationObserver(() => {
-      trace.outgoingSeen ||= Boolean(
-        document.querySelector(".sidebar-outgoing"),
-      );
+      const panel = document.querySelector(".sidebar-active")!;
+      trace.panelMotionSeen ||=
+        Boolean(document.querySelector(".sidebar-outgoing")) ||
+        panel.getAnimations().length > 0 ||
+        getComputedStyle(panel).transform !== "none";
       trace.transitioningSeen ||=
         document
           .querySelector(".player-main")
@@ -183,18 +185,16 @@ test("scene and entire sidebar animate together without replacing the renderer",
   await expect
     .poll(() =>
       sidebarTrace.evaluate(
-        (trace) =>
-          trace.outgoingSeen &&
-          trace.transitioningSeen &&
-          trace.samples.length > 0,
+        (trace) => trace.transitioningSeen && trace.samples.length > 0,
       ),
     )
     .toBe(true);
   const sample = await sidebarTrace.evaluate((trace) => {
     trace.stop();
-    return trace.samples[0];
+    return { ...trace.samples[0], panelMotionSeen: trace.panelMotionSeen };
   });
   await sidebarTrace.dispose();
+  expect(sample.panelMotionSeen).toBe(false);
   expect(sample.position).toBeGreaterThan(0);
   expect(sample.position).toBeLessThan(0.5);
   expect(sample.world).not.toBe("(2.00, 1.00, 0.00)");
@@ -327,8 +327,12 @@ test("operation timelines explain stages without changing the selected snapshot"
   const timeline = pane(page).locator(".stage-timeline");
   await expect(timeline.locator("li")).toHaveCount(11);
   const heading = await pane(page).locator("h1").innerText();
+  await expect(timeline.locator(".stage-timeline-title")).toHaveText(heading);
   const marker = timeline.locator('[data-timeline-stage="gimbal-90-0.5"]');
   await marker.hover();
+  expect(await marker.evaluate((node) => getComputedStyle(node).cursor)).toBe(
+    "default",
+  );
   const tooltip = timeline.getByRole("tooltip");
   await expect(tooltip).toContainText("first and third axes coincide");
   await expect(tooltip).toContainText("y = 90°");

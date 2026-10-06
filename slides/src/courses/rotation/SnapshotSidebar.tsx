@@ -1,5 +1,4 @@
 "use client";
-import { useLayoutEffect, useRef, useState } from "react";
 import { chapterIndex, chapters, lessons, type Language } from "./content";
 import type { RotationState } from "./state";
 import { Numbers, SnapshotParameters } from "./Panels";
@@ -35,7 +34,7 @@ function FramePanel({
   );
 }
 
-/** Scene and sidebar belong to the same frame; the entire previous panel fades out. */
+/** Sidebar content switches immediately; readouts still follow the displayed scene. */
 export function SnapshotSidebar({
   index,
   language,
@@ -47,31 +46,6 @@ export function SnapshotSidebar({
   scene: RotationState;
   destination: RotationState;
 }) {
-  const last = useRef({ index, scene });
-  const [outgoing, setOutgoing] = useState<typeof last.current | null>(null);
-  const [height, setHeight] = useState<number>();
-  const active = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    if (last.current.index === index) return;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setOutgoing(null);
-      return;
-    }
-    setOutgoing(last.current);
-    const timer = setTimeout(() => setOutgoing(null), 420);
-    return () => clearTimeout(timer);
-  }, [index]);
-  useLayoutEffect(() => {
-    last.current = { index, scene };
-  });
-  useLayoutEffect(() => {
-    const measure = () =>
-      setHeight(active.current?.getBoundingClientRect().height);
-    const observer = new ResizeObserver(measure);
-    if (active.current) observer.observe(active.current);
-    measure();
-    return () => observer.disconnect();
-  }, [index, language]);
   const displayed = {
     ...scene,
     mode: destination.mode,
@@ -82,19 +56,8 @@ export function SnapshotSidebar({
       className="lesson"
       aria-label={language === "ru" ? "Кадр мануала" : "Manual frame"}
     >
-      <div className="sidebar-stack" style={{ height }}>
-        {outgoing && (
-          <div className="sidebar-outgoing" aria-hidden="true" inert>
-            <FramePanel
-              index={outgoing.index}
-              language={language}
-              scene={outgoing.scene}
-            />
-          </div>
-        )}
-        <div className="sidebar-active" ref={active} key={index}>
-          <FramePanel index={index} language={language} scene={displayed} />
-        </div>
+      <div className="sidebar-active" key={index}>
+        <FramePanel index={index} language={language} scene={displayed} />
       </div>
     </section>
   );

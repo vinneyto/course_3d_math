@@ -26,8 +26,8 @@ export function StageTimeline({
   const inspected = hovered === null ? undefined : group[hovered];
   return (
     <div className="stage-timeline" data-timeline-position={position}>
-      <p className="panel-caption">
-        {language === "ru" ? "Таймлайн" : "Timeline"}
+      <p className="panel-caption stage-timeline-title">
+        {group[current].caption![language]}
       </p>
       <div className="stage-timeline-track">
         <div className="stage-timeline-rail" aria-hidden="true">

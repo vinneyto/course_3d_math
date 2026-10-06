@@ -37,12 +37,15 @@
 - Viewer interaction is limited to orbit/zoom/pan of the camera and hovering
   scene/panel elements for tooltips. Camera and hover state are separate from the
   authored snapshot and must never change its mathematical values.
-- The sidebar is part of each snapshot. Animate its text, parameter indicators,
-  formulas, layout and numeric readouts along with the scene, not just its title.
+- The sidebar is part of each snapshot. Switch its text, formulas and layout
+  immediately without entry/exit motion, crossfades or animated height. Numeric
+  readouts and indicators follow the displayed scene during its transition.
 - Every multi-step demonstration has an operation timeline with stage markers and
   hover/focus tooltips. Use the current stage's descriptive name as its heading;
   do not substitute completion percentages or an anonymous time/progress meter.
-  Timeline markers inspect stages; course navigation changes the snapshot.
+  Label the timeline with the current stage name, not the word "Timeline".
+  Timeline markers inspect stages with a normal cursor; course navigation changes
+  the snapshot.
 - Keep the shared R3F Canvas, renderer and narrative scene mounted. Forward,
   reverse and interrupted navigation transition from the current visible state.
   Different content may crossfade; respect reduced-motion preferences.

@@ -39,8 +39,10 @@ rings, angles and model consistent. Position, camera and visibility interpolate.
 Reduced-motion preferences reach the destination immediately.
 
 `SnapshotSidebar` contains the full explanation, parameter indicators, formulas
-and numerical readouts. Entire panels crossfade, sidebar height transitions and
-numbers follow the displayed scene. Destination parameters never inherit edits or
+and numerical readouts. Panel text and layout switch immediately without
+entry/exit animation, crossfades or height transitions. Numbers and indicators
+follow the displayed scene. Timeline labels show the current operation name;
+markers use a normal cursor. Destination parameters never inherit edits or
 values from earlier visits. Viewer camera state is preserved between frames with
 the same authored camera; a changed framing animates to the new view. Language
 switching preserves course progress.
