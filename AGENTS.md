@@ -1,5 +1,12 @@
 # Repository instructions
 
+## Reusable manual-authoring skill
+
+For new manuals or changes to their narrative, UI, navigation, or scene transitions,
+use [build-interactive-manuals](.agents/skills/build-interactive-manuals/SKILL.md).
+Its reference files describe the architecture, visual design, narrative structure,
+and geometry rules, including how to use the approach in a standalone project.
+
 ## Monorepo and interactive slides
 
 - Keep `exercises`, `sandbox`, and `slides` as npm workspaces. Preserve root

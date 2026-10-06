@@ -39,7 +39,8 @@ export interface RotationState {
   t: number;
   local: boolean;
   arc: boolean;
-  eulerSectors: boolean;
+  /** Undefined follows the topic default; false explicitly suppresses sectors. */
+  eulerSectors: boolean | undefined;
   arcStartAngles: Triple;
   translation: boolean;
   zero: boolean;
@@ -103,7 +104,7 @@ export const initialState: RotationState = {
   t: 0,
   local: false,
   arc: false,
-  eulerSectors: false,
+  eulerSectors: undefined,
   arcStartAngles: [0, 0, 0],
   translation: false,
   zero: false,

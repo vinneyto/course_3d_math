@@ -358,6 +358,7 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
     "conditions-0",
     "conditions-3",
     "axis-X-0",
+    "axis-X-60",
     "conditions-3",
     "euler-3",
     "order-0",
@@ -376,10 +377,10 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
       true,
     );
     await expect(page.locator(".scene-loading")).toHaveCount(0);
-    if (id === "conditions-3") {
+    if (["conditions-3", "axis-X-0", "axis-X-60"].includes(id)) {
       await canvas.scrollIntoViewIfNeeded();
       await page.screenshot({
-        path: `test-results/${test.info().project.name}-restored-sectors.png`,
+        path: `test-results/${test.info().project.name}-${id}-sectors.png`,
       });
     }
   }

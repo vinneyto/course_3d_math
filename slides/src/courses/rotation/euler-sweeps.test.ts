@@ -112,8 +112,7 @@ describe("Euler angle sectors", () => {
     expect(eulerQuaternion(angles).angleTo(orientation(middle))).toBeLessThan(
       1e-7,
     );
-    // The restoration frame already shows sectors. Resetting to the first axis
-    // shrinks their angles, without briefly fading sectors into existence.
+    // Keep the early restoration/reset free of sectors, including their transition.
     const restored = scene("conditions-3"),
       reset = scene("axis-X-0");
     for (const [from, to] of [
@@ -124,13 +123,14 @@ describe("Euler angle sectors", () => {
         const frame = blendScene(from, to, t);
         expect(
           (frame.visual?.visibility ?? visibility(frame)).eulerSectors,
-        ).toBe(1);
+        ).toBe(0);
       }
     }
     const interrupted = blendScene(restored, reset, 0.4);
     expect(
       blendScene(interrupted, restored, 0.3).visual!.visibility.eulerSectors,
-    ).toBe(1);
+    ).toBe(0);
+    expect(visibility(scene("axis-X-60")).eulerSectors).toBe(1);
     expect(displayedEulerAngles(reset)).toEqual([0, 0, 0]);
   });
   it("resets XYZ sectors before switching to YXZ, without moving their planes or radii at the boundary", () => {

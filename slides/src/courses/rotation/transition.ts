@@ -44,10 +44,10 @@ export function visibility(s: RotationState) {
     grid3D: Number(s.dimension === 3),
     cubePoint: Number(s.mode === "cube"),
     eulerSectors: Number(
-      s.eulerSectors ||
-        ["axis", "euler", "order"].includes(s.panel) ||
-        (s.panel === "gimbal" &&
-          (s.gimbalView.startsWith("turn-") || s.gimbalView === "align")),
+      s.eulerSectors ??
+        (["axis", "euler", "order"].includes(s.panel) ||
+          (s.panel === "gimbal" &&
+            (s.gimbalView.startsWith("turn-") || s.gimbalView === "align"))),
     ),
     surface: Number(s.surface === "surface"),
     wireframe: Number(

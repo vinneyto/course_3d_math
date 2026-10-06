@@ -18,6 +18,13 @@ within a group; on mobile this applies to the document's lesson section.
 
 ## React structure
 
+The reusable [build-interactive-manuals skill](../.agents/skills/build-interactive-manuals/SKILL.md)
+documents the stack, snapshot authoring, persistent scene lifecycle, navigation,
+responsive sidebar, timelines, charts, axes, sectors, and tooltips. Invoke
+`$build-interactive-manuals` to add a course here or create another manual project.
+For another checkout, copy the complete skill folder, including its references
+and `agents/openai.yaml`, into that project's `.agents/skills/` directory.
+
 `RotationPresentation` creates `useCourseController(snapshots.length)` and selects
 `PointSlide`, `ModelSlide`, `GimbalSlide`, `InterpolationSlide`, `QuaternionSlide`
 or `ObjectSlide` through a switch on the snapshot kind, passing its complete scene.
@@ -82,6 +89,8 @@ composition uses successive moving axes, described as nested parent frames.
 Then: cube, torus knot, orthonormality versus deformation, axis formulas,
 Euler composition, order comparison, gimbal lock and angle boundary interpolation.
 Finally: axis–angle quaternion, quaternion matrix, SLERP, Object3D and recap.
+Steps 19–20 omit angle sectors; they appear in step 21 when the swept angle
+becomes the subject of the explanation.
 
 The order lesson reuses one model: reset after XYZ, then animate Y = 40°,
 X = 30° and Z = 25° in YXZ order. The resulting orientations differ despite
