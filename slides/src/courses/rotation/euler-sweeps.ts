@@ -49,3 +49,19 @@ export function gimbalTurnSweeps(angles: Triple): EulerSweep[] {
     .toArray();
   return sweeps;
 }
+
+/** Ring planes use the same successive Euler frames as the basis demonstration. */
+export function eulerRingFrames(angles: Triple): EulerSweep[] {
+  return eulerSweeps(angles, "XYZ").map((sweep) => ({
+    ...sweep,
+    frame: new Quaternion(...sweep.frame)
+      .multiply(axisQuaternion(vectors[sweep.axis], sweep.angle))
+      .multiply(
+        new Quaternion().setFromUnitVectors(
+          new Vector3(0, 0, 1),
+          new Vector3(...vectors[sweep.axis]),
+        ),
+      )
+      .toArray(),
+  }));
+}

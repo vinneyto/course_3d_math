@@ -274,10 +274,16 @@ export const lessons = {
   en: snapshots.map((step) => ({
     ...en[step.topic],
     title: step.caption?.en ?? en[step.topic].title,
+    body: step.explanation?.body.en ?? en[step.topic].body,
+    takeaway: step.explanation?.takeaway.en ?? en[step.topic].takeaway,
+    hint: step.explanation?.hint.en ?? en[step.topic].hint,
   })),
   ru: snapshots.map((step) => ({
     ...ru[step.topic],
     title: step.caption?.ru ?? ru[step.topic].title,
+    body: step.explanation?.body.ru ?? ru[step.topic].body,
+    takeaway: step.explanation?.takeaway.ru ?? ru[step.topic].takeaway,
+    hint: step.explanation?.hint.ru ?? ru[step.topic].hint,
   })),
 };
 export const chapters = {

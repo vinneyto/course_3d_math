@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { gimbalPass } from "../src/courses/rotation/gimbal-story";
 import { snapshots } from "../src/courses/rotation/snapshots";
 
 const pane = (page: Page) => page.locator(".sidebar-active");
@@ -385,19 +386,17 @@ test("operation timelines explain stages without changing the selected snapshot"
   await page.goto("/presentations/rotation");
   await go(page, "gimbal-y45");
   const timeline = pane(page).locator(".stage-timeline");
-  await expect(timeline.locator("li")).toHaveCount(
-    snapshots.filter((step) => step.topic === 14).length,
-  );
+  await expect(timeline.locator("li")).toHaveCount(gimbalPass.length);
   const heading = await pane(page).locator("h1").innerText();
   await expect(timeline.locator(".stage-timeline-title")).toHaveText(heading);
-  const marker = timeline.locator('[data-timeline-stage="gimbal-planes"]');
+  const marker = timeline.locator('[data-timeline-stage="gimbal-align"]');
   await marker.hover();
   expect(await marker.evaluate((node) => getComputedStyle(node).cursor)).toBe(
     "default",
   );
   const tooltip = timeline.getByRole("tooltip");
-  await expect(tooltip).toContainText("X and Z now rotate in the same plane");
-  await expect(tooltip).toContainText("y = 90°");
+  await expect(tooltip).toContainText("The new Z coincides with the saved X");
+  await expect(tooltip).toContainText("Ry(90°)");
   const panelBounds = (await pane(page).boundingBox())!;
   const tooltipBounds = (await tooltip.boundingBox())!;
   expect(tooltipBounds.x).toBeGreaterThanOrEqual(panelBounds.x);
@@ -445,31 +444,52 @@ test("operation timelines explain stages without changing the selected snapshot"
 test("separate X/Z turns move the model but simultaneous compensation leaves the rendered scene still", async ({
   page,
 }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
   await page.goto("/presentations/rotation");
   const canvas = page.locator("canvas");
+  // The footer's course-progress rail can overlap the canvas's bottom pixel.
+  // Compare the scene interior, excluding that navigation UI.
+  const sceneImage = async () => {
+    await canvas.scrollIntoViewIfNeeded();
+    const bounds = (await canvas.boundingBox())!;
+    return page.screenshot({ clip: { ...bounds, height: bounds.height - 2 } });
+  };
   await expect(canvas).toHaveAttribute("data-webgl-ready", "true");
   await go(page, "order-0");
-  const orderStart = await canvas.screenshot();
+  const orderStart = await sceneImage();
   await go(page, "order-1");
-  expect(orderStart.equals(await canvas.screenshot())).toBe(false);
+  expect(orderStart.equals(await sceneImage())).toBe(false);
   await go(page, "order-3");
   await page.screenshot({
     path: `test-results/${test.info().project.name}-yxz.png`,
     fullPage: true,
   });
-  await go(page, "gimbal-planes");
+  await go(page, "gimbal-align");
   await page.screenshot({
-    path: `test-results/${test.info().project.name}-planes.png`,
+    path: `test-results/${test.info().project.name}-saved-axis.png`,
     fullPage: true,
   });
-  await go(page, "gimbal-x-ready");
-  const beforeX = await canvas.screenshot();
+  await go(page, "gimbal-remember-x");
+  const beforeX = await sceneImage();
   await go(page, "gimbal-x30");
-  expect(beforeX.equals(await canvas.screenshot())).toBe(false);
+  expect(beforeX.equals(await sceneImage())).toBe(false);
+  await go(page, "gimbal-y45");
+  await expect(pane(page).locator(".gimbal-basis-readouts")).toContainText(
+    "X₀ = (1.00, 0.00, 0.00)",
+  );
+  await go(page, "gimbal-y90");
+  await expect(pane(page).locator(".gimbal-basis-readouts")).toContainText(
+    "Z = (1.00, 0.00, 0.00)",
+  );
+  await go(page, "gimbal-z-minus15");
+  await expect(
+    pane(page).getByRole("meter", { name: "z angle", exact: true }),
+  ).toHaveAttribute("aria-valuenow", "-15");
   await go(page, "gimbal-z-minus30");
+  await go(page, "gimbal-equivalent");
+  const beforeCancel = await sceneImage();
   await go(page, "gimbal-cancel-ready");
-  const beforeCancel = await canvas.screenshot();
+  expect(beforeCancel.equals(await sceneImage())).toBe(true);
   const angleTrace = await page.evaluateHandle(() => {
     const trace = {
       changedWhileAnimating: false,
@@ -502,7 +522,7 @@ test("separate X/Z turns move the model but simultaneous compensation leaves the
     }),
   ).toBe(true);
   await angleTrace.dispose();
-  expect(beforeCancel.equals(await canvas.screenshot())).toBe(true);
+  expect(beforeCancel.equals(await sceneImage())).toBe(true);
   await go(page, "gimbal-cancel90");
   await expect(
     pane(page).getByRole("meter", { name: "x angle", exact: true }),
@@ -510,10 +530,38 @@ test("separate X/Z turns move the model but simultaneous compensation leaves the
   await expect(
     pane(page).getByRole("meter", { name: "z angle", exact: true }),
   ).toHaveAttribute("aria-valuenow", "-90");
-  expect(beforeCancel.equals(await canvas.screenshot())).toBe(true);
+  expect(beforeCancel.equals(await sceneImage())).toBe(true);
   await pane(page)
     .locator(".angle-charts")
     .screenshot({
       path: `test-results/${test.info().project.name}-compensation-graphs.png`,
     });
+  const renderer = await canvas.elementHandle();
+  await go(page, "gimbal-rings-start");
+  await expect(pane(page).locator(".stage-timeline")).toHaveAttribute(
+    "data-timeline-position",
+    "0",
+  );
+  await expect(pane(page).locator(".stage-timeline li")).toHaveCount(
+    gimbalPass.length,
+  );
+  await expect(pane(page).locator(".stage-timeline")).not.toContainText(
+    "Start with an ordinary basis",
+  );
+  await go(page, "gimbal-rings-align");
+  await expect(pane(page).locator(".gimbal-basis-readouts")).toContainText(
+    "Z = (1.00, 0.00, 0.00)",
+  );
+  await page.screenshot({
+    path: `test-results/${test.info().project.name}-rings-aligned.png`,
+    fullPage: true,
+  });
+  await go(page, "gimbal-rings-equivalent");
+  expect(beforeCancel.equals(await sceneImage())).toBe(false);
+  expect(
+    await canvas.evaluate((node, previous) => node === previous, renderer),
+  ).toBe(true);
+  await expect(pane(page).locator(".snapshot-values")).toContainText(
+    "basis and rings",
+  );
 });

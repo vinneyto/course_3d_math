@@ -1,6 +1,6 @@
 "use client";
 
-import { gimbalStory } from "./gimbal-story";
+import { gimbalPass } from "./gimbal-story";
 import { worldPoint } from "./transition";
 import { Matrix4, Object3D, Vector3 } from "three";
 import {
@@ -85,18 +85,18 @@ export function AngleCharts({
 }) {
   const angles = displayedEulerAngles(s);
   const active = Math.abs(angles[1] - 90) < 0.001;
-  const position = s.timeline?.position ?? s.t;
+  const position = s.t;
   const planePosition =
-    gimbalStory.findIndex((step) => step.view === "planes") /
-    (gimbalStory.length - 1);
-  const cancelIndex = gimbalStory.findIndex((step) => step.view === "cancel");
-  const cancelPosition = cancelIndex / (gimbalStory.length - 1);
+    gimbalPass.findIndex((step) => step.angles[1] === 90) /
+    (gimbalPass.length - 1);
+  const cancelIndex = gimbalPass.findIndex((step) => step.view === "cancel");
+  const cancelPosition = cancelIndex / (gimbalPass.length - 1);
   const graphPoints = (axis: number, start = 0) =>
-    gimbalStory
+    gimbalPass
       .slice(start)
       .map(
         (step, i) =>
-          `${((i + start) / (gimbalStory.length - 1)) * 260},${32 - (step.angles[axis] / 90) * 26}`,
+          `${((i + start) / (gimbalPass.length - 1)) * 260},${32 - (step.angles[axis] / 90) * 26}`,
       )
       .join(" ");
   return (
@@ -104,8 +104,8 @@ export function AngleCharts({
       <p className={active ? "lock active" : "lock"}>
         {active
           ? language === "ru"
-            ? `Оси X₁ и Z₃ совпали · x + z = ${fmt(angles[0] + angles[2])}°`
-            : `X₁ and Z₃ coincide · x + z = ${fmt(angles[0] + angles[2])}°`
+            ? `Оси X₀ и Z₃ совпали · x + z = ${fmt(angles[0] + angles[2])}°`
+            : `X₀ and Z₃ coincide · x + z = ${fmt(angles[0] + angles[2])}°`
           : language === "ru"
             ? "Три независимых угла"
             : "Three independent angles"}
@@ -263,6 +263,20 @@ export function SnapshotParameters({
             <dd>{s.order}</dd>
           </>
         )}
+        {s.panel === "gimbal" && (
+          <>
+            <dt>{ru ? "Представление" : "Representation"}</dt>
+            <dd>
+              {s.gimbalRings
+                ? ru
+                  ? "базис и кольца"
+                  : "basis and rings"
+                : ru
+                  ? "обычный базис"
+                  : "ordinary basis"}
+            </dd>
+          </>
+        )}
         {s.panel === "object" && (
           <>
             <dt>{ru ? "Представление" : "Representation"}</dt>
@@ -397,6 +411,23 @@ export function Numbers({
             <p>= {vectorText(tuple(world))}</p>
           </div>
         </>
+      )}
+      {s.panel === "gimbal" && s.gimbalRememberX && (
+        <div className="expansion gimbal-basis-readouts">
+          <p style={{ color: colors[0] }}>
+            X₀ = {vectorText(s.gimbalReferenceX)}
+          </p>
+          <p style={{ color: colors[2] }}>Z = {vectorText(tuple(basis[2]))}</p>
+          {(s.gimbalView === "align" ||
+            s.gimbalView === "equivalent" ||
+            s.gimbalView === "cancel") && <p>Z₃ = X₀</p>}
+          {(s.gimbalView === "equivalent" || s.gimbalView === "cancel") && (
+            <p>
+              Rx(30°) · Ry(90°) · Rz(−30°)
+              <br />= Rx(0°) · Ry(90°) · Rz(0°)
+            </p>
+          )}
+        </div>
       )}
       {s.panel === "conditions" && (
         <div className="expansion">

@@ -47,6 +47,9 @@ export interface RotationState {
   stage: number;
   parent: boolean;
   gimbalView: import("./gimbal-story").GimbalView;
+  gimbalRememberX: boolean;
+  gimbalReferenceX: Triple;
+  gimbalRings: boolean;
   singleAxis: "X" | "Y" | "Z";
   cameraPosition: Triple;
   cameraTarget: Triple;
@@ -93,7 +96,10 @@ export const initialState: RotationState = {
   input: "euler",
   stage: 1,
   parent: false,
-  gimbalView: "turn-y",
+  gimbalView: "basis",
+  gimbalRememberX: false,
+  gimbalReferenceX: [1, 0, 0],
+  gimbalRings: false,
   singleAxis: "X",
   cameraPosition: [1, 1, 12],
   cameraTarget: [1, 1, 0],

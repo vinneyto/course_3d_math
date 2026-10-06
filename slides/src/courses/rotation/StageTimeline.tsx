@@ -20,7 +20,8 @@ export function StageTimeline({
   if (group.length < 2) return null;
   const current = group.findIndex((step) => step.id === snapshots[index].id);
   const position =
-    scene.timeline?.group === snapshots[index].topic
+    scene.timeline &&
+    scene.timeline.group === snapshots[index].scene.timeline?.group
       ? scene.timeline.position
       : current / (group.length - 1);
   const inspected = hovered === null ? undefined : group[hovered];

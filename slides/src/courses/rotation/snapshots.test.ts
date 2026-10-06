@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { Vector3 } from "three";
+import { gimbalPass } from "./gimbal-story";
 import { snapshots } from "./snapshots";
 import { lessons } from "./content";
 import { orientation } from "./state";
@@ -39,8 +41,8 @@ describe("authored manual snapshots", () => {
       });
   });
   it("shows separate X/Z turns and compensation throughout simultaneous changes", () => {
-    const base = orientation(scene("gimbal-y90"));
-    expect(base.angleTo(orientation(scene("gimbal-x30")))).toBeCloseTo(
+    const base = orientation(scene("gimbal-equivalent"));
+    expect(base.angleTo(orientation(scene("gimbal-y90")))).toBeCloseTo(
       Math.PI / 6,
       8,
     );
@@ -71,6 +73,42 @@ describe("authored manual snapshots", () => {
     );
     const reversed = blendScene(interrupted, scene("gimbal-cancel45"), 0.5);
     expect(base.angleTo(modelOrientation(reversed))).toBeLessThan(1e-7);
+  });
+  it("remembers the original X while the current Z aligns with it after the Y turn", () => {
+    for (const prefix of ["gimbal-", "gimbal-rings-"]) {
+      const remembered = scene(`${prefix}remember-x`).gimbalReferenceX;
+      expect(remembered).toEqual([1, 0, 0]);
+      expect(Object.isFrozen(remembered)).toBe(true);
+      const turned = scene(`${prefix}y90`),
+        q = orientation(turned);
+      const z = new Vector3(0, 0, 1).applyQuaternion(q);
+      const x = new Vector3(1, 0, 0).applyQuaternion(q);
+      expect(z.distanceTo(new Vector3(...remembered))).toBeLessThan(1e-12);
+      expect(x.dot(z)).toBeCloseTo(0, 12);
+      expect(x.distanceTo(new Vector3(...remembered))).toBeGreaterThan(1);
+      expect(
+        orientation(scene(`${prefix}z-minus30`)).angleTo(
+          orientation(scene(`${prefix}equivalent`)),
+        ),
+      ).toBeLessThan(1e-7);
+    }
+    // −45° would overcompensate the first +30° turn by 15°.
+    expect(
+      eulerQuaternion([30, 90, -45]).angleTo(eulerQuaternion([-15, 90, 0])),
+    ).toBeLessThan(1e-7);
+  });
+  it("repeats identical rotations with rings and restores independent per-pass timelines", () => {
+    for (const step of gimbalPass) {
+      const plain = scene(step.id),
+        rings = scene(step.id.replace("gimbal-", "gimbal-rings-"));
+      expect(orientation(plain).angleTo(orientation(rings))).toBeLessThan(1e-7);
+      expect(rings.gimbalReferenceX).toEqual(plain.gimbalReferenceX);
+      expect(rings.t).toBe(plain.t);
+      expect(rings.timeline!.position).toBe(plain.timeline!.position);
+      expect(rings.timeline!.group).not.toBe(plain.timeline!.group);
+      expect(visibility(plain).gimbalRings).toBe(0);
+      expect(visibility(rings).gimbalRings).toBe(1);
+    }
   });
   it("animates one model through the second Euler order with the same final angles", () => {
     const finalXYZ = orientation(scene("euler-3"));

@@ -43,7 +43,7 @@ import {
   eulerSweeps,
   gimbalTurnSweeps,
   sweepVertex,
-  sweepAxis,
+  eulerRingFrames,
   type EulerSweep,
 } from "./euler-sweeps";
 import type { Language } from "./content";
@@ -623,64 +623,40 @@ function EulerSectors({
     </>
   );
 }
-/** Filled planes appear only while explaining the coinciding Euler axes. */
-function RotationPlanes({
-  s,
-  language,
-}: {
-  s: RotationState;
-  language: Language;
-}) {
-  const sweeps = eulerSweeps(displayedEulerAngles(s), "XYZ");
+/** Remember the first Euler axis while the current object basis keeps turning. */
+function SavedXAxis({ s }: { s: RotationState }) {
+  const tip = tuple(new Vector3(...s.gimbalReferenceX).multiplyScalar(3.65));
   return (
     <>
-      {[sweeps[0], sweeps[2]].map((sweep, i) => {
-        const color = colors["XYZ".indexOf(sweep.axis)];
-        const normal = sweepAxis(sweep);
-        const radius = i === 0 ? 2.4 : 2.05;
-        const frame = new Quaternion().setFromUnitVectors(
-          new Vector3(0, 0, 1),
-          normal,
-        );
-        const outline = [
-          [-radius, -radius, 0],
-          [radius, -radius, 0],
-          [radius, radius, 0],
-          [-radius, radius, 0],
-          [-radius, -radius, 0],
-        ].map((point) => tuple(new Vector3(...point).applyQuaternion(frame)));
-        return (
-          <group key={sweep.axis}>
-            <mesh quaternion={frame}>
-              <planeGeometry args={[radius * 2, radius * 2]} />
-              <meshBasicMaterial
-                color={color}
-                transparent
-                opacity={0.13}
-                side={DoubleSide}
-                depthWrite={false}
-                polygonOffset
-                polygonOffsetFactor={i + 1}
-                polygonOffsetUnits={i + 1}
-              />
-            </mesh>
-            <Line points={outline} color={color} lineWidth={1.5} />
-            <Arrow
-              to={tuple(normal.multiplyScalar(i === 0 ? 3 : 3.5))}
-              color={color}
-              label={i === 0 ? "X₁" : "Z₃"}
-            />
-            <Label
-              position={[0, radius + (i === 0 ? 0.4 : -0.35), 0]}
-              color={color}
-            >
-              {language === "ru"
-                ? `Плоскость вращения ${sweep.axis}`
-                : `${sweep.axis} rotation plane`}
-            </Label>
-          </group>
-        );
-      })}
+      <Line
+        points={[[0, 0, 0], tip]}
+        color={colors[0]}
+        dashed
+        dashSize={0.16}
+        gapSize={0.08}
+        lineWidth={2.5}
+      />
+      <Label
+        position={tip}
+        color={colors[0]}
+      >{`X₀ ${vectorText(s.gimbalReferenceX)}`}</Label>
+    </>
+  );
+}
+/** The second pass adds mounted rings without changing the authored rotations. */
+function EulerRings({ s }: { s: RotationState }) {
+  return (
+    <>
+      {eulerRingFrames(displayedEulerAngles(s)).map((ring, i) => (
+        <mesh key={ring.axis} quaternion={ring.frame}>
+          <torusGeometry args={[2.65 - i * 0.22, 0.035, 12, 96]} />
+          <meshStandardMaterial
+            color={colors["XYZ".indexOf(ring.axis)]}
+            roughness={0.4}
+            metalness={0.15}
+          />
+        </mesh>
+      ))}
     </>
   );
 }
@@ -875,8 +851,16 @@ function World({
               <EulerSectors s={s} language={language} comparison />
             </Fade>
           </group>
-          <Fade opacity={weights.gimbalPlanes}>
-            <RotationPlanes s={s} language={language} />
+          <Fade opacity={weights.gimbalReference}>
+            <SavedXAxis s={s} />
+          </Fade>
+          <Fade opacity={weights.gimbalAlignment}>
+            <Label position={[0, 2.9, 0]} color={colors[2]}>
+              Z = X₀ = (1, 0, 0)
+            </Label>
+          </Fade>
+          <Fade opacity={weights.gimbalRings}>
+            <EulerRings s={s} />
           </Fade>
           <Fade opacity={weights.axis}>
             <Arrow

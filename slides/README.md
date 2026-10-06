@@ -9,7 +9,7 @@ Run `npm run dev` from the monorepo root, then open http://localhost:3000.
 - `/presentations/rotation`: rotation manual in English and Russian.
 
 Existing workspace and route names remain stable. User-facing terminology is
-**interactive manual** and **step**. The rotation manual contains 93 atomic snapshots
+**interactive manual** and **step**. The rotation manual contains 107 atomic snapshots
 covering 21 topics. Each snapshot describes the complete scene and sidebar.
 
 ## React structure
@@ -76,15 +76,18 @@ The order lesson reuses one model: reset after XYZ, then animate Y = 40°,
 X = 30° and Z = 25° in YXZ order. The resulting orientations differ despite
 identical final angle values.
 
-The gimbal sequence first turns Y to 90°, briefly shows the coinciding X/Z
-rotation planes, then hides them. Separate X = +30° and Z = −30° turns cancel
-in sequence. Subsequent snapshots change X and Z simultaneously while keeping
-X + Z = 0°: the model stays still throughout each transition. There are no
-gimbal rings. Only the active turn has a signed sector; compensation has none.
-Angle graphs share the authored snapshot path and highlight the simultaneous
-cancellation segment in orange. The axis and Euler sequences also show signed
-sectors in the successive moving frames. Geometry buffers stay mounted.
-Graphs observe course time; clicking them cannot change it.
+The gimbal lesson has two matching 13-step passes, with separate operation
+timelines. First show an ordinary rotating basis, remember the original X₀ as a
+fixed dashed reference, turn X by +30°, then local Y through 45° to 90°.
+The new Z coincides with X₀ while current X and Z remain perpendicular.
+Z = −15° partially cancels the first turn; Z = −30° fully cancels it.
+Setting X/Z to zero demonstrates the exact equivalent Y-only orientation.
+Simultaneous X/Z changes then show the loss of independence, with no sectors
+when the model does not rotate. Repeat the same authored angles with rings
+whose planes follow the successive Euler frames. Intermediate rings can move
+while their combined effect leaves the model still. Graphs share the per-pass
+authored path and highlight simultaneous cancellation in orange. Sector and
+ring geometry remain mounted. Graphs observe course time without seeking.
 
 Interpolation snapshots compare an actual vertex trajectory. Angular speeds are
 degrees per normalized time t. Single-axis and compound comparisons share their

@@ -1,4 +1,3 @@
-import { gimbalStory } from "./gimbal-story";
 export type Localized = { en: string; ru: string };
 export interface ManualStage {
   name: Localized;
@@ -277,7 +276,6 @@ export const stageDefinitions: Record<number, readonly ManualStage[]> = {
       "R = Ry(40°) · Rx(30°) · Rz(25°) ≠ Rx(30°) · Ry(40°) · Rz(25°)",
     ),
   ],
-  14: gimbalStory,
   15: [
     stage(
       "Start near the angle boundary",

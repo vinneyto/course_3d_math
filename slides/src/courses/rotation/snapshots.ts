@@ -13,6 +13,8 @@ export type StepKind =
   | "object";
 export interface RotationSnapshot {
   id: string;
+  sequence?: string;
+  explanation?: import("./gimbal-story").GimbalExplanation;
   topic: number;
   kind: StepKind;
   scene: RotationState;
@@ -177,13 +179,22 @@ const authored: readonly RotationSnapshot[] = [
       angles,
     }),
   ),
-  ...gimbalStory.map((step, i) =>
-    frame(step.id, 14, "gimbal", {
-      panel: "gimbal",
-      cameraPosition: [6, 4, 11],
-      t: i / (gimbalStory.length - 1),
-      angles: step.angles,
-      gimbalView: step.view,
+  ...gimbalStory.map((step) =>
+    Object.freeze({
+      ...frame(step.id, 14, "gimbal", {
+        panel: "gimbal",
+        cameraPosition: [6, 4, 11],
+        t: step.position,
+        angles: step.angles,
+        gimbalView: step.view,
+        gimbalRememberX: step.rememberX,
+        gimbalReferenceX: [1, 0, 0],
+        gimbalRings: step.rings,
+      }),
+      sequence: step.rings ? "gimbal-rings" : "gimbal-basis",
+      caption: step.name,
+      operation: step.operation,
+      explanation: step.explanation,
     }),
   ),
   ...[0, 0.25, 0.5, 0.75, 1].map((t) =>
@@ -240,19 +251,31 @@ const authored: readonly RotationSnapshot[] = [
 ];
 export const snapshots: readonly RotationSnapshot[] = Object.freeze(
   authored.map((snapshot, index) => {
-    const group = authored.filter((step) => step.topic === snapshot.topic);
+    const group = authored.filter(
+      (step) =>
+        step.topic === snapshot.topic && step.sequence === snapshot.sequence,
+    );
     if (group.length === 1) return snapshot;
     const position = group.findIndex((step) => step.id === snapshot.id);
-    const stage = stageDefinitions[snapshot.topic]?.[position];
+    const stage = snapshot.caption
+      ? { name: snapshot.caption, operation: snapshot.operation! }
+      : stageDefinitions[snapshot.topic]?.[position];
     if (!stage) throw new Error(`Missing stage for ${snapshot.id}`);
     return Object.freeze({
       ...snapshot,
       caption: Object.freeze(stage.name),
+      explanation:
+        snapshot.explanation &&
+        Object.freeze({
+          body: Object.freeze(snapshot.explanation.body),
+          takeaway: Object.freeze(snapshot.explanation.takeaway),
+          hint: Object.freeze(snapshot.explanation.hint),
+        }),
       operation: stage.operation,
       scene: Object.freeze({
         ...snapshot.scene,
         timeline: Object.freeze({
-          group: snapshot.topic,
+          group: snapshot.scene.gimbalRings ? 114 : snapshot.topic,
           position: position / (group.length - 1),
         }),
       }),
@@ -262,5 +285,8 @@ export const snapshots: readonly RotationSnapshot[] = Object.freeze(
 
 export function sequenceFor(index: number) {
   const step = snapshots[index];
-  return snapshots.filter((snapshot) => snapshot.topic === step.topic);
+  return snapshots.filter(
+    (snapshot) =>
+      snapshot.topic === step.topic && snapshot.sequence === step.sequence,
+  );
 }

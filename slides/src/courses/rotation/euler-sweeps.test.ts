@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { Matrix4, Quaternion, Vector3, type EulerOrder } from "three";
 import {
   eulerSweeps,
+  eulerRingFrames,
   gimbalTurnSweeps,
   sweepAxis,
   sweepVertex,
@@ -60,6 +61,22 @@ describe("Euler angle sectors", () => {
       1e-10,
     );
     expect(sweepVertex("Z", -Math.PI / 2, 2)[1]).toBeCloseTo(-2, 12);
+  });
+  it("keeps ring normals aligned with the successive Euler rotation axes", () => {
+    for (const angles of [
+      [0, 0, 0],
+      [30, 45, 0],
+      [30, 90, -30],
+      [90, 90, -90],
+    ] as Triple[]) {
+      const axes = eulerSweeps(angles, "XYZ");
+      eulerRingFrames(angles).forEach((ring, i) => {
+        const normal = new Vector3(0, 0, 1).applyQuaternion(
+          new Quaternion(...ring.frame),
+        );
+        expect(normal.distanceTo(sweepAxis(axes[i]))).toBeLessThan(1e-12);
+      });
+    }
   });
   it("draws the Z undo sector along the X sector in reverse", () => {
     const sweeps = gimbalTurnSweeps([30, 90, -30]);
