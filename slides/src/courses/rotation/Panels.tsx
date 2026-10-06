@@ -1,4 +1,6 @@
 "use client";
+
+import { worldPoint } from "./transition";
 import { Matrix4, Object3D, Vector3, type EulerOrder } from "three";
 import {
   axisQuaternion,
@@ -507,8 +509,7 @@ export function Numbers({
   );
   m.elements[4] += s.shear;
   const p: Triple = s.zero ? (s.axisPoint ? [2, 0, 0] : [0, 0, 0]) : s.point;
-  const world = localToWorld(p, s.origin, q);
-  if (s.translation) world.set(s.point[0] + s.t, s.point[1] + s.t * 2, 0);
+  const world = worldPoint(s);
   const basis = [0, 1, 2].map((c) => new Vector3().setFromMatrixColumn(m, c));
   const showMatrix = [
     "basis",

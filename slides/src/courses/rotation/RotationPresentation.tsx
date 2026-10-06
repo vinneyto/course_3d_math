@@ -1,10 +1,11 @@
 "use client";
 
-import { Fragment, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { useCourseController } from "../../platform/use-course-controller";
 import { CourseControls } from "../../platform/CourseControls";
 import { useLanguage } from "../../components/use-language";
+import { RotationStage } from "./RotationSlide";
 import { lessons } from "./content";
 import {
   GimbalSlide,
@@ -20,12 +21,6 @@ export default function RotationPresentation() {
   const [language, changeLanguage] = useLanguage();
   const ru = language === "ru";
   const { index } = controller;
-  const slideKey =
-    index === 4 || index === 5
-      ? "basis"
-      : index === 17 || index === 18
-        ? "quaternion"
-        : index;
   const props = { index, language };
   let slide: ReactNode;
 
@@ -35,7 +30,7 @@ export default function RotationPresentation() {
       slide = <PointSlide {...props} />;
       break;
     case 1:
-      slide = <PointSlide {...props} scene={{ translation: true }} />;
+      slide = <PointSlide {...props} scene={{ translation: true, t: 1 }} />;
       break;
     case 2:
       slide = (
@@ -182,11 +177,7 @@ export default function RotationPresentation() {
   }
 
   return (
-    <main
-      className="presentation"
-      data-slide={index + 1}
-      data-slide-key={slideKey}
-    >
+    <main className="presentation" data-slide={index + 1}>
       <header className="player-header">
         <Link href="/" className="back-link">
           ← <span>{ru ? "Все презентации" : "All presentations"}</span>
@@ -202,8 +193,7 @@ export default function RotationPresentation() {
           {ru ? "EN" : "RU"}
         </button>
       </header>
-      {/* Related steps share a component; independent examples start fresh. */}
-      <Fragment key={slideKey}>{slide}</Fragment>
+      <RotationStage {...props}>{slide}</RotationStage>
       <CourseControls
         controller={controller}
         titles={lessons[language].map((lesson) => lesson.title)}

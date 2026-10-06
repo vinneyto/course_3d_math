@@ -5,14 +5,24 @@ import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   type ComponentRef,
   type RefObject,
+  type ReactNode,
 } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Line, OrbitControls } from "@react-three/drei";
-import { Euler, Group, Matrix4, Quaternion, Vector3 } from "three";
+import {
+  Euler,
+  Group,
+  Material,
+  Matrix4,
+  Mesh,
+  Quaternion,
+  Vector3,
+} from "three";
 import { createSky } from "@course/sandbox/sky";
 import { createKnotGeometry, modelVertex } from "./geometry";
 import {
@@ -27,12 +37,68 @@ import {
 } from "./math";
 import { orientation, type RotationState } from "./state";
 import type { Language } from "./content";
+import {
+  comparisonOrientation,
+  modelOrientation,
+  visibility,
+  worldPoint,
+} from "./transition";
 
 const colors = ["#f78189", "#8fd29d", "#7ea9ff"];
 // Projected DOM labels have an effect-owned layer, with no secondary React roots.
 const LabelPortal = createContext<RefObject<HTMLDivElement | null> | undefined>(
   undefined,
 );
+const FadeOpacity = createContext(1);
+function Fade({ opacity, children }: { opacity: number; children: ReactNode }) {
+  const inherited = useContext(FadeOpacity);
+  return (
+    <FadeOpacity.Provider value={inherited * opacity}>
+      <group visible={opacity > 0.001} userData={{ fadeOpacity: opacity }}>
+        {children}
+      </group>
+    </FadeOpacity.Provider>
+  );
+}
+/** Fade existing materials without replacing geometry or the WebGL renderer. */
+function SceneOpacity() {
+  const bases = useMemo(
+    () =>
+      new WeakMap<
+        Material,
+        { opacity: number; transparent: boolean; depthWrite: boolean }
+      >(),
+    [],
+  );
+  useFrame(({ scene }) => {
+    const visit = (object: import("three").Object3D, opacity: number) => {
+      const alpha = opacity * (object.userData.fadeOpacity ?? 1);
+      const material = (object as Mesh).material;
+      if (material)
+        for (const m of Array.isArray(material) ? material : [material]) {
+          let base = bases.get(m);
+          if (!base) {
+            base = {
+              opacity: m.opacity,
+              transparent: m.transparent,
+              depthWrite: m.depthWrite,
+            };
+            bases.set(m, base);
+          }
+          const transparent = base.transparent || alpha < 0.999;
+          if (transparent !== m.transparent) {
+            m.transparent = transparent;
+            m.needsUpdate = true;
+          }
+          m.opacity = base.opacity * alpha;
+          m.depthWrite = alpha < 0.999 ? false : base.depthWrite;
+        }
+      object.children.forEach((child) => visit(child, alpha));
+    };
+    visit(scene, 1);
+  });
+  return null;
+}
 const axes: Triple[] = [
   [1, 0, 0],
   [0, 1, 0],
@@ -50,6 +116,7 @@ function ScreenLabel({
   tooltip?: boolean;
 }) {
   const portal = useContext(LabelPortal);
+  const opacity = useContext(FadeOpacity);
   const invalidate = useThree((state) => state.invalidate);
   const group = useRef<Group>(null);
   const element = useRef<HTMLDivElement | null>(null);
@@ -72,6 +139,7 @@ function ScreenLabel({
     if (!node) return;
     node.className = tooltip ? "point-tooltip" : "scene-label";
     node.style.color = color;
+    node.style.opacity = String(opacity);
     node.replaceChildren(
       ...text.split("\n").map((line, i) => {
         const item = document.createElement(tooltip && i === 0 ? "b" : "span");
@@ -79,7 +147,7 @@ function ScreenLabel({
         return item;
       }),
     );
-  }, [text, color, tooltip]);
+  }, [text, color, tooltip, opacity]);
   useFrame(({ camera, size }) => {
     if (!group.current || !element.current) return;
     group.current.updateWorldMatrix(true, false);
@@ -91,7 +159,8 @@ function ScreenLabel({
       y = Math.max(125, y);
     }
     const node = element.current;
-    node.style.display = projected.z < -1 || projected.z > 1 ? "none" : "";
+    node.style.display =
+      opacity < 0.001 || projected.z < -1 || projected.z > 1 ? "none" : "";
     node.style.zIndex = tooltip ? "25" : "10";
     node.style.transform = `translate(${x}px, ${y}px) translate(-50%, ${tooltip ? "calc(-100% - 18px)" : "-50%"})`;
   });
@@ -168,6 +237,7 @@ function Basis({
   world = false,
   dimension = 3,
   shear = 0,
+  zOpacity = 1,
 }: {
   origin: Triple;
   q: Quaternion;
@@ -175,21 +245,26 @@ function Basis({
   world?: boolean;
   dimension?: number;
   shear?: number;
+  zOpacity?: number;
 }) {
   return (
     <group>
-      {axes.slice(0, dimension).map((a, i) => {
+      {axes.map((a, i) => {
         const tip = new Vector3(...a).applyQuaternion(q);
         if (i === 1) tip.x += shear;
         tip.multiplyScalar(length).add(new Vector3(...origin));
         return (
-          <Arrow
+          <Fade
             key={i}
-            from={origin}
-            to={tuple(tip)}
-            color={world ? "#6b819b" : colors[i]}
-            label={world ? `${"XYZ"[i]}w` : "XYZ"[i]}
-          />
+            opacity={i === 2 ? zOpacity * Number(dimension === 3) : 1}
+          >
+            <Arrow
+              from={origin}
+              to={tuple(tip)}
+              color={world ? "#6b819b" : colors[i]}
+              label={world ? `${"XYZ"[i]}w` : "XYZ"[i]}
+            />
+          </Fade>
         );
       })}
     </group>
@@ -218,7 +293,7 @@ function Camera({
   const ref = useRef<ComponentRef<typeof OrbitControls>>(null);
   const position = state.cameraPosition.join(","),
     target = state.cameraTarget.join(",");
-  useEffect(() => {
+  useLayoutEffect(() => {
     camera.position.set(...state.cameraPosition);
     ref.current?.target.set(...state.cameraTarget);
     ref.current?.update();
@@ -320,15 +395,16 @@ function Model({
   select?: (point: Triple) => void;
 }) {
   const geometry = useMemo(createKnotGeometry, []);
+  const weights = s.visual?.visibility ?? visibility(s);
   useEffect(() => () => geometry.dispose(), [geometry]);
   const matrix = new Matrix4().makeRotationFromQuaternion(q);
   matrix.elements[4] += s.shear;
-  if (s.parent && s.panel === "object")
-    matrix.premultiply(new Matrix4().makeRotationY(rad(35)));
+  if (weights.parent > 0)
+    matrix.premultiply(new Matrix4().makeRotationY(rad(35 * weights.parent)));
   matrix.setPosition(new Vector3(...position));
   return (
     <group matrixAutoUpdate={false} matrix={matrix}>
-      {s.mode === "cube" ? (
+      <Fade opacity={weights.cube}>
         <>
           <mesh>
             <boxGeometry args={[2, 2, 2]} />
@@ -365,26 +441,29 @@ function Model({
               )),
           )}
         </>
-      ) : s.surface === "vertices" ? (
-        <points geometry={geometry} dispose={null}>
-          <pointsMaterial color={color} size={0.035} sizeAttenuation />
-        </points>
-      ) : (
-        <mesh geometry={geometry} dispose={null}>
-          <meshStandardMaterial
-            color={color}
-            roughness={0.38}
-            metalness={0.15}
-            wireframe={s.surface === "wireframe"}
-          />
-        </mesh>
-      )}
-      {s.mode === "model" && (
+      </Fade>
+      <Fade opacity={weights.model}>
+        {s.surface === "vertices" ? (
+          <points geometry={geometry} dispose={null}>
+            <pointsMaterial color={color} size={0.035} sizeAttenuation />
+          </points>
+        ) : (
+          <mesh geometry={geometry} dispose={null}>
+            <meshStandardMaterial
+              color={color}
+              roughness={0.38}
+              metalness={0.15}
+              wireframe={s.surface === "wireframe"}
+            />
+          </mesh>
+        )}
+      </Fade>
+      <Fade opacity={weights.model}>
         <mesh position={modelVertex}>
           <sphereGeometry args={[0.07, 20, 16]} />
           <meshStandardMaterial color="#fff1a0" />
         </mesh>
-      )}
+      </Fade>
     </group>
   );
 }
@@ -442,19 +521,19 @@ function World({
   patch: (p: Partial<RotationState>) => void;
   language: Language;
 }) {
+  const weights = s.visual?.visibility ?? visibility(s);
   const q = orientation(s),
     origin = new Vector3(...s.origin);
   const p: Triple = s.zero ? (s.axisPoint ? [2, 0, 0] : [0, 0, 0]) : s.point;
   const localPoint = new Vector3(...p);
-  const world = localPoint.clone().applyQuaternion(q).add(origin);
-  if (s.translation) world.set(s.point[0] + s.t, s.point[1] + 2 * s.t, 0);
+  const world = worldPoint(s);
   const comparison = s.panel === "order" || s.panel === "interpolation";
-  const offset: Triple = comparison ? [-2.6, 0, 0] : s.origin;
-  const modelQ = comparison
-    ? s.panel === "interpolation"
-      ? interpolation(s.t, s.compound).euler
-      : eulerQuaternion(s.angles, "XYZ")
-    : q;
+  const offset: Triple = [
+    s.origin[0] - 2.6 * weights.comparison,
+    s.origin[1],
+    s.origin[2],
+  ];
+  const modelQ = modelOrientation(s);
   const path = Array.from({ length: 65 }, (_, i) => {
     const u = i / 64;
     const quat = eulerQuaternion(
@@ -474,38 +553,44 @@ function World({
     <>
       <Environment />
       <Camera state={s} patch={patch} />
-      {s.dimension === 2 ? (
+      <SceneOpacity />
+      <Fade opacity={1 - weights.grid3D}>
         <gridHelper
           args={[16, 16, "#536c90", "#324762"]}
           rotation={[Math.PI / 2, 0, 0]}
           position={[0, 0, -0.015]}
         />
-      ) : (
+      </Fade>
+      <Fade opacity={weights.grid3D}>
         <gridHelper
           args={[16, 16, "#536c90", "#324762"]}
           position={[0, -1.6, 0]}
         />
-      )}
+      </Fade>
       <Basis
         origin={[0, 0, 0]}
         q={new Quaternion()}
         world
-        dimension={s.dimension}
-        length={s.mode === "point" ? 3.5 : 2.7}
+        dimension={3}
+        zOpacity={weights.grid3D}
+        length={2.7 + 0.8 * weights.point}
       />
-      {s.local && !comparison && s.panel !== "gimbal" && (
+      <Fade opacity={weights.local}>
         <Basis
           origin={s.origin}
           q={
-            s.panel === "object" && s.parent
-              ? axisQuaternion([0, 1, 0], 35).multiply(q.clone())
+            weights.parent > 0
+              ? axisQuaternion([0, 1, 0], 35 * weights.parent).multiply(
+                  q.clone(),
+                )
               : q
           }
-          dimension={s.dimension}
+          dimension={3}
+          zOpacity={weights.grid3D}
           shear={s.shear}
         />
-      )}
-      {s.mode === "point" ? (
+      </Fade>
+      <Fade opacity={weights.point}>
         <>
           <Point
             point={p}
@@ -517,10 +602,10 @@ function World({
                 : undefined
             }
           />
-          {s.local && (
+          <Fade opacity={weights.vector}>
             <Arrow from={s.origin} to={tuple(world)} color="#fff1a0" />
-          )}
-          {s.arc && !s.zero && (
+          </Fade>
+          <Fade opacity={weights.arc}>
             <Line
               points={path}
               color="#ffca80"
@@ -529,8 +614,8 @@ function World({
               gapSize={0.04}
               lineWidth={2}
             />
-          )}
-          {s.translation && (
+          </Fade>
+          <Fade opacity={weights.translation}>
             <>
               <Arrow
                 from={s.point}
@@ -543,9 +628,9 @@ function World({
                 <meshStandardMaterial color="#899bb4" />
               </mesh>
             </>
-          )}
-          {(s.panel === "basis" || s.panel === "compute") &&
-            addends.slice(0, 3).map(
+          </Fade>
+          <Fade opacity={weights.addends}>
+            {addends.slice(0, 3).map(
               (a, i) =>
                 Math.abs(p[i]) > 1e-6 && (
                   <group key={i}>
@@ -561,11 +646,13 @@ function World({
                   </group>
                 ),
             )}
+          </Fade>
           <Label position={[s.origin[0], s.origin[1] - 0.3, s.origin[2]]}>
             O {vectorText(s.origin)}
           </Label>
         </>
-      ) : (
+      </Fade>
+      <Fade opacity={1}>
         <>
           <Model
             s={s}
@@ -574,7 +661,7 @@ function World({
             color={comparison ? "#ffbd80" : "#a3e7d6"}
             select={(point) => patch({ point })}
           />
-          {s.mode === "cube" && (
+          <Fade opacity={weights.cubePoint}>
             <Point
               point={s.point}
               world={tuple(
@@ -582,13 +669,13 @@ function World({
               )}
               language={language}
             />
-          )}
-          {comparison && (
+          </Fade>
+          <Fade opacity={weights.comparison}>
             <>
               <Model
                 s={s}
-                q={s.panel === "order" ? eulerQuaternion(s.angles, "YXZ") : q}
-                position={[2.6, 0, 0]}
+                q={comparisonOrientation(s)}
+                position={[2.6 * weights.comparison, 0, 0]}
               />
               <Label position={[-2.6, -1.65, 0]} color="#ffbd80">
                 {s.panel === "order" ? "XYZ" : "Euler · lerp"}
@@ -613,11 +700,11 @@ function World({
                   />
                 ))}
             </>
-          )}
-          {s.panel === "gimbal" && <Gimbals s={s} />}
-          {(s.panel === "quaternion" ||
-            s.panel === "q-matrix" ||
-            (s.panel === "object" && s.input === "quaternion")) && (
+          </Fade>
+          <Fade opacity={weights.gimbal}>
+            <Gimbals s={s} />
+          </Fade>
+          <Fade opacity={weights.axis}>
             <Arrow
               from={tuple(
                 new Vector3(...s.axis).normalize().multiplyScalar(-2.4),
@@ -626,16 +713,16 @@ function World({
               color="#ffca80"
               label="a"
             />
-          )}
-          {s.panel === "object" && s.parent && (
+          </Fade>
+          <Fade opacity={weights.parent}>
             <Basis
               origin={[0, 0, 0]}
               q={axisQuaternion([0, 1, 0], 35)}
               length={2.6}
             />
-          )}
+          </Fade>
         </>
-      )}
+      </Fade>
     </>
   );
 }

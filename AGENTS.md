@@ -11,8 +11,11 @@
   `useCourseController` and selects its slide components and props with a switch.
   Navigation changes the index directly; do not replay intermediate slides.
 - Keep controls and animation state in React. Use effect cleanup for animation,
-  subscriptions and explicit resources. Choose component keys deliberately:
-  a new key resets a step; the same key preserves state while props change.
+  subscriptions and explicit resources. Keep the Canvas and shared narrative
+  stage mounted across steps. Animate from the current visible transform to the
+  next destination, including reverse and interrupted transitions. Do not key
+  the renderer or shared scene by slide index. Use crossfades for different content
+  and respect reduced-motion preferences.
 - Check slides with `npm run test:slides`, `npm run typecheck`, `npm run build`,
   and `npm run test:e2e`. Test desktop and mobile layouts; do not claim physical
   device coverage from viewport emulation.

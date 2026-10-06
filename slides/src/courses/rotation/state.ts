@@ -1,4 +1,4 @@
-import type { EulerOrder, Quaternion } from "three";
+import { Quaternion, type EulerOrder } from "three";
 import {
   axisQuaternion,
   eulerQuaternion,
@@ -24,6 +24,7 @@ export type Panel =
   | "object"
   | "summary";
 export interface RotationState {
+  visual?: import("./transition").SceneVisual;
   mode: Mode;
   panel: Panel;
   dimension: 2 | 3;
@@ -80,6 +81,7 @@ export const initialState: RotationState = {
   cameraTarget: [1, 1, 0],
 };
 export function orientation(s: RotationState): Quaternion {
+  if (s.visual) return new Quaternion(...s.visual.quaternion);
   if (s.panel === "gimbal")
     return eulerQuaternion(
       s.gimbalManual ? s.angles : gimbalAngles(s.t, s.locked),

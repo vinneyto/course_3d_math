@@ -77,10 +77,13 @@ after building. Deployment is a separate step.
 
 The course page creates a `useCourseController` and selects React slide components
 and props with a switch. Navigation selects the requested index directly.
-`CourseControls` provides the shared navigation UI. React state and effect cleanup
-own interactions and playback. Rotation steps use explicit React keys, resetting
-controls and camera for independent examples. The basis/matrix and quaternion/matrix
-pairs share keys to preserve parameters while their panels change through props.
+`CourseControls` provides the shared navigation UI. Slide components declare
+destinations in a persistent React stage, which owns state and effect cleanup.
+The WebGL canvas stays mounted
+through the course; transforms, camera and object visibility transition smoothly
+from the currently visible frame. Related basis/matrix and quaternion/matrix
+steps retain interactive parameters. Reverse navigation and interrupted transitions
+continue from the visible state without replaying earlier steps.
 See [slides/README.md](slides/README.md).
 
 ## Contents

@@ -397,7 +397,7 @@ select {
   scrollbar-width: thin;
   scrollbar-color: #344b66 transparent;
 }
-.lesson > .eyebrow {
+.lesson .eyebrow {
   display: flex;
   justify-content: space-between;
   font-size: 9px;
@@ -910,5 +910,24 @@ details .code-block {
   *:after {
     scroll-behavior: auto !important;
     transition: none !important;
+  }
+}
+
+.narration {
+  animation: narration-enter 420ms ease-out;
+}
+@keyframes narration-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .narration {
+    animation: none;
   }
 }

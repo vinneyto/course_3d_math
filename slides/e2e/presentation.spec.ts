@@ -18,14 +18,18 @@ test("catalogue, all slide components, numerical controls and direct navigation"
     page.getByRole("heading", { name: "Computing the world position" }),
   ).toBeVisible();
   await expect(page.locator(".readouts")).toContainText("(2.00, 3.00, 0.00)");
-  const tooltip = page.locator(".point-tooltip");
+  const tooltip = page.locator(".point-tooltip:visible");
   await expect(tooltip).toBeVisible();
-  const worldAxisLabel = page.locator(".scene-label").filter({ hasText: /^Xw$/ });
+  const worldAxisLabel = page
+    .locator(".scene-label")
+    .filter({ hasText: /^Xw$/ });
   await expect(worldAxisLabel).toBeVisible();
   // DOM labels must be painted above the opaque WebGL canvas.
-  await expect.poll(() => worldAxisLabel.evaluate(
-    node => Number(getComputedStyle(node).zIndex),
-  )).toBeGreaterThan(0);
+  await expect
+    .poll(() =>
+      worldAxisLabel.evaluate((node) => Number(getComputedStyle(node).zIndex)),
+    )
+    .toBeGreaterThan(0);
   const tooltipBounds = await tooltip.boundingBox();
   const sceneBounds = await page.locator("canvas").boundingBox();
   expect(tooltipBounds!.x).toBeGreaterThanOrEqual(sceneBounds!.x);
@@ -76,7 +80,7 @@ test("catalogue, all slide components, numerical controls and direct navigation"
   expect(errors).toEqual([]);
 });
 
-test("React resets independent steps, preserves shared components and stops playback", async ({
+test("narrative destinations preserve related controls and stop old playback", async ({
   page,
 }) => {
   await page.goto("/presentations/rotation");
@@ -90,21 +94,17 @@ test("React resets independent steps, preserves shared components and stops play
   ).toBeVisible();
   await expect.poll(() => time.inputValue()).not.toBe("0.6");
   await picker.selectOption("1");
-  await expect(time).toHaveValue("0");
+  await expect(time).toHaveValue("1");
   await expect(
     page.getByRole("button", { name: "▶ Play", exact: true }),
   ).toBeVisible();
-  // An old RAF must not advance the freshly mounted translation component.
+  // An old playback RAF must not change the new destination.
   await page.waitForTimeout(200);
-  await expect(time).toHaveValue("0");
+  await expect(time).toHaveValue("1");
   await picker.selectOption("15");
   await expect(time).toHaveValue("0");
 
   await picker.selectOption("17");
-  await expect(page.locator("[data-slide]")).toHaveAttribute(
-    "data-slide-key",
-    "quaternion",
-  );
   const angle = page.getByRole("slider", { name: "θ", exact: true });
   await angle.fill("140");
   await expect(
@@ -168,4 +168,121 @@ test("range keyboard does not navigate, and graphics failure keeps the lesson us
   );
   await page.getByRole("button", { name: /^Next/ }).click();
   await expect(page.locator("[data-slide]")).toHaveAttribute("data-slide", "5");
+});
+
+test("one renderer survives the course, with visible motion and interruptible transitions", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/presentations/rotation");
+  const canvas = page.locator("canvas");
+  await expect(canvas).toHaveAttribute("data-webgl-ready", "true");
+  await expect(page.locator(".player-main")).toHaveAttribute(
+    "data-transitioning",
+    "false",
+  );
+  await canvas.evaluate((node) => {
+    const w = window as typeof window & {
+      narrativeCanvas?: Element;
+      narrativeContext?: WebGL2RenderingContext | null;
+      removedCanvases?: number;
+    };
+    w.narrativeCanvas = node;
+    w.narrativeContext = (node as HTMLCanvasElement).getContext("webgl2");
+    w.removedCanvases = 0;
+    new MutationObserver((records) =>
+      records.forEach((record) =>
+        record.removedNodes.forEach((removed) => {
+          if (
+            removed === node ||
+            (removed instanceof Element && removed.contains(node))
+          )
+            w.removedCanvases!++;
+        }),
+      ),
+    ).observe(document.querySelector(".viewport")!, {
+      childList: true,
+      subtree: true,
+    });
+  });
+  const picker = page.getByRole("combobox", { name: "Choose slide" });
+  await page.getByRole("button", { name: /^Next/ }).click();
+  await expect(page.locator(".player-main")).toHaveAttribute(
+    "data-transitioning",
+    "true",
+  );
+  // Sample an actual intermediate world coordinate, not just an animation flag.
+  await expect
+    .poll(async () =>
+      page.locator(".point-tooltip:visible").first().textContent(),
+    )
+    .not.toContain("world (2.00, 1.00, 0.00)");
+  const middle = await page
+    .locator(".point-tooltip:visible")
+    .first()
+    .textContent();
+  expect(middle).not.toContain("world (3.00, 3.00, 0.00)");
+  await page.getByRole("button", { name: /Previous/ }).click();
+  await expect(page.locator(".player-main")).toHaveAttribute(
+    "data-transitioning",
+    "false",
+  );
+  await expect(page.locator(".readouts")).toContainText("(2.00, 1.00, 0.00)");
+  for (const step of [2, 3, 4, 9, 10, 14, 15, 16, 17, 20, 21, 0]) {
+    await picker.selectOption(String(step));
+    await expect(page.locator(".player-main")).toHaveAttribute(
+      "data-transitioning",
+      "false",
+    );
+    expect(
+      await canvas.evaluate((node) => {
+        const w = window as typeof window & {
+          narrativeCanvas?: Element;
+          narrativeContext?: WebGL2RenderingContext | null;
+          removedCanvases?: number;
+        };
+        return (
+          node === w.narrativeCanvas &&
+          (node as HTMLCanvasElement).getContext("webgl2") ===
+            w.narrativeContext &&
+          w.removedCanvases === 0
+        );
+      }),
+    ).toBe(true);
+    await expect(page.locator(".scene-loading")).toHaveCount(0);
+  }
+  await page.screenshot({
+    path: `test-results/${test.info().project.name}-continuous-scene.png`,
+    fullPage: true,
+  });
+  // Leaving mid-transition must clean up RAF and scene resources.
+  await picker.selectOption("20");
+  await page.locator(".back-link").click();
+  await page.getByRole("link", { name: /Rotation in 3D/ }).click();
+  await expect(canvas).toHaveAttribute("data-webgl-ready", "true");
+  await expect(page.locator(".player-main")).toHaveAttribute(
+    "data-transitioning",
+    "false",
+  );
+  await expect(page.locator(".readouts")).toContainText("(2.00, 1.00, 0.00)");
+  expect(errors).toEqual([]);
+});
+
+test("reduced motion reaches the destination without replacing the renderer", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/presentations/rotation");
+  await expect(page.locator("canvas")).toHaveAttribute(
+    "data-webgl-ready",
+    "true",
+  );
+  await page.getByRole("combobox", { name: "Choose slide" }).selectOption("6");
+  await expect(page.locator(".player-main")).toHaveAttribute(
+    "data-transitioning",
+    "false",
+  );
+  await expect(page.locator(".readouts")).toContainText("(2.00, 3.00, 0.00)");
 });

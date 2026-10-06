@@ -20,7 +20,9 @@ function CoursePage() {
     // Other components, or the same component with different props.
   }
   return <>
-    <Fragment key={controller.index}>{slide}</Fragment>
+    <RotationStage index={controller.index} language="en">
+      {slide}
+    </RotationStage>
     <CourseControls controller={controller} titles={titles} language="en" />
   </>;
 }
@@ -33,17 +35,24 @@ the keyboard listener and its cleanup. It has no knowledge of the course scene.
 
 `RotationPresentation` contains the course's switch. `PointSlide`, `ModelSlide`,
 `GimbalSlide`, `InterpolationSlide`, `QuaternionSlide` and `ObjectSlide` reuse the
-R3F visualization with declarative props. `RotationSlide` owns its interactive
-parameters and camera with `useState`, and playback with `useEffect` and RAF cleanup.
-Scene features such as `panel`, `mode` and `dimension` follow props on every render;
-angles and other interactive values in `scene` supply initial state on mount.
+R3F visualization with declarative props. Step components declare their full target
+state through a small context and a layout effect. They never own or key the canvas.
+`RotationStage` stays mounted outside the switch and owns interactive parameters,
+camera and playback with React state and effect cleanup.
 
-The rotation page keys independent examples by index, resetting controls, camera
-and playback to the new step's defaults. The basis/matrix pair (5–6) and
-quaternion/matrix pair (18–19) share keys: panels change through props while their
-interactive parameters and camera stay intact. Switching language preserves state.
-To keep local state across other related steps, use the same component and key.
-No transition queue, scene snapshots, or imperative slide lifecycle is needed.
+`useSceneTransition` animates the displayed state toward the next step over 1.1s.
+Rotations use quaternion SLERP; position and camera use eased interpolation.
+Point, cube, model, grids and helpers share one scene and crossfade existing objects.
+The numerical readouts follow the displayed transform. Controls describe the target
+state and remain usable during a transition. Next, previous and direct jumps all
+begin from the current visible frame; a new destination cancels the old RAF.
+Users with reduced-motion preferences reach the destination immediately.
+
+The basis/matrix pair (5–6) and quaternion/matrix pair (18–19) preserve parameters
+while changing panels. Other destinations select their own defaults without
+remounting the scene. Changing language preserves the state. Entering translation
+animates the displacement automatically; its timeline can still be replayed.
+There is no imperative apply/revert lifecycle or transition queue.
 
 To add a course, create a React page with its controller, switch and slide
 components, reuse `CourseControls`, add its route and catalogue tile. Each component
@@ -53,8 +62,9 @@ The scene uses the sandbox's gradient sky, equivalent lighting, and OrbitControl
 Labels use a projected DOM layer owned by React effects, avoiding extra React roots
 inside Fiber's teardown. Declarative geometry is disposed by Fiber;
 explicitly created sky and knot resources have disposal effects. Rendering is on
-demand; the timeline drives it only during playback. Unmounting a slide cancels
-playback. Mobile controls use normal touch-friendly form elements.
+demand; transition and playback RAFs drive updates only while animating. Switching
+steps stops old playback, and leaving the course cancels animation effects.
+Mobile controls use normal touch-friendly form elements.
 
 ## Rotation course
 
