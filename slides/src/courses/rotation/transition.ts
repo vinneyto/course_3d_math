@@ -1,14 +1,21 @@
 import { Quaternion, Vector3 } from "three";
 import { orientation, type RotationState } from "./state";
-import { eulerQuaternion, interpolation, type Triple } from "./math";
+import {
+  eulerQuaternion,
+  gimbalAngles,
+  interpolation,
+  type Triple,
+} from "./math";
 
 export const transitionDuration = 1100;
 export type Visibility = ReturnType<typeof visibility>;
 export interface SceneVisual {
+  path?: "gimbal" | "interpolation";
   quaternion: [number, number, number, number];
   modelQuaternion: [number, number, number, number];
   comparisonQuaternion: [number, number, number, number];
   worldPoint: Triple;
+  gimbalAngles: Triple;
   visibility: Visibility;
 }
 
@@ -34,6 +41,9 @@ export function visibility(s: RotationState) {
     parent: Number(s.panel === "object" && s.parent),
     grid3D: Number(s.dimension === 3),
     cubePoint: Number(s.mode === "cube"),
+    surface: Number(s.surface === "surface"),
+    wireframe: Number(s.surface === "wireframe"),
+    vertices: Number(s.surface === "vertices"),
   };
 }
 export function localPoint(s: RotationState): Triple {
@@ -74,7 +84,31 @@ export function blendScene(
   if (progress >= 1) return to;
   const u = Math.max(0, progress);
   const t = u * u * (3 - 2 * u);
-  const q = orientation(from).clone().slerp(orientation(to), t);
+  const gimbal = triple(
+    from.visual?.gimbalAngles ??
+      (from.gimbalManual ? from.angles : gimbalAngles(from.t, from.locked)),
+    to.gimbalManual ? to.angles : gimbalAngles(to.t, to.locked),
+    t,
+  );
+  const timeline = from.t + (to.t - from.t) * t;
+  const sameGimbal =
+    from.panel === "gimbal" &&
+    to.panel === "gimbal" &&
+    (!from.visual || from.visual.path === "gimbal");
+  const q = sameGimbal
+    ? eulerQuaternion(gimbal)
+    : orientation(from).clone().slerp(orientation(to), t);
+  const sameInterpolation =
+    from.panel === "interpolation" &&
+    to.panel === "interpolation" &&
+    from.compound === to.compound &&
+    (!from.visual || from.visual.path === "interpolation");
+  const leftQ = sameInterpolation
+    ? interpolation(timeline, to.compound).euler
+    : modelOrientation(from).clone().slerp(modelOrientation(to), t);
+  const rightQ = sameInterpolation
+    ? interpolation(timeline, to.compound).slerp
+    : comparisonOrientation(from).clone().slerp(comparisonOrientation(to), t);
   const point = triple(localPoint(from), localPoint(to), t);
   // Recover the current effective origin when retargeting an unfinished transition.
   const fromOrigin = from.visual
@@ -109,15 +143,15 @@ export function blendScene(
     cameraPosition: triple(from.cameraPosition, to.cameraPosition, t),
     cameraTarget: triple(from.cameraTarget, to.cameraTarget, t),
     visual: {
+      path: sameGimbal
+        ? "gimbal"
+        : sameInterpolation
+          ? "interpolation"
+          : undefined,
       quaternion: q.toArray(),
-      modelQuaternion: modelOrientation(from)
-        .clone()
-        .slerp(modelOrientation(to), t)
-        .toArray(),
-      comparisonQuaternion: comparisonOrientation(from)
-        .clone()
-        .slerp(comparisonOrientation(to), t)
-        .toArray(),
+      modelQuaternion: sameGimbal ? q.toArray() : leftQ.toArray(),
+      comparisonQuaternion: rightQ.toArray(),
+      gimbalAngles: gimbal,
       worldPoint: world.toArray(),
       visibility: weights,
     },

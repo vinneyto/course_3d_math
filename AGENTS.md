@@ -22,6 +22,33 @@
 - Exercise tasks intentionally contain TODOs. Do not solve them to make the
   presentation CI pass; keep their tests independent.
 
+## Interactive manual contract
+
+- Treat this product as an interactive manual, not a conventional slide deck or
+  a parameter playground. A step is a complete, deterministic snapshot of course
+  progress: scene, explanation, sidebar layout, displayed parameters and values.
+- Prefer many atomic steps with a small meaningful delta over fewer steps with
+  editable controls. Author angle changes, geometry modes, comparison options,
+  composition stages and timeline samples as additional snapshots.
+- Course navigation is the only way to change lesson parameters. Do not add
+  editable sliders, numeric inputs, toggles, model-selection clicks, point dragging,
+  chart scrubbing, playback buttons or autonomous playback. Sidebar indicators may
+  resemble controls but must be read-only and derive their values from the frame.
+- Viewer interaction is limited to orbit/zoom/pan of the camera and hovering
+  scene/panel elements for tooltips. Camera and hover state are separate from the
+  authored snapshot and must never change its mathematical values.
+- The sidebar is part of each snapshot. Animate its text, parameter indicators,
+  formulas, layout and numeric readouts along with the scene, not just its title.
+- Keep the shared R3F Canvas, renderer and narrative scene mounted. Forward,
+  reverse and interrupted navigation transition from the current visible state.
+  Different content may crossfade; respect reduced-motion preferences.
+- Each snapshot supplies its full destination, without inheriting parameters from
+  the previous visit. Returning to a step must restore its authored scene and
+  sidebar values regardless of navigation history. React owns lifecycle and
+  cleanup; do not introduce imperative apply/revert slide methods.
+- Keep workspace/package and existing route names stable; use "interactive manual"
+  and "step" in user-facing copy. Do not rename packages merely for terminology.
+
 ## Exercise page navigation
 
 - End every exercise `README.md` with a navigation block separated from the

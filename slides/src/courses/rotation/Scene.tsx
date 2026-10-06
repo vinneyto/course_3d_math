@@ -8,11 +8,12 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
   type ComponentRef,
   type RefObject,
   type ReactNode,
 } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, events, useFrame, useThree } from "@react-three/fiber";
 import { Line, OrbitControls } from "@react-three/drei";
 import {
   Euler,
@@ -155,6 +156,10 @@ function ScreenLabel({
     let x = ((projected.x + 1) * size.width) / 2;
     let y = ((1 - projected.y) * size.height) / 2;
     if (tooltip) {
+      if (element.current) {
+        element.current.dataset.anchorX = String(x);
+        element.current.dataset.anchorY = String(y);
+      }
       x = Math.max(112, Math.min(size.width - 112, x));
       y = Math.max(125, y);
     }
@@ -194,6 +199,7 @@ function Arrow({
   color: string;
   label?: string;
 }) {
+  const [hovered, setHovered] = useState(false);
   const start = new Vector3(...from),
     end = new Vector3(...to),
     direction = end.clone().sub(start);
@@ -205,7 +211,13 @@ function Arrow({
   );
   const head = Math.min(0.17, length * 0.2);
   return (
-    <group>
+    <group
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+      }}
+      onPointerOut={() => setHovered(false)}
+    >
       <mesh position={tuple(start.clone().lerp(end, 0.5))} quaternion={q}>
         <cylinderGeometry
           args={[0.018, 0.018, Math.max(0.001, length - head), 16]}
@@ -219,6 +231,13 @@ function Arrow({
         <coneGeometry args={[0.065, head, 24]} />
         <meshStandardMaterial color={color} />
       </mesh>
+      <Fade opacity={hovered ? 1 : 0}>
+        <ScreenLabel
+          position={to}
+          tooltip
+          text={`${label ?? "v"}\n${vectorText(from)} → ${vectorText(to)}\n|v| = ${length.toFixed(2)}`}
+        />
+      </Fade>
       {label && (
         <Label
           position={tuple(end.clone().addScaledVector(direction, 0.16))}
@@ -284,10 +303,10 @@ function Environment() {
 }
 function Camera({
   state,
-  patch,
+  changeCamera,
 }: {
   state: RotationState;
-  patch: (p: Partial<RotationState>) => void;
+  changeCamera: (camera: { position: Triple; target: Triple }) => void;
 }) {
   const { camera, invalidate } = useThree();
   const ref = useRef<ComponentRef<typeof OrbitControls>>(null);
@@ -305,14 +324,14 @@ function Camera({
     <OrbitControls
       ref={ref}
       makeDefault
-      enableRotate={state.dimension === 3}
+      enableRotate
       minDistance={4}
       maxDistance={25}
       onEnd={() => {
         if (ref.current)
-          patch({
-            cameraPosition: tuple(camera.position),
-            cameraTarget: tuple(ref.current.target),
+          changeCamera({
+            position: tuple(camera.position),
+            target: tuple(ref.current.target),
           });
       }}
     />
@@ -322,57 +341,32 @@ function Point({
   point,
   world,
   language,
-  onMove,
 }: {
   point: Triple;
   world: Triple;
   language: Language;
-  onMove?: (p: Triple) => void;
 }) {
-  const dragging = useRef(false);
-  const controls = useThree((state) => state.controls) as ComponentRef<
-    typeof OrbitControls
-  > | null;
-  useEffect(
-    () => () => {
-      if (controls && dragging.current) controls.enabled = true;
-    },
-    [controls],
-  );
+  const [hovered, setHovered] = useState(false);
   return (
     <group>
       <mesh
         position={world}
-        onPointerDown={(e) => {
-          if (!onMove) return;
+        onPointerOver={(e) => {
           e.stopPropagation();
-          dragging.current = true;
-          if (controls) controls.enabled = false;
-          (e.target as Element).setPointerCapture(e.pointerId);
+          setHovered(true);
         }}
-        onPointerUp={(e) => {
-          if (dragging.current) {
-            dragging.current = false;
-            if (controls) controls.enabled = true;
-            (e.target as Element).releasePointerCapture(e.pointerId);
-          }
-        }}
-        onPointerMove={(e) => {
-          if (!dragging.current || !onMove) return;
-          e.stopPropagation();
-          const planeDistance = -e.ray.origin.z / e.ray.direction.z;
-          if (Number.isFinite(planeDistance))
-            onMove(tuple(e.ray.at(planeDistance, new Vector3())));
-        }}
+        onPointerOut={() => setHovered(false)}
       >
         <sphereGeometry args={[0.09, 24, 16]} />
         <meshStandardMaterial color="#fff1a0" roughness={0.35} />
       </mesh>
-      <ScreenLabel
-        position={world}
-        tooltip
-        text={`P\n${language === "ru" ? "лок." : "local"} ${vectorText(point)}\n${language === "ru" ? "мир" : "world"} ${vectorText(world)}`}
-      />
+      <Fade opacity={hovered ? 1 : 0}>
+        <ScreenLabel
+          position={world}
+          tooltip
+          text={`P\n${language === "ru" ? "лок." : "local"} ${vectorText(point)}\n${language === "ru" ? "мир" : "world"} ${vectorText(world)}`}
+        />
+      </Fade>
     </group>
   );
 }
@@ -386,14 +380,15 @@ function Model({
   q,
   color = "#a3e7d6",
   position = [0, 0, 0],
-  select,
+  language,
 }: {
   s: RotationState;
   q: Quaternion;
   color?: string;
   position?: Triple;
-  select?: (point: Triple) => void;
+  language: Language;
 }) {
+  const [hoverPoint, setHoverPoint] = useState<Triple | null>(null);
   const geometry = useMemo(createKnotGeometry, []);
   const weights = s.visual?.visibility ?? visibility(s);
   useEffect(() => () => geometry.dispose(), [geometry]);
@@ -419,10 +414,11 @@ function Model({
             <mesh
               key={i}
               position={p}
-              onClick={(e) => {
+              onPointerOver={(e) => {
                 e.stopPropagation();
-                select?.(p);
+                setHoverPoint(p);
               }}
+              onPointerOut={() => setHoverPoint(null)}
             >
               <sphereGeometry args={[0.075, 20, 12]} />
               <meshStandardMaterial color={color} />
@@ -443,21 +439,50 @@ function Model({
         </>
       </Fade>
       <Fade opacity={weights.model}>
-        {s.surface === "vertices" ? (
-          <points geometry={geometry} dispose={null}>
-            <pointsMaterial color={color} size={0.035} sizeAttenuation />
-          </points>
-        ) : (
-          <mesh geometry={geometry} dispose={null}>
-            <meshStandardMaterial
-              color={color}
-              roughness={0.38}
-              metalness={0.15}
-              wireframe={s.surface === "wireframe"}
-            />
-          </mesh>
-        )}
+        <group
+          onPointerMove={(e) => {
+            e.stopPropagation();
+            setHoverPoint(
+              tuple(e.point.clone().applyMatrix4(matrix.clone().invert())),
+            );
+          }}
+          onPointerOut={() => setHoverPoint(null)}
+        >
+          <Fade opacity={weights.surface}>
+            <mesh geometry={geometry} dispose={null}>
+              <meshStandardMaterial
+                color={color}
+                roughness={0.38}
+                metalness={0.15}
+              />
+            </mesh>
+          </Fade>
+          <Fade opacity={weights.wireframe}>
+            <mesh geometry={geometry} dispose={null}>
+              <meshStandardMaterial
+                color={color}
+                roughness={0.38}
+                metalness={0.15}
+                wireframe
+              />
+            </mesh>
+          </Fade>
+          <Fade opacity={weights.vertices}>
+            <points geometry={geometry} dispose={null}>
+              <pointsMaterial color={color} size={0.035} sizeAttenuation />
+            </points>
+          </Fade>
+        </group>
       </Fade>
+      {hoverPoint && (
+        <Fade opacity={s.mode === "cube" ? weights.cube : weights.model}>
+          <ScreenLabel
+            position={hoverPoint}
+            tooltip
+            text={`V\n${language === "ru" ? "лок." : "local"} ${vectorText(hoverPoint)}\n${language === "ru" ? "мир" : "world"} ${vectorText(tuple(new Vector3(...hoverPoint).applyMatrix4(matrix)))}`}
+          />
+        </Fade>
+      )}
       <Fade opacity={weights.model}>
         <mesh position={modelVertex}>
           <sphereGeometry args={[0.07, 20, 16]} />
@@ -469,7 +494,8 @@ function Model({
 }
 function Gimbals({ s }: { s: RotationState }) {
   const [x, y, z] = (
-    s.gimbalManual ? s.angles : gimbalAngles(s.t, s.locked)
+    s.visual?.gimbalAngles ??
+    (s.gimbalManual ? s.angles : gimbalAngles(s.t, s.locked))
   ).map(rad);
   const qx = new Quaternion().setFromEuler(new Euler(x, 0, 0));
   const qxy = new Quaternion().setFromEuler(new Euler(x, y, 0, "XYZ"));
@@ -514,11 +540,11 @@ function Gimbals({ s }: { s: RotationState }) {
 }
 function World({
   state: s,
-  patch,
+  changeCamera,
   language,
 }: {
   state: RotationState;
-  patch: (p: Partial<RotationState>) => void;
+  changeCamera: (camera: { position: Triple; target: Triple }) => void;
   language: Language;
 }) {
   const weights = s.visual?.visibility ?? visibility(s);
@@ -552,7 +578,7 @@ function World({
   return (
     <>
       <Environment />
-      <Camera state={s} patch={patch} />
+      <Camera state={s} changeCamera={changeCamera} />
       <SceneOpacity />
       <Fade opacity={1 - weights.grid3D}>
         <gridHelper
@@ -592,16 +618,7 @@ function World({
       </Fade>
       <Fade opacity={weights.point}>
         <>
-          <Point
-            point={p}
-            world={tuple(world)}
-            language={language}
-            onMove={
-              !s.local && !s.translation
-                ? (point) => patch({ point: [point[0], point[1], 0] })
-                : undefined
-            }
-          />
+          <Point point={p} world={tuple(world)} language={language} />
           <Fade opacity={weights.vector}>
             <Arrow from={s.origin} to={tuple(world)} color="#fff1a0" />
           </Fade>
@@ -659,7 +676,7 @@ function World({
             q={modelQ}
             position={offset}
             color={comparison ? "#ffbd80" : "#a3e7d6"}
-            select={(point) => patch({ point })}
+            language={language}
           />
           <Fade opacity={weights.cubePoint}>
             <Point
@@ -674,6 +691,7 @@ function World({
             <>
               <Model
                 s={s}
+                language={language}
                 q={comparisonOrientation(s)}
                 position={[2.6 * weights.comparison, 0, 0]}
               />
@@ -746,7 +764,7 @@ function RendererLifecycle({ failed }: { failed: () => void }) {
 
 export default function RotationScene(props: {
   state: RotationState;
-  patch: (p: Partial<RotationState>) => void;
+  changeCamera: (camera: { position: Triple; target: Triple }) => void;
   language: Language;
   failed: () => void;
 }) {
@@ -755,6 +773,20 @@ export default function RotationScene(props: {
     <div className="rotation-canvas">
       <div ref={portal} className="scene-label-layer" />
       <Canvas
+        events={(store) => ({
+          ...events(store),
+          // Mounted objects from other frames must not intercept visible hover targets.
+          filter: (hits) =>
+            hits.filter(({ object }) => {
+              for (
+                let node: import("three").Object3D | null = object;
+                node;
+                node = node.parent
+              )
+                if (!node.visible) return false;
+              return true;
+            }),
+        })}
         frameloop="demand"
         dpr={[1, 1.75]}
         gl={{ antialias: true, alpha: false }}
@@ -762,7 +794,7 @@ export default function RotationScene(props: {
         fallback={
           <div className="canvas-fallback">
             WebGL is unavailable. You can still read the lesson and use the
-            numerical controls.
+            frame values.
           </div>
         }
       >

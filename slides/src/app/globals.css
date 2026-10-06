@@ -931,3 +931,95 @@ details .code-block {
     animation: none;
   }
 }
+
+.sidebar-stack {
+  position: relative;
+  overflow: hidden;
+  transition: height 420ms ease;
+}
+.sidebar-active {
+  animation: frame-panel-in 420ms ease both;
+}
+.sidebar-outgoing {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: frame-panel-out 420ms ease both;
+}
+@keyframes frame-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes frame-panel-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.snapshot-parameters {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  margin-bottom: 24px;
+}
+.snapshot-values {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px 12px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.snapshot-values dt {
+  color: var(--muted);
+}
+.snapshot-values dd {
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+  font-family: monospace;
+}
+.snapshot-indicator {
+  margin: 16px 0;
+  font-size: 11px;
+}
+.snapshot-indicator > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.snapshot-indicator output {
+  color: var(--accent);
+  font-family: monospace;
+}
+.snapshot-rail {
+  height: 4px;
+  border-radius: 4px;
+  background: #344257;
+  overflow: hidden;
+}
+.snapshot-rail i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-active,
+  .sidebar-outgoing {
+    animation: none;
+  }
+  .sidebar-outgoing {
+    display: none;
+  }
+  .sidebar-stack {
+    transition: none;
+  }
+}

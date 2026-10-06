@@ -1,14 +1,13 @@
 "use client";
 
 import { worldPoint } from "./transition";
-import { Matrix4, Object3D, Vector3, type EulerOrder } from "three";
+import { Matrix4, Object3D, Vector3 } from "three";
 import {
   axisQuaternion,
   deg,
   fmt,
   gimbalAngles,
   interpolation,
-  localToWorld,
   tuple,
   vectorText,
   type Triple,
@@ -17,78 +16,6 @@ import { orientation, type RotationState } from "./state";
 import type { Language } from "./content";
 
 const colors = ["#f78189", "#8fd29d", "#7ea9ff", "#d8c598"];
-export function Range({
-  label,
-  value,
-  min = -180,
-  max = 180,
-  step = 1,
-  change,
-  suffix = "°",
-}: {
-  label: string;
-  value: number;
-  min?: number;
-  max?: number;
-  step?: number;
-  change: (n: number) => void;
-  suffix?: string;
-}) {
-  return (
-    <label className="range">
-      <span>
-        {label}
-        <output>
-          {value.toFixed(step < 1 ? 2 : 0)}
-          {suffix}
-        </output>
-      </span>
-      <input
-        aria-label={label}
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => change(Number(e.target.value))}
-      />
-    </label>
-  );
-}
-function VectorInputs({
-  label,
-  value,
-  change,
-}: {
-  label: string;
-  value: Triple;
-  change: (v: Triple) => void;
-}) {
-  return (
-    <fieldset className="vector-inputs">
-      <legend>{label}</legend>
-      {value.map((n, i) => (
-        <label key={i} style={{ color: colors[i] }}>
-          {"xyz"[i]}
-          <input
-            aria-label={`${label} ${"xyz"[i]}`}
-            type="number"
-            step="0.1"
-            min="-8"
-            max="8"
-            value={Number(n.toFixed(2))}
-            onChange={(e) => {
-              if (!Number.isFinite(e.target.valueAsNumber)) return;
-              const next = [...value] as Triple;
-              next[i] = Math.max(-8, Math.min(8, e.target.valueAsNumber));
-              change(next);
-            }}
-          />
-        </label>
-      ))}
-    </fieldset>
-  );
-}
 function Matrix({
   matrix,
   symbolic = false,
@@ -125,25 +52,31 @@ function Matrix({
 }
 export function AngleCharts({
   s,
-  patch,
   language,
 }: {
   s: RotationState;
-  patch: (p: Partial<RotationState>) => void;
   language: Language;
 }) {
-  const angles = gimbalAngles(s.t, s.locked),
-    active = s.locked && s.t >= 0.5;
+  const angles =
+    s.visual?.gimbalAngles ??
+    (s.gimbalManual ? s.angles : gimbalAngles(s.t, s.locked));
+  const active = Math.abs(angles[1] - 90) < 0.001;
+  const sample = (t: number): Triple =>
+    s.gimbalManual
+      ? t <= 0.5
+        ? [60 * t, 90, 0]
+        : [30, 90, -60 * (t - 0.5)]
+      : gimbalAngles(t, s.locked);
   return (
     <div className="angle-charts">
       <p className={active ? "lock active" : "lock"}>
         {active
           ? language === "ru"
-            ? "Оси X₁ и Z₃ совпали · x + z = 0"
-            : "X₁ and Z₃ coincide · x + z = 0"
+            ? `Оси X₁ и Z₃ совпали · x + z = ${fmt(angles[0] + angles[2])}°`
+            : `X₁ and Z₃ coincide · x + z = ${fmt(angles[0] + angles[2])}°`
           : language === "ru"
-            ? "Три независимых управления"
-            : "Three independent controls"}
+            ? "Три независимых угла"
+            : "Three independent angles"}
       </p>
       {angles.map((angle, axis) => (
         <div key={axis} className="chart-row">
@@ -155,21 +88,13 @@ export function AngleCharts({
             viewBox="0 0 260 64"
             role="img"
             aria-label={`${"xyz"[axis]} angle over time`}
-            onPointerDown={(e) => {
-              const bounds = e.currentTarget.getBoundingClientRect();
-              patch({
-                t: Math.max(
-                  0,
-                  Math.min(1, (e.clientX - bounds.left) / bounds.width),
-                ),
-              });
-            }}
           >
+            <title>{`t = ${fmt(s.t)}, ${"xyz"[axis]} = ${fmt(angle)}°`}</title>
             {s.locked && (
               <rect
-                x="130"
+                x={s.gimbalManual ? 0 : 130}
                 y="0"
-                width="130"
+                width={s.gimbalManual ? 260 : 130}
                 height="64"
                 fill="#ffb966"
                 opacity="0.08"
@@ -180,7 +105,7 @@ export function AngleCharts({
               points={Array.from(
                 { length: 81 },
                 (_, i) =>
-                  `${(i / 80) * 260},${32 - (gimbalAngles(i / 80, s.locked)[axis] / 90) * 26}`,
+                  `${(i / 80) * 260},${32 - (sample(i / 80)[axis] / 90) * 26}`,
               ).join(" ")}
               fill="none"
               stroke={colors[axis]}
@@ -209,287 +134,142 @@ export function AngleCharts({
     </div>
   );
 }
-export function Controls({
+function Indicator({
+  label,
+  value,
+  min = -180,
+  max = 180,
+  suffix = "°",
+}: {
+  label: string;
+  value: number;
+  min?: number;
+  max?: number;
+  suffix?: string;
+}) {
+  const percent = Math.max(
+    0,
+    Math.min(100, ((value - min) / (max - min)) * 100),
+  );
+  return (
+    <div
+      className="snapshot-indicator"
+      role="meter"
+      aria-label={label}
+      aria-valuenow={value}
+      aria-valuemin={min}
+      aria-valuemax={max}
+    >
+      <div>
+        <span>{label}</span>
+        <output>
+          {fmt(value)}
+          {suffix}
+        </output>
+      </div>
+      <div className="snapshot-rail">
+        <i style={{ width: `${percent}%` }} />
+      </div>
+    </div>
+  );
+}
+/** Values are part of the frame. No inputs or event handlers mutate the lesson. */
+export function SnapshotParameters({
   s,
-  patch,
   language,
-  index,
 }: {
   s: RotationState;
-  patch: (p: Partial<RotationState>) => void;
   language: Language;
-  index: number;
 }) {
   const ru = language === "ru";
-  const angles = s.panel === "gimbal" ? gimbalAngles(s.t, s.locked) : s.angles;
-  const timeline =
-    s.translation || s.panel === "gimbal" || s.panel === "interpolation";
-  const axisInput =
+  const angles =
+    s.panel === "gimbal"
+      ? (s.visual?.gimbalAngles ??
+        (s.gimbalManual ? s.angles : gimbalAngles(s.t, s.locked)))
+      : s.angles;
+  const quaternion =
     s.panel === "quaternion" ||
     s.panel === "q-matrix" ||
     (s.panel === "object" && s.input === "quaternion");
   return (
-    <div className="controls">
-      {s.panel === "object" && (
-        <>
-          <label className="select-control">
-            {ru ? "Ввод ориентации" : "Orientation input"}
-            <select
-              aria-label="Orientation input"
-              value={s.input}
-              onChange={(e) => {
-                const input = e.target.value as "euler" | "quaternion";
-                const q = orientation(s);
-                if (input === "quaternion") {
-                  const angle = 2 * Math.acos(Math.max(-1, Math.min(1, q.w)));
-                  const v = new Vector3(q.x, q.y, q.z);
-                  patch({
-                    input,
-                    angle: deg(angle),
-                    axis:
-                      v.lengthSq() < 1e-10 ? [0, 1, 0] : tuple(v.normalize()),
-                  });
-                } else {
-                  const object = new Object3D();
-                  object.quaternion.copy(q);
-                  patch({
-                    input,
-                    angles: [
-                      deg(object.rotation.x),
-                      deg(object.rotation.y),
-                      deg(object.rotation.z),
-                    ],
-                    order: object.rotation.order,
-                  });
-                }
-              }}
-            >
-              <option value="euler">Euler</option>
-              <option value="quaternion">Axis → quaternion</option>
-            </select>
-          </label>
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={s.parent}
-              onChange={(e) => patch({ parent: e.target.checked })}
-            />
-            {ru ? "Родитель: Ry(35°)" : "Parent: Ry(35°)"}
-          </label>
-        </>
+    <div className="snapshot-parameters">
+      <p className="panel-caption">
+        {ru ? "Параметры кадра" : "Frame parameters"}
+      </p>
+      <dl className="snapshot-values">
+        <dt>{ru ? "Геометрия" : "Geometry"}</dt>
+        <dd>
+          {s.mode === "model"
+            ? {
+                surface: ru ? "поверхность" : "surface",
+                wireframe: ru ? "каркас" : "wireframe",
+                vertices: ru ? "вершины" : "vertices",
+              }[s.surface]
+            : s.mode}
+        </dd>
+        <dt>{ru ? "Начало O" : "Origin O"}</dt>
+        <dd>{vectorText(s.origin)}</dd>
+        {(s.panel === "euler" ||
+          s.panel === "order" ||
+          s.panel === "object") && (
+          <>
+            <dt>Euler order</dt>
+            <dd>{s.order}</dd>
+          </>
+        )}
+        {s.panel === "object" && (
+          <>
+            <dt>{ru ? "Представление" : "Representation"}</dt>
+            <dd>{s.input}</dd>
+            <dt>{ru ? "Родитель" : "Parent"}</dt>
+            <dd>{s.parent ? "Ry(35°)" : ru ? "нет" : "none"}</dd>
+          </>
+        )}
+        {quaternion && (
+          <>
+            <dt>{ru ? "Ось a" : "Axis a"}</dt>
+            <dd>{vectorText(tuple(new Vector3(...s.axis).normalize()))}</dd>
+          </>
+        )}
+      </dl>
+      {quaternion ? (
+        <Indicator label="θ" value={s.angle} min={0} max={180} />
+      ) : (
+        s.local &&
+        angles.map((value, i) => (
+          <Indicator key={i} label={`${"xyz"[i]} angle`} value={value} />
+        ))
       )}
-      {!s.local && !s.translation && (
-        <VectorInputs
-          label={ru ? "Точка" : "Point"}
-          value={s.point}
-          change={(point) => patch({ point })}
-        />
-      )}
-      {timeline && (
-        <Range
+      {(s.translation ||
+        s.panel === "gimbal" ||
+        s.panel === "interpolation") && (
+        <Indicator
           label={ru ? "Время" : "Time"}
           value={s.t}
           min={0}
           max={1}
-          step={0.001}
           suffix=""
-          change={(t) => patch({ t })}
         />
       )}
-      {s.panel === "gimbal" && (
-        <>
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={s.locked}
-              onChange={(e) => patch({ locked: e.target.checked })}
-            />
-            {ru
-              ? "Средний угол 90° (иначе 80°)"
-              : "Middle angle 90° (otherwise 80°)"}
-          </label>
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={s.gimbalManual}
-              onChange={(e) =>
-                patch({
-                  gimbalManual: e.target.checked,
-                  angles: gimbalAngles(s.t, s.locked),
-                })
-              }
-            />
-            {ru ? "Изменять углы отдельно" : "Change angles independently"}
-          </label>
-          {s.gimbalManual ? (
-            [0, 1, 2].map((i) => (
-              <Range
-                key={i}
-                label={`${"xyz"[i]} angle`}
-                value={s.angles[i]}
-                change={(n) => {
-                  const next = [...s.angles] as Triple;
-                  next[i] = n;
-                  patch({ angles: next });
-                }}
-              />
-            ))
-          ) : (
-            <AngleCharts s={s} patch={patch} language={language} />
-          )}
-        </>
-      )}
-      {s.panel === "interpolation" && (
-        <label className="check">
-          <input
-            type="checkbox"
-            checked={s.compound}
-            onChange={(e) => patch({ compound: e.target.checked })}
-          />
-          {ru ? "Составное вращение" : "Compound rotation"}
-        </label>
-      )}
-      {axisInput ? (
-        <>
-          <VectorInputs
-            label={ru ? "Ось a (нормализуется)" : "Axis a (normalized)"}
-            value={s.axis}
-            change={(axis) => patch({ axis })}
-          />
-          <Range
-            label="θ"
-            value={s.angle}
-            min={0}
-            max={360}
-            change={(angle) => patch({ angle })}
-          />
-          {s.axis.every((n) => n === 0) && (
-            <p role="alert">
-              {ru
-                ? "Для нулевой оси показываем единичное вращение. Задайте ненулевую ось."
-                : "A zero axis shows the identity rotation. Choose a nonzero axis."}
-            </p>
-          )}
-        </>
-      ) : (
-        s.local &&
-        !timeline && (
-          <>
-            {s.panel === "axis" && (
-              <label className="select-control">
-                {ru ? "Ось вращения" : "Rotation axis"}
-                <select
-                  aria-label="Rotation axis"
-                  value={s.singleAxis}
-                  onChange={(e) => {
-                    const singleAxis = e.target.value as "X" | "Y" | "Z";
-                    const next: Triple = [0, 0, 0];
-                    next["XYZ".indexOf(singleAxis)] =
-                      s.angles["XYZ".indexOf(s.singleAxis)];
-                    patch({ singleAxis, angles: next });
-                  }}
-                >
-                  {["X", "Y", "Z"].map((a) => (
-                    <option key={a}>{a}</option>
-                  ))}
-                </select>
-              </label>
-            )}
-            {(s.dimension === 2
-              ? [2]
-              : s.zero || s.panel === "matrix"
-                ? [0]
-                : s.panel === "compute"
-                  ? [2]
-                  : s.panel === "axis"
-                    ? ["XYZ".indexOf(s.singleAxis)]
-                    : [0, 1, 2]
-            ).map((i) => (
-              <Range
-                key={i}
-                label={`${"xyz"[i]} angle`}
-                value={angles[i]}
-                change={(n) => {
-                  const next = [...s.angles] as Triple;
-                  next[i] = n;
-                  patch({ angles: next });
-                }}
-              />
-            ))}
-            {(s.panel === "euler" || s.panel === "object") && (
-              <label className="select-control">
-                Euler order
-                <select
-                  aria-label="Euler order"
-                  value={s.order}
-                  onChange={(e) =>
-                    patch({ order: e.target.value as EulerOrder })
-                  }
-                >
-                  {["XYZ", "YXZ", "ZXY", "ZYX", "YZX", "XZY"].map((order) => (
-                    <option key={order}>{order}</option>
-                  ))}
-                </select>
-              </label>
-            )}
-          </>
-        )
-      )}
       {s.panel === "euler" && (
-        <Range
+        <Indicator
           label={ru ? "Этапы композиции" : "Composition stages"}
           value={s.stage}
           min={0}
           max={1}
-          step={0.001}
           suffix=""
-          change={(stage) => patch({ stage })}
         />
-      )}
-      {index === 3 && (
-        <VectorInputs
-          label={ru ? "Начало O" : "Origin O"}
-          value={s.origin}
-          change={(origin) => patch({ origin })}
-        />
-      )}
-      {s.zero && (
-        <label className="check">
-          <input
-            type="checkbox"
-            checked={s.axisPoint}
-            onChange={(e) => patch({ axisPoint: e.target.checked })}
-          />
-          {ru ? "Точка (2,0,0) на оси X" : "Point (2,0,0) on X"}
-        </label>
-      )}
-      {s.mode === "model" && (
-        <label className="select-control">
-          {ru ? "Геометрия" : "Geometry"}
-          <select
-            aria-label="Geometry display"
-            value={s.surface}
-            onChange={(e) =>
-              patch({ surface: e.target.value as RotationState["surface"] })
-            }
-          >
-            <option value="surface">{ru ? "Поверхность" : "Surface"}</option>
-            <option value="wireframe">{ru ? "Каркас" : "Wireframe"}</option>
-            <option value="vertices">{ru ? "Вершины" : "Vertices"}</option>
-          </select>
-        </label>
       )}
       {s.panel === "conditions" && (
-        <Range
+        <Indicator
           label="Δ R[0,1]"
           value={s.shear}
           min={-1}
           max={1}
-          step={0.01}
           suffix=""
-          change={(shear) => patch({ shear })}
         />
       )}
+      {s.panel === "gimbal" && <AngleCharts s={s} language={language} />}
     </div>
   );
 }
@@ -529,9 +309,10 @@ export function Numbers({
   const object = new Object3D();
   object.position.set(...s.origin);
   object.quaternion.copy(q);
-  if (s.parent) {
+  const parentWeight = s.visual?.visibility.parent ?? Number(s.parent);
+  if (parentWeight > 0) {
     const parent = new Object3D();
-    parent.rotation.y = (Math.PI * 35) / 180;
+    parent.rotation.y = (Math.PI * 35 * parentWeight) / 180;
     parent.add(object);
   }
   object.updateWorldMatrix(true, false);
@@ -566,8 +347,10 @@ export function Numbers({
           </div>
           <Matrix matrix={m} />
           {s.panel === "matrix" && (
-            <details open>
-              <summary>{ru ? "Компоненты базиса" : "Basis components"}</summary>
+            <div className="basis-components">
+              <p className="panel-caption">
+                {ru ? "Компоненты базиса" : "Basis components"}
+              </p>
               <Matrix matrix={m} symbolic />
               <code className="code-block">{`const m = new THREE.Matrix4();\nm.set(\n  X.x, Y.x, Z.x, O.x,\n  X.y, Y.y, Z.y, O.y,\n  X.z, Y.z, Z.z, O.z,\n    0,   0,   0,   1\n);`}</code>
               <small>
@@ -575,7 +358,7 @@ export function Numbers({
                   ? "set: по строкам · elements: по столбцам"
                   : "set: row-major · elements: column-major"}
               </small>
-            </details>
+            </div>
           )}
         </>
       )}

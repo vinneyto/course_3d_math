@@ -4,7 +4,7 @@ A hands-on course about vectors, matrices, and linear transformations in compute
 
 The course uses TypeScript, Vitest, and Three.js, but it is not a Three.js course. `Vector3`, `Vector4`, `Matrix3`, and `Matrix4` are used as convenient implementations of universal mathematical concepts.
 
-Exercises 1–14 work only with vectors and `3 × 3` matrices. Exercise 15 introduces points, and exercise 17 introduces `4 × 4` matrices. World space and handedness are intentionally left out of these exercises for now. The interactive rotation presentation additionally introduces local/world frames and a right-handed rotation basis.
+Exercises 1–14 work only with vectors and `3 × 3` matrices. Exercise 15 introduces points, and exercise 17 introduces `4 × 4` matrices. World space and handedness are intentionally left out of these exercises for now. The interactive rotation manual additionally introduces local/world frames and a right-handed rotation basis.
 
 Russian translation: [translations/ru/README.md](translations/ru/README.md)
 
@@ -47,25 +47,26 @@ The three npm workspaces stay at their existing top-level paths:
 | --- | --- |
 | `exercises` | TypeScript tasks, task tests, and lesson pages |
 | `sandbox` | Vite exercise viewer and shared Three.js visualization utilities |
-| `slides` | Next.js catalogue and interactive presentations using React Three Fiber, drei, and classic WebGL |
+| `slides` | Next.js catalogue and interactive manuals using React Three Fiber, drei, and classic WebGL |
 
 Install once at the repository root. Existing exercise commands above keep working.
 
-## Interactive presentations
+## Interactive manuals
 
 ```bash
 npm run dev
 ```
 
-Open http://localhost:3000. The catalogue contains **Rotation in 3D**, a 22-slide
-presentation with English as the default and a Russian language switch. On desktop
-the scene and lesson sit side by side; on mobile they stack with persistent slide
-navigation. Orbit by dragging, zoom with the wheel or a pinch, and explore the
-sliders, matrices, Euler-order comparison, gimbal-lock graphs and quaternion SLERP.
-The application uses `WebGLRenderer`; no WebGPU device is requested.
+Open http://localhost:3000. The catalogue contains **Rotation in 3D**, an interactive
+manual with 85 atomic snapshots across 22 topics, English by default and a Russian
+language switch. On desktop the scene and sidebar sit side by side; on mobile they
+stack with persistent step navigation. Each step supplies its scene, explanation,
+formulas and read-only parameter indicators. Only navigation changes lesson values.
+Drag to orbit the camera, zoom with the wheel or a pinch, and hover for coordinates.
+The application uses `WebGLRenderer`.
 
 ```bash
-npm run test:slides  # independent math and navigation tests
+npm run test:slides  # independent math, snapshots and navigation tests
 npm run build        # Next.js application and Vite sandbox
 npx playwright install chromium
 npm run test:e2e     # Chromium desktop and mobile viewport checks
@@ -75,16 +76,14 @@ The browser checks emulate a mobile viewport/touch input; they do not replace
 testing on a physical phone. For a production server, run `npm run start -w slides`
 after building. Deployment is a separate step.
 
-The course page creates a `useCourseController` and selects React slide components
-and props with a switch. Navigation selects the requested index directly.
-`CourseControls` provides the shared navigation UI. Slide components declare
-destinations in a persistent React stage, which owns state and effect cleanup.
-The WebGL canvas stays mounted
-through the course; transforms, camera and object visibility transition smoothly
-from the currently visible frame. Related basis/matrix and quaternion/matrix
-steps retain interactive parameters. Reverse navigation and interrupted transitions
-continue from the visible state without replaying earlier steps.
-See [slides/README.md](slides/README.md).
+The course page creates a `useCourseController` and selects React step components
+and props with a switch. `CourseControls` provides navigation. Each destination is
+a full immutable snapshot, so revisiting it restores the same mathematical values
+regardless of navigation history. A persistent React stage animates the scene and
+entire sidebar from the currently visible state. The WebGL canvas remains mounted
+across forward, reverse and interrupted transitions. Camera and hover belong to
+the viewer; they cannot edit lesson parameters. See [slides/README.md](slides/README.md)
+and the interactive manual contract in [AGENTS.md](AGENTS.md).
 
 ## Contents
 

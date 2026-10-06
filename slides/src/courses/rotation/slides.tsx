@@ -31,48 +31,36 @@ export function ModelSlide({
   );
 }
 
-export function GimbalSlide(props: SlideProps) {
+type ConfiguredStep = SlideProps & { scene?: Partial<RotationState> };
+export function GimbalSlide({ scene, ...props }: ConfiguredStep) {
   return (
     <ModelSlide
       {...props}
-      scene={{ panel: "gimbal", cameraPosition: [6, 4, 11] }}
+      scene={{ panel: "gimbal", cameraPosition: [6, 4, 11], ...scene }}
     />
   );
 }
-
-export function InterpolationSlide(props: SlideProps) {
+export function InterpolationSlide({ scene, ...props }: ConfiguredStep) {
   return (
     <ModelSlide
       {...props}
-      scene={{ panel: "interpolation", cameraPosition: [3, 2, 13] }}
+      scene={{ panel: "interpolation", cameraPosition: [3, 2, 13], ...scene }}
     />
   );
 }
-
-export function QuaternionSlide({
-  matrix = false,
-  ...props
-}: SlideProps & { matrix?: boolean }) {
+export function QuaternionSlide({ scene, ...props }: ConfiguredStep) {
   return (
     <ModelSlide
       {...props}
-      scene={{
-        panel: matrix ? "q-matrix" : "quaternion",
-        axis: [1, 1, 0],
-        angle: 75,
-      }}
+      scene={{ panel: "quaternion", axis: [1, 1, 0], angle: 75, ...scene }}
     />
   );
 }
-
-export function ObjectSlide({
-  summary = false,
-  ...props
-}: SlideProps & { summary?: boolean }) {
+export function ObjectSlide({ scene, ...props }: ConfiguredStep) {
   return (
     <ModelSlide
       {...props}
-      scene={{ panel: summary ? "summary" : "object", angles: [30, 40, 25] }}
+      scene={{ panel: "object", angles: [30, 40, 25], ...scene }}
     />
   );
 }

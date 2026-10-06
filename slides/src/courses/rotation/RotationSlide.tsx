@@ -6,7 +6,6 @@ import {
   useContext,
   useLayoutEffect,
   useCallback,
-  useEffect,
   useRef,
   useState,
   type ReactNode,
@@ -14,8 +13,8 @@ import {
 import dynamic from "next/dynamic";
 import { useSceneTransition } from "./use-scene-transition";
 import { initialState, type RotationState } from "./state";
-import { chapterIndex, chapters, lessons, type Language } from "./content";
-import { Controls, Numbers } from "./Panels";
+import { chapterIndex, chapters, type Language } from "./content";
+import { SnapshotSidebar } from "./SnapshotSidebar";
 
 const Scene = dynamic(() => import("./Scene"), {
   ssr: false,
@@ -73,60 +72,47 @@ export function RotationStage({
 }: SlideProps & { children: ReactNode }) {
   const [state, setParameters] = useState<RotationState>(initialState);
   const previous = useRef(-1);
+  const authoredCamera = useRef("");
   const setScene = useCallback(
     (scene: Partial<RotationState>, step: number) => {
-      const old = previous.current;
       previous.current = step;
-      const shared =
-        ((old === 4 || old === 5) && (step === 4 || step === 5)) ||
-        ((old === 17 || old === 18) && (step === 17 || step === 18));
+      const destination = { ...initialState, ...scene };
+      const cameraKey = JSON.stringify([
+        destination.cameraPosition,
+        destination.cameraTarget,
+      ]);
+      const preserveView = authoredCamera.current === cameraKey;
+      authoredCamera.current = cameraKey;
       setParameters((current) =>
-        shared
-          ? { ...current, panel: scene.panel ?? initialState.panel }
-          : { ...initialState, ...scene },
+        preserveView
+          ? {
+              ...destination,
+              cameraPosition: current.cameraPosition,
+              cameraTarget: current.cameraTarget,
+            }
+          : destination,
       );
-      setPlaying(false);
     },
     [],
   );
   const { view, transitioning } = useSceneTransition(state, previous.current);
-  const [playing, setPlaying] = useState(false);
   const [contextLost, setContextLost] = useState(false);
   const contextFailed = useCallback(() => setContextLost(true), []);
-  const time = useRef(state.t);
-  useLayoutEffect(() => {
-    time.current = state.t;
-  }, [state.t]);
-  const patch = useCallback((update: Partial<RotationState>) => {
-    if (update.t !== undefined) time.current = update.t;
-    if (update.gimbalManual) setPlaying(false);
-    setParameters((current) => ({ ...current, ...update }));
-  }, []);
-  const timeline =
-    state.translation ||
-    (state.panel === "gimbal" && !state.gimbalManual) ||
-    state.panel === "interpolation";
-  const duration = state.panel === "gimbal" ? 8000 : 6000;
-  useEffect(() => {
-    if (!playing || !timeline) return;
-    let frame = 0,
-      last = performance.now();
-    const tick = (now: number) => {
-      const t = Math.min(
-        1,
-        time.current + Math.min(100, now - last) / duration,
-      );
-      last = now;
-      patch({ t });
-      if (t < 1) frame = requestAnimationFrame(tick);
-      else setPlaying(false);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [playing, timeline, duration, patch]);
+  const changeCamera = useCallback(
+    (camera: {
+      position: RotationState["cameraPosition"];
+      target: RotationState["cameraTarget"];
+    }) => {
+      setParameters((current) => ({
+        ...current,
+        cameraPosition: camera.position,
+        cameraTarget: camera.target,
+      }));
+    },
+    [],
+  );
+  const ru = language === "ru";
 
-  const ru = language === "ru",
-    text = lessons[language][index];
   return (
     <SceneTarget.Provider value={setScene}>
       {children}
@@ -145,10 +131,10 @@ export function RotationStage({
               title={ru ? "Вернуть камеру" : "Reset camera"}
               aria-label="Reset camera"
               onClick={() =>
-                patch(
+                changeCamera(
                   state.dimension === 2
-                    ? { cameraPosition: [1, 1, 12], cameraTarget: [1, 1, 0] }
-                    : { cameraPosition: [6, 4, 10], cameraTarget: [0, 0, 0] },
+                    ? { position: [1, 1, 12], target: [1, 1, 0] }
+                    : { position: [6, 4, 10], target: [0, 0, 0] },
                 )
               }
             >
@@ -158,7 +144,7 @@ export function RotationStage({
           <SceneBoundary language={language}>
             <Scene
               state={view}
-              patch={patch}
+              changeCamera={changeCamera}
               language={language}
               failed={contextFailed}
             />
@@ -178,65 +164,17 @@ export function RotationStage({
             </span>
             <span>
               {ru
-                ? state.dimension === 2
-                  ? "Точка: перетащить · Колесо: масштаб"
-                  : "Потяните: орбита · Щипок: масштаб"
-                : state.dimension === 2
-                  ? "Drag point · Scroll to zoom"
-                  : "Drag to orbit · Pinch to zoom"}
+                ? "Потяните: камера · Наведите: координаты"
+                : "Drag: camera · Hover: coordinates"}
             </span>
           </div>
         </section>
-        <section
-          className="lesson"
-          aria-label={ru ? "Объяснение и управления" : "Lesson and controls"}
-        >
-          <div className="narration" key={index}>
-            <p className="eyebrow">
-              {chapters[language][chapterIndex(index)]}{" "}
-              <span>
-                {String(index + 1).padStart(2, "0")} / {lessons.en.length}
-              </span>
-            </p>
-            <h1 aria-live="polite">{text.title}</h1>
-            <p className="lesson-body">{text.body}</p>
-            <div className="takeaway">
-              <span>{ru ? "ИДЕЯ" : "THE IDEA"}</span>
-              <p>{text.takeaway}</p>
-            </div>
-            <p className="try-it">{text.hint}</p>
-          </div>
-          {timeline && (
-            <div className="play-controls">
-              <button
-                className="play-button"
-                onClick={() => {
-                  if (!playing && state.t >= 1) patch({ t: 0 });
-                  setPlaying(!playing);
-                }}
-              >
-                {playing
-                  ? ru
-                    ? "Ⅱ Пауза"
-                    : "Ⅱ Pause"
-                  : ru
-                    ? "▶ Воспроизвести"
-                    : "▶ Play"}
-              </button>
-              <button
-                className="quiet-button"
-                onClick={() => {
-                  setPlaying(false);
-                  patch({ t: 0 });
-                }}
-              >
-                {ru ? "В начало" : "Restart"}
-              </button>
-            </div>
-          )}
-          <Controls s={state} patch={patch} language={language} index={index} />
-          <Numbers s={view} language={language} />
-        </section>
+        <SnapshotSidebar
+          index={index}
+          language={language}
+          scene={view}
+          destination={state}
+        />
       </div>
     </SceneTarget.Provider>
   );

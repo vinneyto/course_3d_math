@@ -1,4 +1,4 @@
-# Interactive presentations
+# Interactive manuals
 
 Next.js + React Three Fiber + drei, using the classic Three.js WebGL renderer.
 Run `npm run dev` from the monorepo root, then open http://localhost:3000.
@@ -6,67 +6,53 @@ Run `npm run dev` from the monorepo root, then open http://localhost:3000.
 ## Routes
 
 - `/`: responsive tile catalogue.
-- `/presentations/rotation`: 22-slide rotation course in English and Russian.
+- `/presentations/rotation`: rotation manual in English and Russian.
 
-## React presentation structure
+Existing workspace and route names remain stable. User-facing terminology is
+**interactive manual** and **step**. The rotation manual contains 85 atomic snapshots
+covering 22 topics. Each snapshot describes the complete scene and sidebar.
 
-```tsx
-function CoursePage() {
-  const controller = useCourseController(22);
-  let slide;
-  switch (controller.index) {
-    case 0: slide = <PointSlide index={0} language="en" />; break;
-    case 1: slide = <PointSlide index={1} language="en" scene={{ translation: true }} />; break;
-    // Other components, or the same component with different props.
-  }
-  return <>
-    <RotationStage index={controller.index} language="en">
-      {slide}
-    </RotationStage>
-    <CourseControls controller={controller} titles={titles} language="en" />
-  </>;
-}
-```
+## React structure
 
-`useCourseController` is a small React hook: it holds the current index and exposes
-`goTo`, `next`, and `previous`. Jumps select the requested component directly.
-`CourseControls` renders navigation, the slide selector and progress, and owns
-the keyboard listener and its cleanup. It has no knowledge of the course scene.
+`RotationPresentation` creates `useCourseController(snapshots.length)` and selects
+`PointSlide`, `ModelSlide`, `GimbalSlide`, `InterpolationSlide`, `QuaternionSlide`
+or `ObjectSlide` through a switch on the snapshot kind, passing its complete scene.
+A component can serve multiple consecutive snapshots with different props.
+`CourseControls` handles next, previous, direct selection and keyboard navigation.
 
-`RotationPresentation` contains the course's switch. `PointSlide`, `ModelSlide`,
-`GimbalSlide`, `InterpolationSlide`, `QuaternionSlide` and `ObjectSlide` reuse the
-R3F visualization with declarative props. Step components declare their full target
-state through a small context and a layout effect. They never own or key the canvas.
-`RotationStage` stays mounted outside the switch and owns interactive parameters,
-camera and playback with React state and effect cleanup.
+`snapshots.ts` is the authored timeline. Its immutable destinations contain all
+lesson parameters; returning or jumping to a frame restores its exact values.
+Changes of angle, geometry representation, composition stage, parent transform or
+timeline sample are additional snapshots. There are no editable lesson controls,
+chart seeking, point dragging, vertex-selection clicks or automatic playback.
+Viewer interaction consists of camera orbit/zoom/pan and hover tooltips.
 
-`useSceneTransition` animates the displayed state toward the next step over 1.1s.
-Rotations use quaternion SLERP; position and camera use eased interpolation.
-Point, cube, model, grids and helpers share one scene and crossfade existing objects.
-The numerical readouts follow the displayed transform. Controls describe the target
-state and remain usable during a transition. Next, previous and direct jumps all
-begin from the current visible frame; a new destination cancels the old RAF.
-Users with reduced-motion preferences reach the destination immediately.
+Step components declare destinations through context and a React layout effect.
+`RotationStage` stays mounted outside the switch and owns the animated scene.
+`useSceneTransition` animates from the visible state over 1.1s; a new destination
+cancels and retargets the previous RAF. Rotations generally use quaternion SLERP;
+the gimbal and Euler/SLERP examples follow their own mathematical paths, keeping
+rings, angles and model consistent. Position, camera and visibility interpolate.
+Reduced-motion preferences reach the destination immediately.
 
-The basis/matrix pair (5–6) and quaternion/matrix pair (18–19) preserve parameters
-while changing panels. Other destinations select their own defaults without
-remounting the scene. Changing language preserves the state. Entering translation
-animates the displacement automatically; its timeline can still be replayed.
-There is no imperative apply/revert lifecycle or transition queue.
+`SnapshotSidebar` contains the full explanation, parameter indicators, formulas
+and numerical readouts. Entire panels crossfade, sidebar height transitions and
+numbers follow the displayed scene. Destination parameters never inherit edits or
+values from earlier visits. Viewer camera state is preserved between frames with
+the same authored camera; a changed framing animates to the new view. Language
+switching preserves course progress.
 
-To add a course, create a React page with its controller, switch and slide
-components, reuse `CourseControls`, add its route and catalogue tile. Each component
-describes its full example, independently of how the learner reached it.
+The R3F Canvas, renderer and shared geometry remain mounted. Point, cube, model,
+grids and helpers crossfade; surface, wireframe and vertices also share mounted
+geometry. Labels use an effect-owned projected DOM layer. Geometry and explicit
+sky resources have disposal cleanup. Demand rendering runs while transitions,
+camera movement or hover updates require it. Leaving the manual cancels animation.
 
-The scene uses the sandbox's gradient sky, equivalent lighting, and OrbitControls.
-Labels use a projected DOM layer owned by React effects, avoiding extra React roots
-inside Fiber's teardown. Declarative geometry is disposed by Fiber;
-explicitly created sky and knot resources have disposal effects. Rendering is on
-demand; transition and playback RAFs drive updates only while animating. Switching
-steps stops old playback, and leaving the course cancels animation effects.
-Mobile controls use normal touch-friendly form elements.
+To add a course, create its authored snapshots, React page/controller and switch,
+reuse `CourseControls`, then add a route and catalogue tile. Follow the contract
+in the root [AGENTS.md](../AGENTS.md).
 
-## Rotation course
+## Rotation topics
 
 1–4: point, translation, local-frame rotation, offset origin. 5–9: basis sum,
 colored Matrix4 columns, world coordinate calculation, fixed axis points, recap.
@@ -74,17 +60,18 @@ colored Matrix4 columns, world coordinate calculation, fixed axis points, recap.
 Euler composition, order comparison, gimbal lock, angle boundary interpolation.
 18–22: axis–angle quaternion, quaternion matrix, SLERP, Object3D, recap.
 
-For XYZ, the scripted gimbal demo reaches y=90° at t=0.5, then increases x and
-decreases z equally. It compares this cancellation to y=80°, and offers separate
-manual angle controls. The rings show the successive rotation frames, rather than
-mislabeling the final model basis as gimbal axes.
+For XYZ, scripted gimbal snapshots reach y=90°, then increase x and decrease z
+equally. Further snapshots compare y=80° and change x then z separately at the
+singularity: either angle still rotates the model, but their effects become
+linearly dependent. Rings show successive rotation frames. Graphs observe the
+snapshot time; clicking them cannot change it.
 
-The interpolation comparison samples an actual vertex trajectory. Angular speeds
-are degrees per normalized time t, not degrees per second. The compound example
-compares the same endpoint orientations. The Object3D example supports Euler and
-axis-to-quaternion input and an optional parent rotation.
+Interpolation snapshots compare an actual vertex trajectory. Angular speeds are
+degrees per normalized time t. Single-axis and compound comparisons share their
+endpoint orientations. Object3D snapshots first show Euler input, then the same
+orientation as a quaternion, then add a parent rotation.
 
-The full authoring scenario lives in [Google Docs](https://docs.google.com/document/d/1-fET7tLlbFPbg-6VB6uop51qskeiLZWIn274aTkDQFo/edit).
+The authoring scenario lives in [Google Docs](https://docs.google.com/document/d/1-fET7tLlbFPbg-6VB6uop51qskeiLZWIn274aTkDQFo/edit).
 
 ## Validation
 
@@ -92,6 +79,7 @@ From the root: `npm run typecheck`, `npm run test:slides`, `npm run build`.
 For browsers: `npx playwright install chromium`, then `npm run build` and
 `npm run test:e2e`. Browser tests run against the production server.
 An existing Chromium can be used via `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
-CI checks desktop and mobile Chromium viewports, not physical iOS/Android devices.
-Exercise `task.test.ts` files remain intentionally failing until solved by learners;
-they are kept separate from presentation validation.
+Tests cover all snapshots, read-only/reproducible values, renderer continuity,
+animated sidebar values, reverse/interrupted transitions, camera/hover, graphics
+failure, and desktop/mobile layouts. Mobile coverage is Chromium viewport emulation.
+Exercise task tests intentionally fail until solved and stay separate.

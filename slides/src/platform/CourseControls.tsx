@@ -45,9 +45,9 @@ export function CourseControls({
         ← <span>{ru ? "Назад" : "Previous"}</span>
       </button>
       <label className="slide-picker">
-        <span className="sr-only">{ru ? "Выбрать слайд" : "Choose slide"}</span>
+        <span className="sr-only">{ru ? "Выбрать шаг" : "Choose step"}</span>
         <select
-          aria-label="Choose slide"
+          aria-label="Choose step"
           value={index}
           onChange={(e) => goTo(Number(e.target.value))}
         >

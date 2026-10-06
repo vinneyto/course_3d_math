@@ -1,4 +1,5 @@
 "use client";
+import { snapshots } from "../courses/rotation/snapshots";
 import Link from "next/link";
 import { useLanguage } from "./use-language";
 
@@ -72,7 +73,7 @@ export default function Catalogue() {
       </header>
       <section className="catalogue-intro">
         <p className="eyebrow">
-          {ru ? "ИНТЕРАКТИВНЫЕ ПРЕЗЕНТАЦИИ" : "INTERACTIVE PRESENTATIONS"}
+          {ru ? "ИНТЕРАКТИВНЫЕ МАНУАЛЫ" : "INTERACTIVE MANUALS"}
         </p>
         <h1>
           {ru ? (
@@ -91,18 +92,20 @@ export default function Catalogue() {
         </h1>
         <p>
           {ru
-            ? "Исследуйте идеи в живой 3D-сцене. Один шаг, один эксперимент, одно новое понимание."
-            : "Explore the ideas inside a live 3D scene. One step, one experiment, one new way to understand."}
+            ? "Исследуйте идеи в живой 3D-сцене. Шаг за шагом наблюдайте, как одна идея превращается в другую."
+            : "Explore the ideas inside a live 3D scene. Move through time, one small change at a time."}
         </p>
       </section>
       <section
         className="catalogue-grid"
-        aria-label={ru ? "Демонстрации" : "Presentations"}
+        aria-label={ru ? "Демонстрации" : "Manuals"}
       >
         <Link className="course-card" href="/presentations/rotation">
           <div className="card-art">
             <RotationArtwork />
-            <span className="card-badge">22 {ru ? "слайда" : "slides"}</span>
+            <span className="card-badge">
+              {snapshots.length} {ru ? "шагов" : "steps"}
+            </span>
           </div>
           <div className="card-copy">
             <p className="eyebrow">
