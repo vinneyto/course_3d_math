@@ -1,5 +1,23 @@
 # Repository instructions
 
+## Monorepo and interactive slides
+
+- Keep `exercises`, `sandbox`, and `slides` as npm workspaces. Preserve root
+  exercise commands and relative lesson links when changing package organization.
+- `slides` uses Next.js, React Three Fiber, drei, and classic WebGLRenderer.
+  Do not switch to WebGPU without an explicit request.
+- Keep English primary and maintain the Russian presentation text alongside it.
+- Slide methods are asynchronous `apply(context, signal)` and
+  `revert(context, signal)`. Jumps must apply/revert every intermediate change.
+  Capture previous immutable context rather than copying another slide's logic.
+- Include camera and interactive controls in reversible state; cancel playback
+  and asynchronous work when leaving or disposing the presentation.
+- Check slides with `npm run test:slides`, `npm run typecheck`, `npm run build`,
+  and `npm run test:e2e`. Test desktop and mobile layouts; do not claim physical
+  device coverage from viewport emulation.
+- Exercise tasks intentionally contain TODOs. Do not solve them to make the
+  presentation CI pass; keep their tests independent.
+
 ## Exercise page navigation
 
 - End every exercise `README.md` with a navigation block separated from the

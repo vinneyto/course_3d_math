@@ -2,3 +2,10 @@ node_modules/
 coverage/
 .DS_Store
 *.log
+.next/
+out/
+dist/
+*.tsbuildinfo
+playwright-report/
+test-results/
+/slides/next-env.d.ts
