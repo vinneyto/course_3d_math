@@ -8,7 +8,12 @@ import {
   sweepVertex,
 } from "./euler-sweeps";
 import { eulerQuaternion, rad, type Triple } from "./math";
-import { displayedEulerAngles, orientation } from "./state";
+import {
+  displayedEulerAngles,
+  displayedEulerOrder,
+  orientation,
+  type RotationState,
+} from "./state";
 import { snapshots, sequenceFor } from "./snapshots";
 import { blendScene, visibility } from "./transition";
 
@@ -127,6 +132,64 @@ describe("Euler angle sectors", () => {
       blendScene(interrupted, restored, 0.3).visual!.visibility.eulerSectors,
     ).toBe(1);
     expect(displayedEulerAngles(reset)).toEqual([0, 0, 0]);
+  });
+  it("resets XYZ sectors before switching to YXZ, without moving their planes or radii at the boundary", () => {
+    const xyz = scene("euler-3"),
+      reset = scene("order-0");
+    const vertices = (s: RotationState) =>
+      eulerSweeps(displayedEulerAngles(s), displayedEulerOrder(s)).flatMap(
+        (sweep, i) =>
+          [0, 0.5, 1].map((fraction) =>
+            new Vector3(
+              ...sweepVertex(
+                sweep.axis,
+                rad(sweep.angle * fraction),
+                2.15 - i * 0.2,
+              ),
+            ).applyQuaternion(new Quaternion(...sweep.frame)),
+          ),
+      );
+    const expectSameSectors = (a: RotationState, b: RotationState) =>
+      vertices(a).forEach((v, i) =>
+        expect(v.distanceTo(vertices(b)[i])).toBeLessThan(1e-10),
+      );
+    expectSameSectors(xyz, blendScene(xyz, reset, 0));
+    for (const t of [0, 0.1, 0.5, 0.9, 0.999]) {
+      const frame = blendScene(xyz, reset, t);
+      expect(displayedEulerOrder(frame)).toBe("XYZ");
+      expect(
+        eulerQuaternion(displayedEulerAngles(frame), "XYZ").angleTo(
+          orientation(frame),
+        ),
+      ).toBeLessThan(1e-7);
+    }
+    expect(
+      displayedEulerAngles(blendScene(xyz, reset, 0.999)).every(
+        (angle) => Math.abs(angle) < 0.001,
+      ),
+    ).toBe(true);
+    expect(displayedEulerOrder(blendScene(xyz, reset, 1))).toBe("YXZ");
+    // A reverse visit grows the original XYZ sectors, not a YXZ decomposition.
+    const reverse = blendScene(reset, xyz, 0.5);
+    expect(displayedEulerOrder(reverse)).toBe("XYZ");
+    expectSameSectors(reverse, blendScene(reverse, reset, 0));
+    const interrupted = blendScene(xyz, reset, 0.4);
+    expectSameSectors(interrupted, blendScene(interrupted, xyz, 0));
+    // Advancing again before the reset finishes retains the visible sectors.
+    const next = scene("order-1");
+    expectSameSectors(interrupted, blendScene(interrupted, next, 0));
+    let previous = interrupted;
+    for (let i = 1; i <= 1000; i++) {
+      const frame = blendScene(interrupted, next, i / 1000);
+      if (displayedEulerOrder(frame) !== displayedEulerOrder(previous))
+        expect(
+          Math.max(...displayedEulerAngles(previous).map(Math.abs)),
+        ).toBeLessThan(0.2);
+      expect(orientation(previous).angleTo(orientation(frame))).toBeLessThan(
+        0.005,
+      );
+      previous = frame;
+    }
   });
 });
 

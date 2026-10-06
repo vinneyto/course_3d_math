@@ -59,12 +59,15 @@ export interface RotationState {
   cameraPosition: Triple;
   cameraTarget: Triple;
 }
+export function displayedEulerOrder(s: RotationState): EulerOrder {
+  return s.visual?.eulerOrder ?? s.order;
+}
 /** Match angle indicators and sectors to the displayed orientation. */
 export function displayedEulerAngles(s: RotationState): Triple {
   if (s.panel === "gimbal") return s.visual?.gimbalAngles ?? s.angles;
   if (s.visual)
     return new Euler()
-      .setFromQuaternion(orientation(s), s.order)
+      .setFromQuaternion(orientation(s), displayedEulerOrder(s))
       .toArray()
       .slice(0, 3)
       .map((n) => (Number(n) * 180) / Math.PI) as Triple;

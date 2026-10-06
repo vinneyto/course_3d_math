@@ -300,6 +300,54 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
     "false",
   );
   await expect(timeline).toHaveAttribute("data-timeline-position", "0");
+  await go(page, "euler-3");
+  const orderTrace = await page.evaluateHandle(() => {
+    const trace = {
+      resetInXYZ: false,
+      switchedWithNonzeroAngles: false,
+      stop: () => observer.disconnect(),
+    };
+    const observer = new MutationObserver(() => {
+      if (
+        document
+          .querySelector("[data-snapshot]")
+          ?.getAttribute("data-snapshot") !== "order-0"
+      )
+        return;
+      const panel = document.querySelector(".sidebar-active")!;
+      const order = Array.from(panel.querySelectorAll("dt")).find(
+        (dt) => dt.textContent === "Euler order",
+      )?.nextElementSibling?.textContent;
+      const maxAngle = Math.max(
+        ...Array.from(
+          panel.querySelectorAll('[role="meter"][aria-label$=" angle"]'),
+        ).map((meter) => Math.abs(Number(meter.getAttribute("aria-valuenow")))),
+      );
+      trace.resetInXYZ ||= order === "XYZ" && maxAngle > 1;
+      trace.switchedWithNonzeroAngles ||= order === "YXZ" && maxAngle > 0.01;
+    });
+    observer.observe(document.querySelector(".player-main")!, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true,
+    });
+    return trace;
+  });
+  await go(page, "order-0");
+  const orderResult = await orderTrace.evaluate((trace) => {
+    trace.stop();
+    return {
+      resetInXYZ: trace.resetInXYZ,
+      switchedWithNonzeroAngles: trace.switchedWithNonzeroAngles,
+    };
+  });
+  await orderTrace.dispose();
+  expect(orderResult).toEqual({
+    resetInXYZ: true,
+    switchedWithNonzeroAngles: false,
+  });
+  await expect(pane(page).locator(".snapshot-values")).toContainText("YXZ");
   for (const id of [
     "local-z-45",
     "origin-1",
@@ -310,6 +358,10 @@ test("scene animates with synchronized readouts and an immediate sidebar", async
     "conditions-3",
     "axis-X-0",
     "conditions-3",
+    "euler-3",
+    "order-0",
+    "euler-3",
+    "order-1",
     "gimbal-cancel90",
     "boundary-0.5",
     "q-matrix-75",

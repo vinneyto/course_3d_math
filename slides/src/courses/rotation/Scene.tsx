@@ -37,7 +37,12 @@ import {
   vectorText,
   type Triple,
 } from "./math";
-import { displayedEulerAngles, orientation, type RotationState } from "./state";
+import {
+  displayedEulerAngles,
+  displayedEulerOrder,
+  orientation,
+  type RotationState,
+} from "./state";
 import {
   eulerSweeps,
   gimbalTurnSweeps,
@@ -589,7 +594,7 @@ function EulerSectors({
   language: Language;
   comparison?: boolean;
 }) {
-  const order = s.order;
+  const order = displayedEulerOrder(s);
   const angles: Triple =
     s.panel === "gimbal"
       ? displayedEulerAngles(s)

@@ -12,7 +12,12 @@ import {
   vectorText,
   type Triple,
 } from "./math";
-import { displayedEulerAngles, orientation, type RotationState } from "./state";
+import {
+  displayedEulerAngles,
+  displayedEulerOrder,
+  orientation,
+  type RotationState,
+} from "./state";
 import { StageTimeline } from "./StageTimeline";
 import type { Language } from "./content";
 
@@ -266,7 +271,7 @@ export function SnapshotParameters({
           s.panel === "object") && (
           <>
             <dt>Euler order</dt>
-            <dd>{s.order}</dd>
+            <dd>{displayedEulerOrder(s)}</dd>
           </>
         )}
         {s.panel === "gimbal" && (
@@ -497,7 +502,12 @@ export function Numbers({
       {(s.panel === "axis" || s.panel === "euler") && (
         <>
           <p className="formula">
-            R = Rx(x) · Ry(y) · Rz(z) <small>(XYZ)</small>
+            R ={" "}
+            {displayedEulerOrder(s)
+              .split("")
+              .map((axis) => `R${axis.toLowerCase()}(${axis.toLowerCase()})`)
+              .join(" · ")}{" "}
+            <small>({displayedEulerOrder(s)})</small>
           </p>
           <code className="code-block">
             {
@@ -508,8 +518,8 @@ export function Numbers({
       )}
       {(s.panel === "euler" || s.panel === "order") && (
         <p className="formula">
-          order = {s.order} · R ={" "}
-          {s.order
+          order = {displayedEulerOrder(s)} · R ={" "}
+          {displayedEulerOrder(s)
             .split("")
             .map((a) => `R${a.toLowerCase()}(${a.toLowerCase()})`)
             .join(" · ")}

@@ -1,11 +1,12 @@
-import { Quaternion, Vector3 } from "three";
-import { orientation, type RotationState } from "./state";
+import { Quaternion, Vector3, type EulerOrder } from "three";
+import { displayedEulerOrder, orientation, type RotationState } from "./state";
 import { eulerQuaternion, interpolation, type Triple } from "./math";
 
 export const transitionDuration = 1100;
 export type Visibility = ReturnType<typeof visibility>;
 export interface SceneVisual {
   path?: "gimbal" | "interpolation";
+  eulerOrder: EulerOrder;
   quaternion: [number, number, number, number];
   modelQuaternion: [number, number, number, number];
   comparisonQuaternion: [number, number, number, number];
@@ -100,6 +101,34 @@ export function comparisonOrientation(s: RotationState): Quaternion {
   return orientation(s);
 }
 
+/** Change the sector decomposition only at identity, where every sweep is empty.
+ * A quick next click during the reset finishes that reset before the new order.
+ */
+function rotationOrderPath(
+  start: Quaternion,
+  end: Quaternion,
+  fromOrder: EulerOrder,
+  toOrder: EulerOrder,
+  t: number,
+): { quaternion: Quaternion; order: EulerOrder } {
+  if (fromOrder === toOrder)
+    return { quaternion: start.clone().slerp(end, t), order: toOrder };
+  const identity = new Quaternion();
+  const outgoing = start.angleTo(identity),
+    incoming = end.angleTo(identity);
+  const split =
+    outgoing + incoming > 1e-7 ? outgoing / (outgoing + incoming) : 0;
+  if (t < split)
+    return {
+      quaternion: start.clone().slerp(identity, t / split),
+      order: fromOrder,
+    };
+  return {
+    quaternion: identity.slerp(end, split < 1 ? (t - split) / (1 - split) : 1),
+    order: toOrder,
+  };
+}
+
 /** Interpolate actual transforms, rather than lerping Euler representations. */
 export function blendScene(
   from: RotationState,
@@ -115,20 +144,40 @@ export function blendScene(
     from.panel === "gimbal" &&
     to.panel === "gimbal" &&
     (!from.visual || from.visual.path === "gimbal");
+  const fromOrder = displayedEulerOrder(from);
   const q = sameGimbal
     ? eulerQuaternion(gimbal)
-    : orientation(from).clone().slerp(orientation(to), t);
+    : rotationOrderPath(
+        orientation(from),
+        orientation(to),
+        fromOrder,
+        to.order,
+        t,
+      ).quaternion;
   const sameInterpolation =
     from.panel === "interpolation" &&
     to.panel === "interpolation" &&
     from.compound === to.compound &&
     (!from.visual || from.visual.path === "interpolation");
+  const leftPath = rotationOrderPath(
+    modelOrientation(from),
+    modelOrientation(to),
+    fromOrder,
+    to.order,
+    t,
+  );
   const leftQ = sameInterpolation
     ? interpolation(timeline, to.compound).euler
-    : modelOrientation(from).clone().slerp(modelOrientation(to), t);
+    : leftPath.quaternion;
   const rightQ = sameInterpolation
     ? interpolation(timeline, to.compound).slerp
-    : comparisonOrientation(from).clone().slerp(comparisonOrientation(to), t);
+    : rotationOrderPath(
+        comparisonOrientation(from),
+        comparisonOrientation(to),
+        fromOrder,
+        to.order,
+        t,
+      ).quaternion;
   const point = triple(localPoint(from), localPoint(to), t);
   // Recover the current effective origin when retargeting an unfinished transition.
   const fromOrigin = from.visual
@@ -171,6 +220,7 @@ export function blendScene(
     cameraPosition: triple(from.cameraPosition, to.cameraPosition, t),
     cameraTarget: triple(from.cameraTarget, to.cameraTarget, t),
     visual: {
+      eulerOrder: leftPath.order,
       path: sameGimbal
         ? "gimbal"
         : sameInterpolation
