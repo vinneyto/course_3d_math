@@ -20,6 +20,12 @@ test("catalogue, all slide components, numerical controls and direct navigation"
   await expect(page.locator(".readouts")).toContainText("(2.00, 3.00, 0.00)");
   const tooltip = page.locator(".point-tooltip");
   await expect(tooltip).toBeVisible();
+  const worldAxisLabel = page.locator(".scene-label").filter({ hasText: /^Xw$/ });
+  await expect(worldAxisLabel).toBeVisible();
+  // DOM labels must be painted above the opaque WebGL canvas.
+  await expect.poll(() => worldAxisLabel.evaluate(
+    node => Number(getComputedStyle(node).zIndex),
+  )).toBeGreaterThan(0);
   const tooltipBounds = await tooltip.boundingBox();
   const sceneBounds = await page.locator("canvas").boundingBox();
   expect(tooltipBounds!.x).toBeGreaterThanOrEqual(sceneBounds!.x);
