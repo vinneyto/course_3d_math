@@ -17,6 +17,9 @@ import { Canvas, events, useFrame, useThree } from "@react-three/fiber";
 import { Line, OrbitControls } from "@react-three/drei";
 import {
   Euler,
+  BufferGeometry,
+  Float32BufferAttribute,
+  DoubleSide,
   Group,
   Material,
   Matrix4,
@@ -36,7 +39,8 @@ import {
   vectorText,
   type Triple,
 } from "./math";
-import { orientation, type RotationState } from "./state";
+import { displayedEulerAngles, orientation, type RotationState } from "./state";
+import { eulerSweeps, sweepVertex, type EulerSweep } from "./euler-sweeps";
 import type { Language } from "./content";
 import {
   comparisonOrientation,
@@ -492,6 +496,117 @@ function Model({
     </group>
   );
 }
+/** Fixed geometry buffers let the signed angular sector grow without remounting. */
+function SweptSector({
+  sweep,
+  radius,
+  language,
+}: {
+  sweep: EulerSweep;
+  radius: number;
+  language: Language;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const geometry = useMemo(() => {
+    const geometry = new BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new Float32BufferAttribute(new Float32Array(66 * 3), 3),
+    );
+    geometry.setIndex(
+      Array.from({ length: 64 }, (_, i) => [0, i + 1, i + 2]).flat(),
+    );
+    return geometry;
+  }, []);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  useLayoutEffect(() => {
+    const positions = geometry.getAttribute("position");
+    for (let i = 0; i <= 64; i++) {
+      positions.setXYZ(
+        i + 1,
+        ...sweepVertex(sweep.axis, (rad(sweep.angle) * i) / 64, radius),
+      );
+    }
+    positions.needsUpdate = true;
+    geometry.computeBoundingSphere();
+  }, [geometry, sweep.axis, sweep.angle, radius]);
+  const color = colors["XYZ".indexOf(sweep.axis)];
+  const start = sweepVertex(sweep.axis, 0, radius);
+  const end = sweepVertex(sweep.axis, rad(sweep.angle), radius);
+  const middle = sweepVertex(sweep.axis, rad(sweep.angle) / 2, radius * 0.8);
+  return (
+    <group quaternion={sweep.frame} visible={Math.abs(sweep.angle) > 0.01}>
+      <mesh
+        geometry={geometry}
+        dispose={null}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+        }}
+        onPointerOut={() => setHovered(false)}
+      >
+        <meshBasicMaterial
+          color={color}
+          transparent
+          opacity={0.19}
+          side={DoubleSide}
+          depthWrite={false}
+        />
+      </mesh>
+      <Line
+        points={[start, [0, 0, 0], end]}
+        color={color}
+        transparent
+        opacity={0.55}
+        lineWidth={1}
+      />
+      <Fade opacity={hovered ? 1 : 0}>
+        <ScreenLabel
+          position={middle}
+          tooltip
+          color={color}
+          text={`R${sweep.axis.toLowerCase()} · ${sweep.angle.toFixed(2)}°\n${language === "ru" ? "Заметённый угол вокруг" : "Swept angle about"} ${sweep.axis}`}
+        />
+      </Fade>
+    </group>
+  );
+}
+function EulerSectors({
+  s,
+  language,
+  comparison = false,
+}: {
+  s: RotationState;
+  language: Language;
+  comparison?: boolean;
+}) {
+  const order = s.panel === "order" ? (comparison ? "YXZ" : "XYZ") : s.order;
+  const angles: Triple =
+    s.panel === "gimbal"
+      ? displayedEulerAngles(s)
+      : s.visual
+        ? (new Euler()
+            .setFromQuaternion(
+              comparison ? comparisonOrientation(s) : modelOrientation(s),
+              order,
+            )
+            .toArray()
+            .slice(0, 3)
+            .map((n) => (Number(n) * 180) / Math.PI) as Triple)
+        : displayedEulerAngles(s);
+  return (
+    <>
+      {eulerSweeps(angles, order).map((sweep, i) => (
+        <SweptSector
+          key={sweep.axis}
+          sweep={sweep}
+          radius={2.15 - i * 0.2}
+          language={language}
+        />
+      ))}
+    </>
+  );
+}
 function Gimbals({ s }: { s: RotationState }) {
   const [x, y, z] = (
     s.visual?.gimbalAngles ??
@@ -719,6 +834,16 @@ function World({
                 ))}
             </>
           </Fade>
+          <group position={offset}>
+            <Fade opacity={weights.eulerSectors}>
+              <EulerSectors s={s} language={language} />
+            </Fade>
+          </group>
+          <group position={[2.6 * weights.comparison, 0, 0]}>
+            <Fade opacity={weights.eulerSectors * weights.comparison}>
+              <EulerSectors s={s} language={language} comparison />
+            </Fade>
+          </group>
           <Fade opacity={weights.gimbal}>
             <Gimbals s={s} />
           </Fade>

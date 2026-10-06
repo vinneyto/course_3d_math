@@ -12,7 +12,8 @@ import {
   vectorText,
   type Triple,
 } from "./math";
-import { orientation, type RotationState } from "./state";
+import { displayedEulerAngles, orientation, type RotationState } from "./state";
+import { StageTimeline } from "./StageTimeline";
 import type { Language } from "./content";
 
 const colors = ["#f78189", "#8fd29d", "#7ea9ff", "#d8c598"];
@@ -177,16 +178,14 @@ function Indicator({
 export function SnapshotParameters({
   s,
   language,
+  index,
 }: {
   s: RotationState;
   language: Language;
+  index: number;
 }) {
   const ru = language === "ru";
-  const angles =
-    s.panel === "gimbal"
-      ? (s.visual?.gimbalAngles ??
-        (s.gimbalManual ? s.angles : gimbalAngles(s.t, s.locked)))
-      : s.angles;
+  const angles = displayedEulerAngles(s);
   const quaternion =
     s.panel === "quaternion" ||
     s.panel === "q-matrix" ||
@@ -240,26 +239,6 @@ export function SnapshotParameters({
           <Indicator key={i} label={`${"xyz"[i]} angle`} value={value} />
         ))
       )}
-      {(s.translation ||
-        s.panel === "gimbal" ||
-        s.panel === "interpolation") && (
-        <Indicator
-          label={ru ? "Время" : "Time"}
-          value={s.t}
-          min={0}
-          max={1}
-          suffix=""
-        />
-      )}
-      {s.panel === "euler" && (
-        <Indicator
-          label={ru ? "Этапы композиции" : "Composition stages"}
-          value={s.stage}
-          min={0}
-          max={1}
-          suffix=""
-        />
-      )}
       {s.panel === "conditions" && (
         <Indicator
           label="Δ R[0,1]"
@@ -269,6 +248,7 @@ export function SnapshotParameters({
           suffix=""
         />
       )}
+      <StageTimeline index={index} scene={s} language={language} />
       {s.panel === "gimbal" && <AngleCharts s={s} language={language} />}
     </div>
   );

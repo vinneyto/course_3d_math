@@ -1,4 +1,4 @@
-import { Quaternion, type EulerOrder } from "three";
+import { Euler, Quaternion, type EulerOrder } from "three";
 import {
   axisQuaternion,
   eulerQuaternion,
@@ -24,6 +24,7 @@ export type Panel =
   | "object"
   | "summary";
 export interface RotationState {
+  timeline?: { group: number; position: number };
   visual?: import("./transition").SceneVisual;
   mode: Mode;
   panel: Panel;
@@ -51,6 +52,30 @@ export interface RotationState {
   singleAxis: "X" | "Y" | "Z";
   cameraPosition: Triple;
   cameraTarget: Triple;
+}
+/** Match angle indicators and sectors to the displayed orientation. */
+export function displayedEulerAngles(s: RotationState): Triple {
+  if (s.panel === "gimbal")
+    return (
+      s.visual?.gimbalAngles ??
+      (s.gimbalManual ? s.angles : gimbalAngles(s.t, s.locked))
+    );
+  if (s.visual)
+    return new Euler()
+      .setFromQuaternion(orientation(s), s.order)
+      .toArray()
+      .slice(0, 3)
+      .map((n) => (Number(n) * 180) / Math.PI) as Triple;
+  if (s.panel === "euler") {
+    const angles = [...s.angles] as Triple;
+    for (let i = 0; i < 3; i++)
+      angles["XYZ".indexOf(s.order[i])] *= Math.max(
+        0,
+        Math.min(1, s.stage * 3 - i),
+      );
+    return angles;
+  }
+  return s.angles;
 }
 export const initialState: RotationState = {
   mode: "point",

@@ -41,6 +41,9 @@ export function visibility(s: RotationState) {
     parent: Number(s.panel === "object" && s.parent),
     grid3D: Number(s.dimension === 3),
     cubePoint: Number(s.mode === "cube"),
+    eulerSectors: Number(
+      ["axis", "euler", "order", "gimbal"].includes(s.panel),
+    ),
     surface: Number(s.surface === "surface"),
     wireframe: Number(s.surface === "wireframe"),
     vertices: Number(s.surface === "vertices"),
@@ -132,6 +135,14 @@ export function blendScene(
   ) as Visibility;
   return {
     ...to,
+    timeline: to.timeline && {
+      ...to.timeline,
+      position:
+        from.timeline?.group === to.timeline.group
+          ? from.timeline.position +
+            (to.timeline.position - from.timeline.position) * t
+          : to.timeline.position,
+    },
     origin: triple(from.origin, to.origin, t),
     point,
     zero: false,

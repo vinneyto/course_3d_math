@@ -29,7 +29,7 @@ function FramePanel({
         <p>{text.takeaway}</p>
       </div>
       <p className="try-it">{text.hint}</p>
-      <SnapshotParameters s={scene} language={language} />
+      <SnapshotParameters s={scene} language={language} index={index} />
       <Numbers s={scene} language={language} />
     </>
   );

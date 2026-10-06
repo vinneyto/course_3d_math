@@ -23,7 +23,10 @@ A component can serve multiple consecutive snapshots with different props.
 `snapshots.ts` is the authored timeline. Its immutable destinations contain all
 lesson parameters; returning or jumping to a frame restores its exact values.
 Changes of angle, geometry representation, composition stage, parent transform or
-timeline sample are additional snapshots. There are no editable lesson controls,
+timeline sample are additional snapshots. Every multi-step demonstration has named
+operations in its heading and a timeline with stage markers and hover/focus tooltips.
+The playhead follows the displayed transition; the chronological sequence continues
+when an example resets its numerical time. Markers inspect stages without seeking. There are no editable lesson controls,
 chart seeking, point dragging, vertex-selection clicks or automatic playback.
 Viewer interaction consists of camera orbit/zoom/pan and hover tooltips.
 
@@ -63,7 +66,11 @@ Euler composition, order comparison, gimbal lock, angle boundary interpolation.
 For XYZ, scripted gimbal snapshots reach y=90°, then increase x and decrease z
 equally. Further snapshots compare y=80° and change x then z separately at the
 singularity: either angle still rotates the model, but their effects become
-linearly dependent. Rings show successive rotation frames. Graphs observe the
+linearly dependent. Rings show successive rotation frames. Translucent signed angle
+sectors follow those same moving Euler axes, including negative angles. The axis,
+Euler-composition and order-comparison examples also show these sectors. Indicators
+show the angles actually applied so far. Sector buffers stay mounted and update
+through the transition. Graphs observe the
 snapshot time; clicking them cannot change it.
 
 Interpolation snapshots compare an actual vertex trajectory. Angular speeds are

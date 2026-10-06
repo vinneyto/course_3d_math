@@ -39,6 +39,10 @@
   authored snapshot and must never change its mathematical values.
 - The sidebar is part of each snapshot. Animate its text, parameter indicators,
   formulas, layout and numeric readouts along with the scene, not just its title.
+- Every multi-step demonstration has an operation timeline with stage markers and
+  hover/focus tooltips. Use the current stage's descriptive name as its heading;
+  do not substitute completion percentages or an anonymous time/progress meter.
+  Timeline markers inspect stages; course navigation changes the snapshot.
 - Keep the shared R3F Canvas, renderer and narrative scene mounted. Forward,
   reverse and interrupted navigation transition from the current visible state.
   Different content may crossfade; respect reduced-motion preferences.

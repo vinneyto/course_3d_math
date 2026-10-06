@@ -1023,3 +1023,99 @@ details .code-block {
     transition: none;
   }
 }
+
+.stage-timeline {
+  margin: 24px 0 30px;
+}
+.stage-timeline-track {
+  position: relative;
+  height: 30px;
+  margin: 10px 12px 0;
+}
+.stage-timeline-rail {
+  position: absolute;
+  inset: 13px 0 auto;
+  height: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #344257;
+}
+.stage-timeline-rail > i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+.stage-timeline-track ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.stage-timeline-track li {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+}
+.stage-timeline-track li > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 30px;
+  border-radius: 5px;
+  cursor: help;
+}
+.stage-timeline-track li > span > i {
+  display: block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2px solid #7a8da8;
+  background: #132037;
+}
+.stage-timeline-track .stage-past > span > i {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.stage-timeline-track .stage-current > span > i {
+  border-color: #e9fff9;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px #a3e7d622;
+}
+.stage-timeline-track li > span:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.stage-timeline-playhead {
+  position: absolute;
+  top: 24px;
+  width: 0;
+  height: 0;
+  border: 4px solid transparent;
+  border-bottom-color: var(--accent);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.stage-timeline-tooltip {
+  position: absolute;
+  bottom: 37px;
+  width: 220px;
+  max-width: 100%;
+  border: 1px solid #465a78;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #111d30;
+  box-shadow: 0 8px 24px #0005;
+  z-index: 30;
+  pointer-events: none;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.stage-timeline-tooltip strong,
+.stage-timeline-tooltip span {
+  display: block;
+}
+.stage-timeline-tooltip span {
+  margin-top: 5px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
